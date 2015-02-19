@@ -2,10 +2,12 @@ defmodule Gmail.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :elixir_gmail,
+    [app: :gmail,
      version: "0.0.1",
      elixir: "~> 1.0",
-     deps: deps]
+     deps: deps,
+     description: "A Gmail API client for Elixir",
+     package: package]
   end
 
   def application do
