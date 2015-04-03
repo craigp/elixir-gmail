@@ -2,8 +2,24 @@ defmodule Gmail.XOAuth2.Client do
 
   use Timex
 
-  def token_headers do
-    %{"Content-Type" => "application/x-www-form-urlencoded"}
+  @auth_url "https://accounts.google.com/o/oauth2/auth"
+  @token_url "https://accounts.google.com/o/oauth2/token"
+  @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
+  @scope "https://mail.google.com/"
+
+  # TODO this won't really work, and needs to be in some sort of config - the redirect_uri needs to match
+  # one this is pre-configured in the google developers panel thingy
+  @redirect_uri "http://widdershins.co.za"
+
+  def authorisation_url(%Gmail.XOAuth2.Opts{client_id: client_id}) do
+    query = %{
+      response_type: "code",
+      client_id: client_id,
+      scope: @scope,
+      access_type: "offline",
+      redirect_uri: @redirect_uri
+    } |> URI.encode_query
+    "#{@auth_url}?#{query}"
   end
 
   def access_token_expired?(%Gmail.XOAuth2.Opts{expires_at: expires_at}) do
@@ -11,21 +27,21 @@ defmodule Gmail.XOAuth2.Client do
   end
 
   def refresh_access_token(opts) do
-    %Gmail.XOAuth2.Opts{url: url, client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
+    %Gmail.XOAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
       refresh_token: refresh_token,
       grant_type: "refresh_token"
     } |> URI.encode_query
-    case HTTPoison.post(url, payload, token_headers) do
+    case HTTPoison.post(@token_url, payload, @token_headers) do
       {:ok, %HTTPoison.Response{body: body}} ->
         case Poison.Parser.parse(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
-            %{opts | access_token: access_token, expires_at: (Date.convert(Date.now, :secs) + expires_in)}
+            {:ok, %{opts | access_token: access_token, expires_at: (Date.convert(Date.now, :secs) + expires_in)}}
           fml -> {:error, fml}
         end
-      _ -> nil
+      not_ok -> {:error, not_ok}
     end
   end
 
@@ -33,7 +49,7 @@ defmodule Gmail.XOAuth2.Client do
     payload = opts
       |> url_options
       |> URI.encode_query
-    case HTTPoison.post(opts.url, payload, token_headers) do
+    case HTTPoison.post(opts.url, payload, @token_headers) do
       {:ok, response} ->
         response
           |> parse_response_body

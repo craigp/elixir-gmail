@@ -2,8 +2,7 @@ defmodule Gmail.XOAuth2.Opts do
 
   use Timex
 
-  defstruct url: "https://accounts.google.com/o/oauth2/token",
-    user_id: "",
+  defstruct user_id: "",
     client_id: "",
     client_secret: "",
     access_token: "",
