@@ -11,11 +11,11 @@ defmodule Gmail.Mixfile do
   end
 
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :httpoison]]
   end
 
   defp deps do
-    [ {:xoauth2, "~> 0.0.1"}, {:httpoison, "~> 0.5"} ]
+    [ {:httpoison, "~> 0.5"}, {:poison, "~> 1.2"}, {:mock, "~> 0.1"}, {:timex, "~> 0.13"} ]
   end
 
   defp package do
