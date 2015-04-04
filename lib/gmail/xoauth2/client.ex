@@ -26,6 +26,14 @@ defmodule Gmail.XOAuth2.Client do
     Date.convert(Date.now, :secs) >= expires_at
   end
 
+  def get_config do
+    config = Gmail.XOAuth2.Opts.from_config
+    if access_token_expired?(config) do
+      {:ok, config} = refresh_access_token(config)
+    end
+    config
+  end
+
   def refresh_access_token(opts) do
     %Gmail.XOAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
