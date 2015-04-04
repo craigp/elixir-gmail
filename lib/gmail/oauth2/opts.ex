@@ -1,4 +1,4 @@
-defmodule Gmail.XOAuth2.Opts do
+defmodule Gmail.OAuth2.Opts do
 
   use Timex
 
@@ -11,7 +11,7 @@ defmodule Gmail.XOAuth2.Opts do
     token_type: "Bearer"
 
   def from_config do
-    Map.merge(%Gmail.XOAuth2.Opts{}, Enum.into(Application.get_env(:gmail, :xoauth2), %{}))
+    Map.merge(%Gmail.OAuth2.Opts{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
   end
 
 end

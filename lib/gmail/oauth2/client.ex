@@ -1,4 +1,4 @@
-defmodule Gmail.XOAuth2.Client do
+defmodule Gmail.OAuth2.Client do
 
   use Timex
 
@@ -11,7 +11,7 @@ defmodule Gmail.XOAuth2.Client do
   # one this is pre-configured in the google developers panel thingy
   @redirect_uri "http://widdershins.co.za"
 
-  def authorisation_url(%Gmail.XOAuth2.Opts{client_id: client_id}) do
+  def authorisation_url(%Gmail.OAuth2.Opts{client_id: client_id}) do
     query = %{
       response_type: "code",
       client_id: client_id,
@@ -22,12 +22,12 @@ defmodule Gmail.XOAuth2.Client do
     "#{@auth_url}?#{query}"
   end
 
-  def access_token_expired?(%Gmail.XOAuth2.Opts{expires_at: expires_at}) do
+  def access_token_expired?(%Gmail.OAuth2.Opts{expires_at: expires_at}) do
     Date.convert(Date.now, :secs) >= expires_at
   end
 
   def get_config do
-    config = Gmail.XOAuth2.Opts.from_config
+    config = Gmail.OAuth2.Opts.from_config
     if access_token_expired?(config) do
       {:ok, config} = refresh_access_token(config)
     end
@@ -35,7 +35,7 @@ defmodule Gmail.XOAuth2.Client do
   end
 
   def refresh_access_token(opts) do
-    %Gmail.XOAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
+    %Gmail.OAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -53,7 +53,7 @@ defmodule Gmail.XOAuth2.Client do
     end
   end
 
-  def generate_token(opts \\ %Gmail.XOAuth2.Opts{}) do
+  def generate_token(opts \\ %Gmail.OAuth2.Opts{}) do
     payload = opts
       |> url_options
       |> URI.encode_query
