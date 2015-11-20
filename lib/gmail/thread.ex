@@ -18,7 +18,11 @@ defmodule Gmail.Thread do
   def get(user_id, id) do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-        %Gmail.Thread{id: id, history_id: history_id, messages: Enum.map(messages, &Gmail.Message.convert/1)}
+        %Gmail.Thread{
+          id: id,
+          history_id: history_id,
+          messages: Enum.map(messages, &Gmail.Message.convert/1)
+        }
     end
   end
 

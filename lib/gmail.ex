@@ -1,5 +1,10 @@
 defmodule Gmail do
 
+  def search(query) do
+    task = Task.async(Gmail.Thread, :search, [query])
+    Task.await(task)
+  end
+
   def threads do
     task = Task.async(Gmail.Thread, :list, [])
     Task.await(task)
