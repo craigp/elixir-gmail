@@ -15,7 +15,7 @@ defmodule Gmail.Mixfile do
   end
 
   defp deps do
-    [ {:httpoison, "~> 0.5"}, {:poison, "~> 1.2"}, {:mock, "~> 0.1"}, {:timex, "~> 0.13"} ]
+    [ {:httpoison, "~> 0.7.3"}, {:poison, "~> 1.5.0"}, {:mock, "~> 0.1.1"}, {:timex, "~> 0.19.3"} ]
   end
 
   defp package do
