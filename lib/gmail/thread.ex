@@ -36,6 +36,7 @@ defmodule Gmail.Thread do
   """
   def search(user_id, query) do
     do_get("users/#{user_id}/threads?q=#{query}")
+      # TODO need to parse results
       # {:ok, %{"threads" => msgs}} ->
       #   {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Gmail.Message{id: id, thread_id: thread_id} end)}
       # not_ok -> not_ok
@@ -61,12 +62,15 @@ defmodule Gmail.Thread do
     end
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+        IO.puts "first"
         threads = Enum.map(raw_threads,
           fn(%{"id" => id, "historyId" => history_id, "snippet" => snippet}) ->
             %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
           end)
         {:ok, threads, next_page_token}
-      not_ok -> not_ok
+      not_ok ->
+        IO.puts "second"
+        not_ok
     end
   end
 
