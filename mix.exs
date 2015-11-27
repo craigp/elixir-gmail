@@ -23,7 +23,7 @@ defmodule Gmail.Mixfile do
   defp package do
     [
       files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
-      contributors: ["Craig Paterson"],
+      maintainers: ["Craig Paterson"],
       licenses: ["MIT"],
       links: %{"Github" => "https://github.com/craigp/elixir-gmail"}]
   end
