@@ -48,7 +48,8 @@ defmodule Gmail.Thread do
   """
   def list(user_id \\ "me", params \\ %{}) do
     url = case Enum.empty?(params) do
-      true -> "users/#{user_id}/threads"
+      true ->
+        get_list "users/#{user_id}/threads"
       false ->
         query = %{}
         if Map.has_key?(params, :page_token) do
@@ -57,19 +58,20 @@ defmodule Gmail.Thread do
         if Enum.empty?(query) do
           list(user_id)
         else
-          "users/#{user_id}/threads?#{URI.encode_query(query)}"
+          get_list "users/#{user_id}/threads?#{URI.encode_query(query)}"
         end
     end
+  end
+
+  defp get_list(url) do
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-        IO.puts "first"
         threads = Enum.map(raw_threads,
           fn(%{"id" => id, "historyId" => history_id, "snippet" => snippet}) ->
             %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
           end)
         {:ok, threads, next_page_token}
       not_ok ->
-        IO.puts "second"
         not_ok
     end
   end
