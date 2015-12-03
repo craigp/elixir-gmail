@@ -95,13 +95,15 @@ defmodule Gmail.MessageTest do
     end
   end
 
-  # this requires config to be setup in config/test.exs
-  # test "getting messages without all the mocking" do
-  #   {:ok, [first_message|_other_messages]} = Gmail.Message.list
-  #   {:ok, message} = Gmail.Message.get(first_message.id)
-  #   assert message.id === first_message.id
-  #   assert message.thread_id === first_message.thread_id
-  # end
+  # this requires gmail config to be setup in config/test.local.exs
+  if File.exists?("./config/test.local.exs") do
+    test "getting messages without all the mocking" do
+      {:ok, [first_message|_other_messages]} = Gmail.Message.list
+      {:ok, message} = Gmail.Message.get(first_message.id)
+      assert message.id === first_message.id
+      assert message.thread_id === first_message.thread_id
+    end
+  end
 
 end
 

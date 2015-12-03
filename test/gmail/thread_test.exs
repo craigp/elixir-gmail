@@ -156,13 +156,15 @@ defmodule Gmail.ThreadTest do
     end
   end
 
-  # this requires config to be setup in config/test.exs
-  # test "getting threads without all the mocking" do
-  #   {:ok, [first_thread|_other_threads], _next_page_token} = Gmail.Thread.list
-  #   {:ok, thread} = Gmail.Thread.get(first_thread.id)
-  #   assert thread.id === first_thread.id
-  #   assert thread.history_id === first_thread.history_id
-  # end
+  # this requires gmail config to be setup in config/test.local.exs
+  if File.exists?("./config/test.local.exs") do
+    test "getting threads without all the mocking" do
+      {:ok, [first_thread|_other_threads], _next_page_token} = Gmail.Thread.list
+      {:ok, thread} = Gmail.Thread.get(first_thread.id)
+      assert thread.id === first_thread.id
+      assert thread.history_id === first_thread.history_id
+    end
+  end
 end
 
 
