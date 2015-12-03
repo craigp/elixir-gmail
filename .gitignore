@@ -6,4 +6,5 @@ erl_crash.dump
 dev.exs
 test.exs
 config/dev.exs
+config/test.exs
 .envrc
