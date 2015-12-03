@@ -21,8 +21,8 @@ defmodule Gmail.Mixfile do
       {:httpoison, "~> 0.7.3"},
       {:poison, "~> 1.5.0"},
       {:timex, "~> 0.19.3"},
-      {:mock, "~> 0.1.1", only: :dev},
-      {:excoveralls, "~> 0.4.2", only: :dev},
+      {:mock, "~> 0.1.1", only: :test},
+      {:excoveralls, "~> 0.4.2", only: :test},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev}
     ]
