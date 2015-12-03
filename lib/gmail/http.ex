@@ -4,8 +4,6 @@ defmodule Gmail.HTTP do
   Performs a GET request against the Gmail API
   """
   def get(token, url) do
-    IO.inspect token
-    IO.inspect url
     headers = [
       {"Authorization", "Bearer #{token}"},
       {"Content-Type", "application/json"}

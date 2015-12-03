@@ -12,21 +12,21 @@ defmodule Gmail.Thread do
   @doc """
   Gets a thread with the specified id
   """
-  @spec get(String.t) :: Gmail.Thread.t
+  @spec get(String.t) :: {:ok, Gmail.Thread.t}
   def get(id), do: get("me", id)
 
   @doc """
   Gets a thread for the specified user with the specified id
   """
-  @spec get(String.t, String.t) :: Gmail.Thread.t
+  @spec get(String.t, String.t) :: {:ok, Gmail.Thread.t}
   def get(user_id, id) do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-        %Gmail.Thread{
+        {:ok, %Gmail.Thread{
           id: id,
           history_id: history_id,
           messages: Enum.map(messages, &Gmail.Message.convert/1)
-        }
+        }}
     end
   end
 

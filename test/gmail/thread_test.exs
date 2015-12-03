@@ -51,8 +51,6 @@ defmodule Gmail.ThreadTest do
       "nextPageToken" => "23434345"
     }
 
-
-
     access_token = "xxx-xxx-xxx"
     access_token_rec = %{access_token: access_token}
 
@@ -70,7 +68,7 @@ defmodule Gmail.ThreadTest do
   test "gets a thread", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        thread = Gmail.Thread.get(context[:thread_id])
+        {:ok, thread} = Gmail.Thread.get(context[:thread_id])
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/threads/" <> context[:thread_id])
@@ -81,7 +79,7 @@ defmodule Gmail.ThreadTest do
   test "gets a thread for a specified user", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        thread = Gmail.Thread.get("user@example.com", context[:thread_id])
+        {:ok, thread} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
@@ -156,6 +154,14 @@ defmodule Gmail.ThreadTest do
           Gmail.Base.base_url <> "users/user@example.com/threads")
       end
     end
+  end
+
+  # this requires config to be setup in config/test.exs
+  test "getting threads without all the mocking" do
+    {:ok, [first_thread|_other_threads], _next_page_token} = Gmail.Thread.list
+    {:ok, thread} = Gmail.Thread.get(first_thread.id)
+    assert thread.id === first_thread.id
+    assert thread.history_id === first_thread.history_id
   end
 end
 

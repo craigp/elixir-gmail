@@ -1,0 +1,10 @@
+use Mix.Config
+
+config :gmail, :oauth2, [
+  client_id: "CLIENT_ID
+  client_secret: "CLIENT_SECRET",
+  access_token: "ACCESS_TOKEN",
+  refresh_token: "REFRESH_TOKEN",
+  token_type: "Bearer",
+  expires_at: 1428085947
+]

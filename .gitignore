@@ -4,5 +4,6 @@ erl_crash.dump
 *.ez
 *.beam
 dev.exs
+test.exs
 config/dev.exs
 .envrc

@@ -67,7 +67,6 @@ defmodule Gmail.MessageTest do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
         results = Gmail.Message.search("in:Inbox")
-        IO.inspect results: results
         assert results = context[:expected_result]
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/messages?q=in:Inbox")
@@ -96,6 +95,13 @@ defmodule Gmail.MessageTest do
     end
   end
 
+  # this requires config to be setup in config/test.exs
+  test "getting messages without all the mocking" do
+    {:ok, [first_message|_other_messages]} = Gmail.Message.list
+    {:ok, message} = Gmail.Message.get(first_message.id)
+    assert message.id === first_message.id
+    assert message.thread_id === first_message.thread_id
+  end
 
 end
 

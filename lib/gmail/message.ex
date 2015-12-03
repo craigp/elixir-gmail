@@ -16,17 +16,17 @@ defmodule Gmail.Message do
   @doc """
   Gets a message with the specified id
   """
-  @spec get(String.t) :: Gmail.Message.t
+  @spec get(String.t) :: {:ok, Gmail.Message.t}
   def get(id), do: get("me", id)
 
   @doc """
   Gets a message for the specified user with the specified id
   """
-  @spec get(String.t, String.t) :: Gmail.Message.t
+  @spec get(String.t, String.t) :: {:ok, Gmail.Message.t}
   def get(user_id, id) do
     case do_get("users/#{user_id}/messages/#{id}?format=full") do
       {:ok, msg} ->
-        convert(msg)
+        {:ok, convert(msg)}
     end
   end
 
@@ -51,12 +51,12 @@ defmodule Gmail.Message do
   @doc """
   Gets a list of messages
   """
-  @spec list(String.t) :: [Gmail.Message.t]
+  @spec list(String.t) :: {:ok, [Gmail.Message.t]}
   def list(user_id \\ "me") do
     case do_get("users/#{user_id}/messages") do
       {:ok, %{"messages" => msgs}} ->
         {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Gmail.Message{id: id, thread_id: thread_id} end)}
-        not_ok -> not_ok
+      not_ok -> {:error, not_ok}
     end
   end
 
