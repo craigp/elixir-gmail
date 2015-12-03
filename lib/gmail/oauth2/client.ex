@@ -7,10 +7,6 @@ defmodule Gmail.OAuth2.Client do
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
   @scope "https://mail.google.com/"
 
-  # TODO this won't really work, and needs to be in some sort of config - the redirect_uri needs to match
-  # one this is pre-configured in the google developers panel thingy
-  @redirect_uri "http://widdershins.co.za"
-
   @doc """
   Checks if an access token has expired
 
@@ -23,6 +19,7 @@ defmodule Gmail.OAuth2.Client do
       false
 
   """
+  @spec access_token_expired?(Gmail.OAuth2.Opts.t) :: boolean
   def access_token_expired?(%Gmail.OAuth2.Opts{expires_at: expires_at}) do
     Date.to_secs(Date.now) >= expires_at
   end
@@ -41,6 +38,7 @@ defmodule Gmail.OAuth2.Client do
   @doc ~S"""
   Refreshes an expired access token
   """
+  @spec refresh_access_token(Map.t) :: {:ok, Map.t}
   def refresh_access_token(opts) do
     %Gmail.OAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{

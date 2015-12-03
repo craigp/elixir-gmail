@@ -44,8 +44,8 @@ defmodule Gmail.MessageTest do
   test "gets a message", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        message = Gmail.Message.get(context[:message_id])
-        assert message = context[:expected_result]
+        {:ok, message} = Gmail.Message.get(context[:message_id])
+        assert message == context[:expected_result]
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/messages/" <> context[:message_id] <> "?format=full")
       end
@@ -55,8 +55,8 @@ defmodule Gmail.MessageTest do
   test "gets a message for a specified user", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        message = Gmail.Message.get("user@example.com", context[:message_id])
-        assert message = context[:expected_result]
+        {:ok, message} = Gmail.Message.get("user@example.com", context[:message_id])
+        assert message == context[:expected_result]
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages/" <> context[:message_id] <> "?format=full")
       end
@@ -66,8 +66,8 @@ defmodule Gmail.MessageTest do
   test "performs a message search", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        results = Gmail.Message.search("in:Inbox")
-        assert results = context[:expected_result]
+        {:ok, results} = Gmail.Message.search("in:Inbox")
+        # TODO need to test results
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/messages?q=in:Inbox")
       end
@@ -77,7 +77,7 @@ defmodule Gmail.MessageTest do
   test "performs a message search for a specified user", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message] } end] do
       with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
-        results = Gmail.Message.search("user@example.com", "in:Inbox")
+        {:ok, results} = Gmail.Message.search("user@example.com", "in:Inbox")
         assert called Gmail.OAuth2.Client.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages?q=in:Inbox")
       end

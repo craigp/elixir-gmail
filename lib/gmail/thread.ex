@@ -52,7 +52,7 @@ defmodule Gmail.Thread do
   @doc """
   Gets a list of threads
   """
-  @spec list(String.t, Keyword.t) :: [Gmail.Thread.t]
+  @spec list(String.t, Map.t) :: [Gmail.Thread.t]
   def list(user_id \\ "me", params \\ %{}) do
     case Enum.empty?(params) do
       true ->
