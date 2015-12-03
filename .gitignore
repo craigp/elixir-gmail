@@ -8,3 +8,4 @@ test.local.exs
 config/dev.exs
 config/test.local.exs
 .envrc
+doc
