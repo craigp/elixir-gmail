@@ -72,7 +72,7 @@ defmodule Gmail.Thread do
           end)
         {:ok, threads, next_page_token}
       not_ok ->
-        not_ok
+        {:error, not_ok}
     end
   end
 
