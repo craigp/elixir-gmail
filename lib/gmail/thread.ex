@@ -7,14 +7,18 @@ defmodule Gmail.Thread do
     history_id: "",
     messages: []
 
+  @type t :: %__MODULE__{}
+
   @doc """
-  Gets a thread
+  Gets a thread with the specified id
   """
+  @spec get(String.t) :: Gmail.Thread.t
   def get(id), do: get("me", id)
 
   @doc """
-  Gets a thread
+  Gets a thread for the specified user with the specified id
   """
+  @spec get(String.t, String.t) :: Gmail.Thread.t
   def get(user_id, id) do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
@@ -29,11 +33,13 @@ defmodule Gmail.Thread do
   @doc """
   Searches for threads
   """
+  @spec search(String.t) :: [Gmail.Thread.t]
   def search(query), do: search("me", query)
 
   @doc """
-  Searches for threads
+  Searches for threads for the specified user
   """
+  @spec search(String.t, String.t) :: [Gmail.Thread.t]
   def search(user_id, query) do
     do_get("users/#{user_id}/threads?q=#{query}")
       # TODO need to parse results
@@ -46,8 +52,9 @@ defmodule Gmail.Thread do
   @doc """
   Gets a list of threads
   """
+  @spec list(String.t, Keyword.t) :: [Gmail.Thread.t]
   def list(user_id \\ "me", params \\ %{}) do
-    url = case Enum.empty?(params) do
+    case Enum.empty?(params) do
       true ->
         get_list "users/#{user_id}/threads"
       false ->
@@ -63,6 +70,7 @@ defmodule Gmail.Thread do
     end
   end
 
+  @spec get_list(String.t) :: {:ok, [Gmail.Thread.t], String.t}
   defp get_list(url) do
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->

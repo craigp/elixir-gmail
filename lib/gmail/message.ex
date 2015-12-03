@@ -63,7 +63,7 @@ defmodule Gmail.Message do
   @doc """
   Converts a Gmail API message response into a local struct
   """
-  @spec convert(%{}) :: Gmail.Message.t
+  @spec convert(Keyword.t) :: Gmail.Message.t
   def convert(%{"id" => id,
     "threadId" => thread_id,
     "labelIds" => label_ids,
