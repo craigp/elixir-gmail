@@ -8,7 +8,7 @@ defmodule Gmail.Mixfile do
      deps: deps,
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test],
-     description: "A Gmail API client for Elixir",
+     description: "A simple Gmail API client for Elixir, mostly built as a learning exercise",
      package: package]
   end
 
@@ -20,9 +20,9 @@ defmodule Gmail.Mixfile do
     [
       {:httpoison, "~> 0.7.3"},
       {:poison, "~> 1.5.0"},
-      {:mock, "~> 0.1.1"},
       {:timex, "~> 0.19.3"},
-      {:excoveralls, "~> 0.4.2"},
+      {:mock, "~> 0.1.1", only: :dev},
+      {:excoveralls, "~> 0.4.2", only: :dev},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev}
     ]
