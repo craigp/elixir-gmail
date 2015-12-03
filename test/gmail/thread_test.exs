@@ -27,7 +27,7 @@ defmodule Gmail.ThreadTest do
       "payload"      => %{"mimeType" => "text/html",
         "filename" => "",
         "headers"  => ["header-1", "header-2"],
-        "body"     => %{"data" => "the actual body", "size" => 234},
+        "body"     => %{"data" => Base.encode64("the actual body"), "size" => 234},
         "parts"    => []},
       "sizeEstimate" => 23433
     }

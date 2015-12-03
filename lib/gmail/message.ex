@@ -44,7 +44,7 @@ defmodule Gmail.Message do
     case do_get("users/#{user_id}/messages?q=#{query}") do
       {:ok, %{"messages" => msgs}} ->
         {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Gmail.Message{id: id, thread_id: thread_id} end)}
-        not_ok -> not_ok
+      not_ok -> not_ok
     end
   end
 
