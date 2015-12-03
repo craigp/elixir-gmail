@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gmail.Thread – gmail v0.0.2</title>
+    <title>Gmail.Thread – gmail v0.0.3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.11.1">
     <link rel="stylesheet" href="dist/app-6bc9434c82.css" />
@@ -28,7 +28,7 @@
         gmail
       </h1>
       <h2 class="sidebar-projectVersion">
-        v0.0.2
+        v0.0.3
       </h2>
     </div>
     
@@ -60,7 +60,7 @@
 
 
       <h1>
-        <small class="visible-xs">gmail v0.0.2</small>
+        <small class="visible-xs">gmail v0.0.3</small>
         Gmail.Thread
         
         
@@ -77,6 +77,19 @@
             Summary
           </h1>
           
+  <div class="summary-types summary">
+    <h2>
+      <a href="#types">Types</a>
+    </h2>
+    <div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:t/0">t()</a>
+  </div>
+  
+</div>
+
+  </div>
+
 
           
   <div class="summary-functions summary">
@@ -88,7 +101,7 @@
     <a href="#get/1">get(id)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Gets a thread</p>
+    <div class="summary-synopsis"><p>Gets a thread with the specified id</p>
 </div>
   
 </div>
@@ -97,7 +110,7 @@
     <a href="#get/2">get(user_id, id)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Gets a thread</p>
+    <div class="summary-synopsis"><p>Gets a thread for the specified user with the specified id</p>
 </div>
   
 </div>
@@ -124,7 +137,7 @@
     <a href="#search/2">search(user_id, query)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Searches for threads</p>
+    <div class="summary-synopsis"><p>Searches for threads for the specified user</p>
 </div>
   
 </div>
@@ -139,6 +152,22 @@
         </section>
       
 
+      
+        <section id="types" class="types details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#types">
+              <i class="icon-link"></i>
+            </a>
+            Types
+          </h1>
+          <div class="types-list">
+            <div id="t:t/0" class="type-detail">
+  <pre><code class="elixir"><a href="#t:t/0">t</a> :: %Gmail.Thread{history_id: term, id: term, messages: term, snippet: term}</code></pre>
+  
+</div>
+
+          </div>
+        </section>
       
 
       
@@ -158,8 +187,17 @@
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">get(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: {:ok, <a href="Gmail.Thread.html#t:t/0">Gmail.Thread.t</a>}</code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
-    <p>Gets a thread</p>
+    <p>Gets a thread with the specified id</p>
 
   </section>
 </div>
@@ -172,8 +210,17 @@
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">get(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: {:ok, <a href="Gmail.Thread.html#t:t/0">Gmail.Thread.t</a>}</code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
-    <p>Gets a thread</p>
+    <p>Gets a thread for the specified user with the specified id</p>
 
   </section>
 </div>
@@ -185,6 +232,15 @@
     <span class="signature">list(user_id \\ &quot;me&quot;, params \\ %{})</span>
       
   </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">list(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, <a href="http://elixir-lang.org/docs/stable/elixir/Keyword.html#t:t/0">Keyword.t</a>) :: [<a href="Gmail.Thread.html#t:t/0">Gmail.Thread.t</a>]</code></pre>
+        
+      </div>
+    </div>
   
   <section class="docstring">
     <p>Gets a list of threads</p>
@@ -200,6 +256,15 @@
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">search(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: [<a href="Gmail.Thread.html#t:t/0">Gmail.Thread.t</a>]</code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
     <p>Searches for threads</p>
 
@@ -214,8 +279,17 @@
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">search(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: [<a href="Gmail.Thread.html#t:t/0">Gmail.Thread.t</a>]</code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
-    <p>Searches for threads</p>
+    <p>Searches for threads for the specified user</p>
 
   </section>
 </div>
