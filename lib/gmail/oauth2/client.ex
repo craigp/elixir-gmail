@@ -7,7 +7,7 @@ defmodule Gmail.OAuth2.Client do
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
   @scope "https://mail.google.com/"
 
-  @doc """
+  @doc ~S"""
   Checks if an access token has expired
 
   ### Examples
@@ -24,7 +24,7 @@ defmodule Gmail.OAuth2.Client do
     Date.to_secs(Date.now) >= expires_at
   end
 
-  @doc ~S"""
+  @doc """
   Gets the config for a Gmail API connection, including a refreshed access token
   """
   @spec get_config() :: Gmail.OAuth2.Opts.t
@@ -36,7 +36,7 @@ defmodule Gmail.OAuth2.Client do
     config
   end
 
-  @doc ~S"""
+  @doc """
   Refreshes an expired access token
   """
   @spec refresh_access_token(Gmail.OAuth2.Opts.t) :: {:ok, Gmail.OAuth2.Opts.t}

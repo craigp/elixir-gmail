@@ -5,8 +5,6 @@ defmodule Gmail.MessageTest do
   use ExUnit.Case
   import Mock
 
-  doctest Gmail.Message
-
   setup do
     message_id = "23443513177"
     thread_id = "234234234"
