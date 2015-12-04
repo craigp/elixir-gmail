@@ -27,6 +27,7 @@ defmodule Gmail.OAuth2.Client do
   @doc ~S"""
   Gets the config for a Gmail API connection, including a refreshed access token
   """
+  @spec get_config() :: Gmail.OAuth2.Opts.t
   def get_config do
     config = Gmail.OAuth2.Opts.from_config
     if access_token_expired?(config) do
@@ -38,7 +39,7 @@ defmodule Gmail.OAuth2.Client do
   @doc ~S"""
   Refreshes an expired access token
   """
-  @spec refresh_access_token(Map.t) :: {:ok, Map.t}
+  @spec refresh_access_token(Gmail.OAuth2.Opts.t) :: {:ok, Gmail.OAuth2.Opts.t}
   def refresh_access_token(opts) do
     %Gmail.OAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
