@@ -27,7 +27,11 @@ defmodule Gmail.OAuth2.ClientTest do
     with_mock URI, [ encode_query: fn _query -> fake_query end ] do
       with_mock HTTPoison, [ post: fn _url, _payload, _headers -> {:ok, response} end ] do
         {:ok, result} = Gmail.OAuth2.Client.refresh_access_token(opts)
-        assert expected_result == %Gmail.OAuth2.Opts{result | expires_at: (Date.to_secs(Date.now) + expires_in)}
+        # assert expected_result == %Gmail.OAuth2.Opts{result | expires_at: (Date.to_secs(Date.now) + expires_in)}
+        assert expected_result.access_token == result.access_token
+        assert expected_result.client_id == result.client_id
+        assert expected_result.client_secret == result.client_secret
+        assert expected_result.refresh_token == result.refresh_token
       end
     end
   end
