@@ -47,7 +47,8 @@ defmodule Gmail.MessageTest do
         {:ok, message} = Gmail.Message.get(context[:message_id])
         assert message == context[:expected_result]
         assert called Gmail.OAuth2.Client.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/messages/" <> context[:message_id] <> "?format=full")
+        assert called Gmail.HTTP.get(context[:access_token],
+          Gmail.Base.base_url <> "users/me/messages/" <> context[:message_id] <> "?format=full")
       end
     end
   end
