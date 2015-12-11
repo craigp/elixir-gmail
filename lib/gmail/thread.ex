@@ -41,12 +41,17 @@ defmodule Gmail.Thread do
   """
   @spec search(String.t, String.t) :: [Gmail.Thread.t]
   def search(user_id, query) do
-    do_get("users/#{user_id}/threads?q=#{query}")
-      # TODO need to parse results
-      # {:ok, %{"threads" => msgs}} ->
-      #   {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Gmail.Message{id: id, thread_id: thread_id} end)}
-      # not_ok -> not_ok
-    # end
+    case do_get("users/#{user_id}/threads?q=#{query}") do
+      {:ok, %{"threads" => threads}} ->
+        {:ok, Enum.map(
+          threads,
+          fn(%{"historyId" => history_id, "id" => id, "snippet" => snippet}) ->
+            %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
+          end)}
+      not_ok ->
+        IO.puts "FML"
+        not_ok
+    end
   end
 
   @doc """
