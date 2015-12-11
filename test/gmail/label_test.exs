@@ -7,18 +7,27 @@ defmodule Gmail.LabelTest do
 
   setup do
 
+    access_token = "xxx-xxx-xxx"
+    access_token_rec = %{access_token: access_token}
+
     label_id = "Label_22"
     label_name = "Cool Label"
+    label_type = "user"
     label = %{
       "id" => label_id,
-      "name" => label_name
+      "name" => label_name,
+      "type" => label_type
     }
     expected_result = %Gmail.Label{
       id: label_id,
-      name: label_name
+      name: label_name,
+      type: label_type
     }
     {:ok, %{
+        access_token: access_token,
+        access_token_rec: access_token_rec,
         label_id: label_id,
+        label_name: label_name,
         label: label,
         expected_result: expected_result
       }}
