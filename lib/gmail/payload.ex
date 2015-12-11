@@ -24,7 +24,7 @@ defmodule Gmail.Payload do
       filename: filename,
       headers: headers,
       body: Gmail.Body.convert(body),
-      parts: Enum.map(parts, &Gmail.Payload.convert/1)}
+      parts: Enum.map(parts, &convert/1)}
   end
 
   @doc """
@@ -56,7 +56,7 @@ defmodule Gmail.Payload do
       filename: filename,
       headers: headers,
       body: Gmail.Body.convert(body),
-      parts: Enum.map(parts, &Gmail.Payload.convert/1)}
+      parts: Enum.map(parts, &convert/1)}
   end
 
   @doc """
