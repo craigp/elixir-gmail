@@ -2,6 +2,13 @@ defmodule Gmail.Message do
 
   import Gmail.Base
 
+  @moduledoc """
+  An email message.
+  """
+
+  @doc """
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages#resource
+  """
   defstruct id: "",
     thread_id: "",
     label_ids: [],
@@ -14,13 +21,17 @@ defmodule Gmail.Message do
   @type t :: %__MODULE__{}
 
   @doc """
-  Gets a message with the specified id
+  Gets the specified message.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
   @spec get(String.t) :: {:ok, Gmail.Message.t}
   def get(id), do: get("me", id)
 
   @doc """
-  Gets a message for the specified user with the specified id
+  Gets the specified message.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
   @spec get(String.t, String.t) :: {:ok, Gmail.Message.t}
   def get(user_id, id) do
@@ -40,13 +51,17 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Searches for messages
+  Searches for messages in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
   @spec search(String.t, String.t) :: [Gmail.Message.t]
   def search(query), do: search("me", query)
 
   @doc """
-  Searches for messages for the specified user
+  Searches for messages in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
   @spec search(String.t, String.t) :: [Gmail.Message.t]
   def search(user_id, query) do
@@ -62,7 +77,9 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Gets a list of messages
+  Lists the messages in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
   @spec list(String.t) :: {:ok, [Gmail.Message.t]}
   def list(user_id \\ "me") do
@@ -74,7 +91,7 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Converts a Gmail API message response into a local struct
+  Converts a Gmail API message resource into a local struct
   """
   @spec convert(Map.t) :: Gmail.Message.t
   def convert(%{"id" => id,

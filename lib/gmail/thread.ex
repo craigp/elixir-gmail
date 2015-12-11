@@ -2,6 +2,13 @@ defmodule Gmail.Thread do
 
   import Gmail.Base
 
+  @moduledoc """
+  A collection of messages representing a conversation.
+  """
+
+  @doc """
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads#resource
+  """
   defstruct id: "",
     snippet: "",
     history_id: "",
@@ -10,13 +17,17 @@ defmodule Gmail.Thread do
   @type t :: %__MODULE__{}
 
   @doc """
-  Gets a thread with the specified id
+  Gets the specified thread.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
   @spec get(String.t) :: {:ok, Gmail.Thread.t}
   def get(id), do: get("me", id)
 
   @doc """
-  Gets a thread for the specified user with the specified id
+  Gets the specified thread.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
   @spec get(String.t, String.t) :: {:ok, Gmail.Thread.t}
   def get(user_id, id) do
@@ -40,13 +51,17 @@ defmodule Gmail.Thread do
   end
 
   @doc """
-  Searches for threads
+  Searches for threads in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec search(String.t) :: [Gmail.Thread.t]
   def search(query), do: search("me", query)
 
   @doc """
-  Searches for threads for the specified user
+  Searches for threads in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec search(String.t, String.t) :: [Gmail.Thread.t]
   def search(user_id, query) do
@@ -64,7 +79,9 @@ defmodule Gmail.Thread do
   end
 
   @doc """
-  Gets a list of threads
+  Lists the threads in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec list(String.t, Map.t) :: {:ok, [Gmail.Thread.t], String.t}
   def list(user_id \\ "me", params \\ %{}) do
