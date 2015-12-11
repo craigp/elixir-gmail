@@ -3,7 +3,7 @@ elixir-gmail [![Build Status](https://secure.travis-ci.org/craigp/elixir-gmail.p
 
 A simple Gmail REST API client for Elixir, mostly built as a learning exercise.
 
-You can find the hex package [here](https://hex.pm/packages/gmail), and the docs [here](http://hexdocs.pm/gmail/0.0.2/).
+You can find the hex package [here](https://hex.pm/packages/gmail), and the docs [here](http://hexdocs.pm/gmail).
 
 You can find documentation for Gmail's API at https://developers.google.com/gmail/api/
 
