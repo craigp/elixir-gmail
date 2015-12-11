@@ -25,8 +25,17 @@ defmodule Gmail.Message do
   @spec get(String.t, String.t) :: {:ok, Gmail.Message.t}
   def get(user_id, id) do
     case do_get("users/#{user_id}/messages/#{id}?format=full") do
-      {:ok, msg} ->
-        {:ok, convert(msg)}
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:error, details} ->
+        {:error, details}
+      {:ok, raw_message} ->
+        {:ok, convert(raw_message)}
     end
   end
 

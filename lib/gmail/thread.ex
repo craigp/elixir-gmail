@@ -23,6 +23,9 @@ defmodule Gmail.Thread do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
         :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
       {:ok, %{"error" => details}} ->
         {:error, details}
       {:error, details} ->
