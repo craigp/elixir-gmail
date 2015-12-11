@@ -1,7 +1,11 @@
 defmodule Gmail.HTTP do
 
+  @moduledoc """
+  HTTP request handling.
+  """
+
   @doc """
-  Performs a GET request against the Gmail API
+  Performs an HTTP GET request.
   """
   @spec get(String.t, String.t) :: {:ok, Map.t}
   def get(token, url) do

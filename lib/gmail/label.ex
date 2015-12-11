@@ -66,9 +66,6 @@ defmodule Gmail.Label do
     end
   end
 
-  @doc """
-  Converts a Gmail API label resource into a local struct
-  """
   @spec convert(Map.t) :: Gmail.Label.t
   defp convert(%{"id" => id,
     "name" => name,

@@ -50,10 +50,10 @@ defmodule Gmail.LabelTest do
 
   test "gets a label", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label] } end] do
-      with_mock Gmail.OAuth2.Client, [ get_config: fn -> context[:access_token_rec] end ] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:ok, label} = Gmail.Label.get(context[:label_id])
         assert context[:expected_result] == label
-        assert called Gmail.OAuth2.Client.get_config
+        assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end

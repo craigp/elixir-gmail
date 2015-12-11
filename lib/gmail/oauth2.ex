@@ -1,6 +1,20 @@
-defmodule Gmail.OAuth2.Client do
+defmodule Gmail.OAuth2 do
 
   use Timex
+
+  @moduledoc """
+  OAuth2 access token handling.
+  """
+
+  defstruct user_id: "",
+    client_id: "",
+    client_secret: "",
+    access_token: "",
+    refresh_token: "",
+    expires_at: "",
+    token_type: "Bearer"
+
+  @type t :: %__MODULE__{}
 
   @auth_url "https://accounts.google.com/o/oauth2/auth"
   @token_url "https://accounts.google.com/o/oauth2/token"
@@ -8,28 +22,28 @@ defmodule Gmail.OAuth2.Client do
   @scope "https://mail.google.com/"
 
   @doc ~S"""
-  Checks if an access token has expired
+  Checks if an access token has expired.
 
   ### Examples
 
-      iex> Gmail.OAuth2.Client.access_token_expired?(%Gmail.OAuth2.Opts{expires_at: 1})
+      iex> Gmail.OAuth2.access_token_expired?(%Gmail.OAuth2{expires_at: 1})
       true
 
-      iex> Gmail.OAuth2.Client.access_token_expired?(%Gmail.OAuth2.Opts{expires_at: (Timex.Date.to_secs(Timex.Date.now) + 10)})
+      iex> Gmail.OAuth2.access_token_expired?(%Gmail.OAuth2{expires_at: (Timex.Date.to_secs(Timex.Date.now) + 10)})
       false
 
   """
-  @spec access_token_expired?(Gmail.OAuth2.Opts.t) :: boolean
-  def access_token_expired?(%Gmail.OAuth2.Opts{expires_at: expires_at}) do
+  @spec access_token_expired?(Gmail.OAuth2.t) :: boolean
+  def access_token_expired?(%Gmail.OAuth2{expires_at: expires_at}) do
     Date.to_secs(Date.now) >= expires_at
   end
 
   @doc """
-  Gets the config for a Gmail API connection, including a refreshed access token
+  Gets the config for a Gmail API connection, including a refreshed access token.
   """
-  @spec get_config() :: Gmail.OAuth2.Opts.t
+  @spec get_config() :: Gmail.OAuth2.t
   def get_config do
-    config = Gmail.OAuth2.Opts.from_config
+    config = from_config
     if access_token_expired?(config) do
       {:ok, config} = refresh_access_token(config)
     end
@@ -37,11 +51,11 @@ defmodule Gmail.OAuth2.Client do
   end
 
   @doc """
-  Refreshes an expired access token
+  Refreshes an expired access token.
   """
-  @spec refresh_access_token(Gmail.OAuth2.Opts.t) :: {:ok, Gmail.OAuth2.Opts.t}
+  @spec refresh_access_token(Gmail.OAuth2.t) :: {:ok, Gmail.OAuth2.t}
   def refresh_access_token(opts) do
-    %Gmail.OAuth2.Opts{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
+    %Gmail.OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -57,6 +71,11 @@ defmodule Gmail.OAuth2.Client do
         end
       not_ok -> {:error, not_ok}
     end
+  end
+
+  @spec from_config() :: Gmail.OAuth2.t
+  defp from_config do
+    Map.merge(%Gmail.OAuth2{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
   end
 
 end

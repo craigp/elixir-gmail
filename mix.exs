@@ -3,7 +3,7 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.0.6",
+     version: "0.0.7",
      elixir: "~> 1.0",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
