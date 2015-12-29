@@ -65,7 +65,7 @@ defmodule Gmail.MessageTest do
     message = %{context[:message] | "payload" => payload}
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, message } end] do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
-        {:ok, message} = Gmail.Message.get(context[:message_id])
+        {:ok, _message} = Gmail.Message.get(context[:message_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/messages/" <> context[:message_id] <> "?format=full")
       end
