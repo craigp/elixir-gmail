@@ -17,4 +17,13 @@ defmodule Gmail.Base do
     Gmail.HTTP.get(access_token, base_url <> path)
   end
 
+  @doc """
+  Performs an HTTP post request.
+  """
+  @spec do_post(String.t, Map.t) :: {:ok, Map.t}
+  def do_post(path, data) do
+    %{access_token: access_token} = Gmail.OAuth2.get_config
+    Gmail.HTTP.post(access_token, base_url <> path, data)
+  end
+
 end

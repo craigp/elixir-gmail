@@ -22,6 +22,26 @@ defmodule Gmail.Label do
   @type t :: %__MODULE__{}
 
   @doc """
+  Creates a new label.
+
+  > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels
+  """
+  @spec create(String.t, String.t) :: Gmail.Label.t
+  def create(name, user_id \\ "me") do
+    case do_post("users/#{user_id}/labels", %{"name" => name}) do
+      {:ok, %{"error" => %{"errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:error, details} ->
+        {:error, details}
+      {:ok, raw_label} ->
+        {:ok, convert(raw_label)}
+    end
+  end
+
+  @doc """
   Gets the specified label.
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
@@ -64,6 +84,30 @@ defmodule Gmail.Label do
       {:ok, %{"labels" => raw_labels}} ->
         {:ok, Enum.map(raw_labels, &convert/1)}
     end
+  end
+
+  @spec convert(Map.t) :: Gmail.Label.t
+  defp convert(%{"id" => id,
+    "labelListVisibility" => labelListVisibility,
+    "messageListVisibility" => messageListVisibility,
+    "name" => name,
+    "type" => type}) do
+    %Gmail.Label{id: id,
+      name: name,
+      labelListVisibility: labelListVisibility,
+      messageListVisibility: messageListVisibility,
+      type: type}
+  end
+
+  @spec convert(Map.t) :: Gmail.Label.t
+  defp convert(%{"id" => id,
+    "labelListVisibility" => labelListVisibility,
+    "messageListVisibility" => messageListVisibility,
+    "name" => name}) do
+    %Gmail.Label{id: id,
+      name: name,
+      labelListVisibility: labelListVisibility,
+      messageListVisibility: messageListVisibility}
   end
 
   @spec convert(Map.t) :: Gmail.Label.t

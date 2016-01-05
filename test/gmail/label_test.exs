@@ -42,8 +42,17 @@ defmodule Gmail.LabelTest do
       }}
   end
 
-  # test "creates a new label" do
-  # end
+  test "creates a new label", context do
+    with_mock Gmail.HTTP, [ post: fn _at, _url, _data -> { :ok, context[:label] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        {:ok, label} = Gmail.Label.create(context[:label_name])
+        assert context[:expected_result] == label
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.post(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels", %{"name" => context[:label_name]})
+      end
+    end
+  end
 
   # test "deletes a label" do
 
