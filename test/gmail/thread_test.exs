@@ -80,6 +80,11 @@ defmodule Gmail.ThreadTest do
       }
     ]
 
+    errors = [
+      %{"message" => "Error #1"},
+      %{"message" => "Error #2"}
+    ]
+
     {:ok,
       thread_id: thread_id,
       threads: threads,
@@ -89,7 +94,9 @@ defmodule Gmail.ThreadTest do
       access_token: access_token,
       access_token_rec: access_token_rec,
       search_results: search_results,
-      expected_search_results: expected_search_results
+      expected_search_results: expected_search_results,
+      thread_not_found: %{"error" => %{"code" => 404}},
+      four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}}
     }
   end
 
@@ -109,6 +116,26 @@ defmodule Gmail.ThreadTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:ok, thread} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert context[:expected_result] == thread
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
+      end
+    end
+  end
+
+  test "reports :not_found for a thread that doesn't exist", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread_not_found] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        :not_found = Gmail.Thread.get("user@example.com", context[:thread_id])
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
+      end
+    end
+  end
+
+  test "handles a 400 error from the API", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        {:error, "Error #1"} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
       end

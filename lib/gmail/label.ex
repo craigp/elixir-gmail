@@ -24,7 +24,7 @@ defmodule Gmail.Label do
   @doc """
   Creates a new label.
 
-  > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels
+  > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
   @spec create(String.t, String.t) :: Gmail.Label.t
   def create(name, user_id \\ "me") do
