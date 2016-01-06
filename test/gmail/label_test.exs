@@ -30,6 +30,11 @@ defmodule Gmail.LabelTest do
 
     expected_results = [expected_result]
 
+    errors = [
+      %{"message" => "Error #1"},
+      %{"message" => "Error #2"}
+    ]
+
     {:ok, %{
         access_token: access_token,
         access_token_rec: access_token_rec,
@@ -38,7 +43,9 @@ defmodule Gmail.LabelTest do
         label: label,
         labels: labels,
         expected_result: expected_result,
-        expected_results: expected_results
+        expected_results: expected_results,
+        label_not_found: %{"error" => %{"code" => 404}},
+        four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}}
       }}
   end
 
@@ -78,6 +85,26 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:ok, label} = Gmail.Label.get(context[:label_id])
         assert context[:expected_result] == label
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+      end
+    end
+  end
+
+  test "reports :not_found for a thread that doesn't exist", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label_not_found] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        :not_found = Gmail.Label.get(context[:label_id])
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+      end
+    end
+  end
+
+  test "handles a 400 error from the API", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        {:error, "Error #1"} = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
