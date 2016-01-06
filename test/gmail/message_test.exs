@@ -36,6 +36,11 @@ defmodule Gmail.MessageTest do
     access_token = "xxx-xxx-xxx"
     access_token_rec = %{access_token: access_token}
 
+    errors = [
+      %{"message" => "Error #1"},
+      %{"message" => "Error #2"}
+    ]
+
     {:ok,
       message_id: message_id,
       message: message,
@@ -43,7 +48,9 @@ defmodule Gmail.MessageTest do
       access_token_rec: access_token_rec,
       expected_result: expected_result,
       search_result: search_result,
-      expected_search_result: expected_search_result
+      expected_search_result: expected_search_result,
+      message_not_found: %{"error" => %{"code" => 404}},
+      four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}}
     }
   end
 
@@ -77,6 +84,26 @@ defmodule Gmail.MessageTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:ok, message} = Gmail.Message.get("user@example.com", context[:message_id])
         assert message == context[:expected_result]
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages/" <> context[:message_id] <> "?format=full")
+      end
+    end
+  end
+
+  test "reports :not_found for a message that doesn't exist", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message_not_found] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        :not_found = Gmail.Message.get("user@example.com", context[:message_id])
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages/" <> context[:message_id] <> "?format=full")
+      end
+    end
+  end
+
+  test "handles a 400 error from the API", context do
+    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        {:error, "Error #1"} = Gmail.Message.get("user@example.com", context[:message_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages/" <> context[:message_id] <> "?format=full")
       end
