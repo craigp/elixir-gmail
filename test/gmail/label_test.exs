@@ -112,7 +112,7 @@ defmodule Gmail.LabelTest do
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:expected_result].id, %{"name" => context[:label_name]})
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id], %{"name" => context[:label_name]})
       end
     end
   end
@@ -125,7 +125,7 @@ defmodule Gmail.LabelTest do
         assert context[:four_hundred_error_content] == error_detail
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:expected_result].id, %{"name" => context[:label_name]})
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id], %{"name" => context[:label_name]})
       end
     end
   end
