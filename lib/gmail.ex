@@ -8,9 +8,9 @@ defmodule Gmail do
   At this stage the client supports API endpoints for:
   - threads
   - messages
+  - labels
 
   Still missing is support for:
-  - labels
   - drafts
   - history
 
@@ -25,7 +25,7 @@ defmodule Gmail do
   file to see what your config should look like.
   """
 
-  @spec search(String.t) :: [Gmail.Thread.t]
+  @spec search(String.t) :: {atom, [Gmail.Thread.t]}
   defdelegate search(query), to: Gmail.Thread
 
 end

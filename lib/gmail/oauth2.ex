@@ -53,7 +53,7 @@ defmodule Gmail.OAuth2 do
   @doc """
   Refreshes an expired access token.
   """
-  @spec refresh_access_token(Gmail.OAuth2.t) :: {:ok, Gmail.OAuth2.t}
+  @spec refresh_access_token(Gmail.OAuth2.t) :: {atom, Gmail.OAuth2.t}
   def refresh_access_token(opts) do
     %Gmail.OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{

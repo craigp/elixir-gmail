@@ -11,7 +11,7 @@ defmodule Gmail.Base do
   @doc """
   Performs an HTTP GET request.
   """
-  @spec do_get(String.t) :: {:ok, Map.t}
+  @spec do_get(String.t) :: {atom, Map.t}
   def do_get(path) do
     get_access_token |> Gmail.HTTP.get(base_url <> path)
   end
@@ -19,7 +19,7 @@ defmodule Gmail.Base do
   @doc """
   Performs an HTTP POST request.
   """
-  @spec do_post(String.t, Map.t) :: {:ok, Map.t}
+  @spec do_post(String.t, Map.t) :: {atom, Map.t}
   def do_post(path, data) do
     get_access_token |> Gmail.HTTP.post(base_url <> path, data)
   end
@@ -27,7 +27,7 @@ defmodule Gmail.Base do
   @doc """
   Performs an HTTP PUT request.
   """
-  @spec do_put(String.t, Map.t) :: {:ok, Map.t}
+  @spec do_put(String.t, Map.t) :: {atom, Map.t}
   def do_put(path, data) do
     get_access_token |> Gmail.HTTP.put(base_url <> path, data)
   end
@@ -35,7 +35,7 @@ defmodule Gmail.Base do
   @doc """
   Performs an HTTP DELETE reauest.
   """
-  @spec do_delete(String.t) :: {:ok, Map.t}
+  @spec do_delete(String.t) :: {atom, Map.t}
   def do_delete(path) do
     get_access_token |> Gmail.HTTP.delete(base_url <> path)
   end

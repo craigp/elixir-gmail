@@ -19,7 +19,7 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/list
   """
-  @spec list(String.t) :: {:ok, [Gmail.Draft.t]}
+  @spec list(String.t) :: {atom, [Gmail.Draft.t]}
   def list(user_id  \\ "me") do
     case do_get("users/#{user_id}/drafts") do
       {:ok, %{"error" => details}} ->

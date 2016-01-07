@@ -16,7 +16,7 @@ defmodule Gmail.Payload do
   @doc """
   Converts an email payload.
   """
-  @spec convert(Map.t) :: Gmail.Payload.t
+  @spec convert(map) :: Gmail.Payload.t
   def convert(%{"partId" => part_id,
     "mimeType" => mime_type,
     "filename" => filename,
@@ -34,7 +34,6 @@ defmodule Gmail.Payload do
   @doc """
   Converts an email payload.
   """
-  @spec convert(Map.t) :: Gmail.Payload.t
   def convert(%{"partId" => part_id,
     "mimeType" => mime_type,
     "filename" => filename,
@@ -50,7 +49,6 @@ defmodule Gmail.Payload do
   @doc """
   Converts an email payload.
   """
-  @spec convert(Map.t) :: Gmail.Payload.t
   def convert(%{"mimeType" => mime_type,
     "filename" => filename,
     "headers" => headers,
@@ -66,7 +64,6 @@ defmodule Gmail.Payload do
   @doc """
   Converts an email payload.
   """
-  @spec convert(Map.t) :: Gmail.Payload.t
   def convert(%{"mimeType" => mime_type,
     "filename" => filename,
     "headers" => headers,

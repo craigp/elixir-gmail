@@ -10,9 +10,9 @@ You can find documentation for Gmail's API at https://developers.google.com/gmai
 At this stage the client supports API endpoints for:
 - threads
 - messages
+- labels
 
 Still missing is support for:
-- labels
 - drafts
 - history
 

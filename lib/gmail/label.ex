@@ -26,15 +26,13 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
-  @spec create(String.t, String.t) :: {:ok, Gmail.Label.t}
+  @spec create(String.t, String.t) :: {atom, Gmail.Label.t}
   def create(name, user_id \\ "me") do
     case do_post("users/#{user_id}/labels", %{"name" => name}) do
       {:ok, %{"error" => %{"errors" => errors}}} ->
         [%{"message" => error_message}|_rest] = errors
         {:error, error_message}
       {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:error, details} ->
         {:error, details}
       {:ok, raw_label} ->
         {:ok, convert(raw_label)}
@@ -46,8 +44,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/update
   """
-  @spec update(Gmail.Label.t, String.t) :: {:ok, Gmail.Label.t}
-  @spec update(Gmail.Label.t, String.t) :: {:error, any}
+  @spec update(Gmail.Label.t, String.t) :: {atom, Gmail.Label.t}
   def update(label, user_id \\ "me") do
     case do_put("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
       {:ok, %{"error" => details}} ->
@@ -62,7 +59,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/delete
   """
-  @spec delete(String.t, String.t) :: {atom, any} # not sure any is a good idea
+  @spec delete(String.t, String.t) :: atom | {atom, String.t}
   def delete(label_id, user_id \\ "me") do
     case do_delete("users/#{user_id}/labels/#{label_id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -70,7 +67,7 @@ defmodule Gmail.Label do
       {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
         [%{"message" => error_message}|_rest] = errors
         {:error, error_message}
-      {:ok, nil} ->
+      {:ok, _} ->
         :ok
     end
   end
@@ -80,9 +77,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t) :: atom
-  @spec get(String.t) :: {atom, Gmail.Label.t}
-  @spec get(String.t) :: {atom, String.t}
+  @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Gmail.Label.t}
   def get(id), do: get("me", id)
 
   @doc """
@@ -90,19 +85,14 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t) :: atom
-  @spec get(String.t) :: {atom, Gmail.Label.t}
-  @spec get(String.t) :: {atom, String.t}
   def get(user_id, id) do
     case do_get("users/#{user_id}/labels/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
-        :not_found
+        {:error, :not_found}
       {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
         [%{"message" => error_message}|_rest] = errors
         {:error, error_message}
       {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:error, details} ->
         {:error, details}
       {:ok, raw_label} ->
         {:ok, convert(raw_label)}
@@ -114,8 +104,8 @@ defmodule Gmail.Label do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
-  @spec list(String.t) :: {:ok, [Gmail.Label.t]}
-  @spec list(String.t) :: {:error, any}
+  @spec list(String.t) :: {atom, [Gmail.Label.t]} | {atom, map}
+  @spec list() :: {atom, [Gmail.Label.t]} | {atom, map}
   def list(user_id  \\ "me") do
     case do_get("users/#{user_id}/labels") do
       {:ok, %{"error" => details}} ->
@@ -125,7 +115,7 @@ defmodule Gmail.Label do
     end
   end
 
-  @spec convert(Map.t) :: Gmail.Label.t
+  @spec convert(map) :: Gmail.Label.t | nil
   defp convert(%{"id" => id,
     "labelListVisibility" => labelListVisibility,
     "messageListVisibility" => messageListVisibility,
@@ -138,7 +128,6 @@ defmodule Gmail.Label do
       type: type}
   end
 
-  @spec convert(Map.t) :: Gmail.Label.t
   defp convert(%{"id" => id,
     "labelListVisibility" => labelListVisibility,
     "messageListVisibility" => messageListVisibility,
@@ -149,14 +138,17 @@ defmodule Gmail.Label do
       messageListVisibility: messageListVisibility}
   end
 
-  @spec convert(Map.t) :: Gmail.Label.t
   defp convert(%{"id" => id,
     "name" => name,
     "type" => type}) do
     %Gmail.Label{id: id, name: name, type: type}
   end
 
-  @spec convert_for_update(Gmail.Label.t) :: Map.t
+  defp convert(_) do
+    nil
+  end
+
+  @spec convert_for_update(Gmail.Label.t) :: map
   defp convert_for_update(%Gmail.Label{
     id: id,
     name: name,

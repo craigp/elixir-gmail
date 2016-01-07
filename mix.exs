@@ -24,7 +24,8 @@ defmodule Gmail.Mixfile do
       {:mock, "~> 0.1.1", only: :test},
       {:excoveralls, "0.4.2", only: :test},
       {:earmark, "0.1.17", only: :dev},
-      {:ex_doc, "0.11.2", only: :dev}
+      {:ex_doc, "0.11.2", only: :dev},
+      {:dialyxir, "~> 0.3", only: :dev}
     ]
   end
 
