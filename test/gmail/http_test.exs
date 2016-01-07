@@ -26,4 +26,14 @@ defmodule Gmail.HTTPTest do
     end
   end
 
+  test "Performs a DELETE request and parses the output" do
+    url = "http://nothing.com"
+    token = "some_token"
+    body = "{ \"groovy\": \"this is some json\"}"
+    response = %HTTPoison.Response{body: body}
+    with_mock HTTPoison, [ delete: fn _url, _headers -> {:ok, response} end ] do
+      assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.delete(token, url)
+    end
+  end
+
 end

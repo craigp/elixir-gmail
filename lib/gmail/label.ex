@@ -42,6 +42,25 @@ defmodule Gmail.Label do
   end
 
   @doc """
+  Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to.
+
+  Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/delete
+  """
+  @spec delete(String.t, String.t) :: atom
+  @spec delete(String.t, String.t) :: {atom, String.t}
+  def delete(label_id, user_id \\ "me") do
+    case do_delete("users/#{user_id}/labels/#{label_id}") do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, nil} ->
+        :ok
+    end
+  end
+
+  @doc """
   Gets the specified label.
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
