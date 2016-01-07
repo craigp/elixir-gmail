@@ -26,7 +26,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
-  @spec create(String.t, String.t) :: Gmail.Label.t
+  @spec create(String.t, String.t) :: {:ok, Gmail.Label.t}
   def create(name, user_id \\ "me") do
     case do_post("users/#{user_id}/labels", %{"name" => name}) do
       {:ok, %{"error" => %{"errors" => errors}}} ->
@@ -42,12 +42,27 @@ defmodule Gmail.Label do
   end
 
   @doc """
+  Updates the specified label.
+
+  Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/update
+  """
+  @spec update(Gmail.Label.t, String.t) :: {:ok, Gmail.Label.t}
+  @spec update(Gmail.Label.t, String.t) :: {:error, any}
+  def update(label, user_id \\ "me") do
+    case do_put("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_label} ->
+        {:ok, convert(raw_label)}
+    end
+  end
+
+  @doc """
   Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to.
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/delete
   """
-  @spec delete(String.t, String.t) :: atom
-  @spec delete(String.t, String.t) :: {atom, String.t}
+  @spec delete(String.t, String.t) :: {atom, any} # not sure any is a good idea
   def delete(label_id, user_id \\ "me") do
     case do_delete("users/#{user_id}/labels/#{label_id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -65,7 +80,9 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t) :: Gmail.Label.t
+  @spec get(String.t) :: atom
+  @spec get(String.t) :: {atom, Gmail.Label.t}
+  @spec get(String.t) :: {atom, String.t}
   def get(id), do: get("me", id)
 
   @doc """
@@ -73,7 +90,9 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t, String.t) :: Gmail.Label.t
+  @spec get(String.t) :: atom
+  @spec get(String.t) :: {atom, Gmail.Label.t}
+  @spec get(String.t) :: {atom, String.t}
   def get(user_id, id) do
     case do_get("users/#{user_id}/labels/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -96,6 +115,7 @@ defmodule Gmail.Label do
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
   @spec list(String.t) :: {:ok, [Gmail.Label.t]}
+  @spec list(String.t) :: {:error, any}
   def list(user_id  \\ "me") do
     case do_get("users/#{user_id}/labels") do
       {:ok, %{"error" => details}} ->
@@ -134,6 +154,21 @@ defmodule Gmail.Label do
     "name" => name,
     "type" => type}) do
     %Gmail.Label{id: id, name: name, type: type}
+  end
+
+  @spec convert_for_update(Gmail.Label.t) :: Map.t
+  defp convert_for_update(%Gmail.Label{
+    id: id,
+    name: name,
+    labelListVisibility: labelListVisibility,
+    messageListVisibility: messageListVisibility
+  }) do
+    %{
+      "id" => id,
+      "name" => name,
+      "labelListVisibility" => labelListVisibility,
+      "messageListVisibility" => messageListVisibility
+    }
   end
 
 end

@@ -35,6 +35,8 @@ defmodule Gmail.LabelTest do
       %{"message" => "Error #2"}
     ]
 
+    error_content = %{"code" => 400, "errors" => errors}
+
     {:ok, %{
         access_token: access_token,
         access_token_rec: access_token_rec,
@@ -45,7 +47,8 @@ defmodule Gmail.LabelTest do
         expected_result: expected_result,
         expected_results: expected_results,
         label_not_found: %{"error" => %{"code" => 404}},
-        four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}}
+        four_hundred_error: %{"error" => error_content},
+        four_hundred_error_content: error_content
       }}
   end
 
@@ -102,9 +105,30 @@ defmodule Gmail.LabelTest do
     end
   end
 
-  # test "updates a label" do
+  test "updates a label", context do
+    with_mock Gmail.HTTP, [ put: fn _at, _url, _data -> { :ok, context[:label] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        {:ok, label} = Gmail.Label.update(context[:expected_result])
+        assert context[:expected_result] == label
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.put(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:expected_result].id, %{"name" => context[:label_name]})
+      end
+    end
+  end
 
-  # end
+  test "handles an error when updating a label", context do
+    with_mock Gmail.HTTP, [ put: fn _at, _url, _data -> { :ok, context[:four_hundred_error] } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+        # {:error, context[:four_hundred_error_content]} = Gmail.Label.update(context[:expected_result])
+        {:error, error_detail} = Gmail.Label.update(context[:expected_result])
+        assert context[:four_hundred_error_content] == error_detail
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.put(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:expected_result].id, %{"name" => context[:label_name]})
+      end
+    end
+  end
 
   test "gets a label", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label] } end] do

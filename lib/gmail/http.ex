@@ -16,6 +16,17 @@ defmodule Gmail.HTTP do
   end
 
   @doc """
+  Performs an HTTP PUT request.
+  """
+  @spec put(String.t, String.t, Map.t) :: {:ok, Map.t}
+  def put(token, url, data) do
+    headers = get_headers(token)
+    {:ok, json} = Poison.encode(data)
+    {:ok, response} = HTTPoison.put(url, json, headers)
+    {:ok, parse_body(response)}
+  end
+
+  @doc """
   Performs an HTTP GET request.
   """
   @spec get(String.t, String.t) :: {:ok, Map.t}

@@ -32,6 +32,20 @@ defmodule Gmail.BaseTest do
     end
   end
 
+  test "gets the config from the OAuth2 client and makes a PUT request" do
+    data = %{"some" => "stuff"}
+    some_url = "foo/bar"
+    access_token = "xxx-xxx-xxx"
+    access_token_rec = %{access_token: access_token}
+    with_mock Gmail.HTTP, [ put: fn _at, _url, _data -> { :ok, "foo" } end] do
+      with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
+        Gmail.Base.do_put(some_url, data)
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.put(access_token, Gmail.Base.base_url <> some_url, data)
+      end
+    end
+  end
+
   test "gets the config from the OAuth2 client and makes a DELETE request" do
     some_url = "foo/bar"
     access_token = "xxx-xxx-xxx"

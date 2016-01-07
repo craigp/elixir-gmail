@@ -25,6 +25,14 @@ defmodule Gmail.Base do
   end
 
   @doc """
+  Performs an HTTP PUT request.
+  """
+  @spec do_put(String.t, Map.t) :: {:ok, Map.t}
+  def do_put(path, data) do
+    get_access_token |> Gmail.HTTP.put(base_url <> path, data)
+  end
+
+  @doc """
   Performs an HTTP DELETE reauest.
   """
   @spec do_delete(String.t) :: {:ok, Map.t}
