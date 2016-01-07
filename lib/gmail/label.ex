@@ -78,14 +78,7 @@ defmodule Gmail.Label do
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
   @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Gmail.Label.t}
-  def get(id), do: get("me", id)
-
-  @doc """
-  Gets the specified label.
-
-  > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
-  """
-  def get(user_id, id) do
+  def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/labels/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
         {:error, :not_found}

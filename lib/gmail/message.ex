@@ -26,14 +26,7 @@ defmodule Gmail.Message do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
   @spec get(String.t | String.t, String.t) :: {atom, Gmail.Message.t} | {atom, String.t} | {atom, map}
-  def get(id), do: get("me", id)
-
-  @doc """
-  Gets the specified message.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
-  """
-  def get(user_id, id) do
+  def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/messages/#{id}?format=full") do
       {:ok, %{"error" => %{"code" => 404}}} ->
         {:error, :not_found}
@@ -52,15 +45,8 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec search(String.t, String.t) :: {atom, [Gmail.Message.t]}
-  def search(query), do: search("me", query)
-
-  @doc """
-  Searches for messages in the user's mailbox.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
-  """
-  def search(user_id, query) do
+  @spec search(String.t | String.t, String.t) :: {atom, [Gmail.Message.t]}
+  def search(query, user_id \\ "me") do
     case do_get("users/#{user_id}/messages?q=#{query}") do
       {:ok, %{"messages" => msgs}} ->
         {:ok, Enum.map(

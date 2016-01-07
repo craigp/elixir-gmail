@@ -21,16 +21,8 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
-  @spec get(String.t) :: {:ok, Gmail.Thread.t}
-  def get(id), do: get("me", id)
-
-  @doc """
-  Gets the specified thread.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
-  """
-  @spec get(String.t, String.t) :: {atom, Gmail.Thread.t}
-  def get(user_id, id) do
+  @spec get(String.t | String.t, String.t) :: {atom, Gmail.Thread.t} | {atom, String.t} | {atom, atom}
+  def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
         {:error, :not_found}
@@ -53,16 +45,8 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec search(String.t) :: {atom, [Gmail.Thread.t]}
-  def search(query), do: search("me", query)
-
-  @doc """
-  Searches for threads in the user's mailbox.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
-  """
-  @spec search(String.t, String.t) :: {atom, [Gmail.Thread.t]}
-  def search(user_id, query) do
+  @spec search(String.t | String.t, String.t) :: {atom, [Gmail.Thread.t]}
+  def search(query, user_id \\ "me") do
     case do_get("users/#{user_id}/threads?q=#{query}") do
       {:ok, %{"threads" => threads}} ->
         {:ok, Enum.map(
