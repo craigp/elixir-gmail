@@ -93,7 +93,7 @@ defmodule Gmail.MessageTest do
   test "reports :not_found for a message that doesn't exist", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:message_not_found] } end] do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
-        :not_found = Gmail.Message.get("user@example.com", context[:message_id])
+        {:error, :not_found} = Gmail.Message.get("user@example.com", context[:message_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/messages/" <> context[:message_id] <> "?format=full")
       end

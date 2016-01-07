@@ -165,7 +165,7 @@ defmodule Gmail.LabelTest do
   test "reports :not_found for a label that doesn't exist", context do
     with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label_not_found] } end] do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
-        :not_found = Gmail.Label.get(context[:label_id])
+        {:error, :not_found} = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token],
           Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])

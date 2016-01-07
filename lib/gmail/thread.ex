@@ -33,7 +33,7 @@ defmodule Gmail.Thread do
   def get(user_id, id) do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
-        :not_found
+        {:error, :not_found}
       {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
         [%{"message" => error_message}|_rest] = errors
         {:error, error_message}
@@ -70,9 +70,6 @@ defmodule Gmail.Thread do
           fn(%{"historyId" => history_id, "id" => id, "snippet" => snippet}) ->
             %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
           end)}
-      # not_ok ->
-      #   IO.puts "FML"
-      #   not_ok
     end
   end
 
