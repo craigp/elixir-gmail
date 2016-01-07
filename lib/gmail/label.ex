@@ -1,10 +1,10 @@
 defmodule Gmail.Label do
 
-  import Gmail.Base
-
   @moduledoc"""
   Labels are used to categorize messages and threads within the user's mailbox.
   """
+
+  import Gmail.Base
 
   @doc """
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels#resource

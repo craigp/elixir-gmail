@@ -57,8 +57,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "creates a new label", context do
-    with_mock Gmail.HTTP, [ post: fn _at, _url, _data -> { :ok, context[:label] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [post: fn _at, _url, _data -> {:ok, context[:label]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, label} = Gmail.Label.create(context[:label_name])
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
@@ -69,8 +69,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "deletes a label", context do
-    with_mock Gmail.HTTP, [ delete: fn _at, _url -> { :ok, nil } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, nil} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         :ok = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.delete(context[:access_token],
@@ -80,8 +80,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "reports a :not_found when deleting a label that doesn't exist", context do
-    with_mock Gmail.HTTP, [ delete: fn _at, _url -> { :ok, context[:label_not_found] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, context[:label_not_found]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         :not_found = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.delete(context[:access_token],
@@ -91,8 +91,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "handles a 400 error when deleting a label", context do
-    with_mock Gmail.HTTP, [ delete: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, context[:four_hundred_error]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, "Error #1"} = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.delete(context[:access_token],
@@ -102,8 +102,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "lists all labels", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:labels] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:labels]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, labels} = Gmail.Label.list
         assert context[:expected_results] == labels
         assert called Gmail.OAuth2.get_config
@@ -114,8 +114,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "updates a label", context do
-    with_mock Gmail.HTTP, [ put: fn _at, _url, _data -> { :ok, context[:label] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [put: fn _at, _url, _data -> {:ok, context[:label]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, label} = Gmail.Label.update(context[:expected_result])
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
@@ -132,8 +132,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "handles an error when updating a label", context do
-    with_mock Gmail.HTTP, [ put: fn _at, _url, _data -> { :ok, context[:four_hundred_error] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [put: fn _at, _url, _data -> {:ok, context[:four_hundred_error]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         # {:error, context[:four_hundred_error_content]} = Gmail.Label.update(context[:expected_result])
         {:error, error_detail} = Gmail.Label.update(context[:expected_result])
         assert context[:four_hundred_error_content] == error_detail
@@ -151,8 +151,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "gets a label", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:label]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, label} = Gmail.Label.get(context[:label_id])
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
@@ -163,8 +163,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "reports :not_found for a label that doesn't exist", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:label_not_found] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:label_not_found]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, :not_found} = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token],
@@ -174,8 +174,8 @@ defmodule Gmail.LabelTest do
   end
 
   test "handles a 400 error when getting a label", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:four_hundred_error]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, "Error #1"} = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token],

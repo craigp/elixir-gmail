@@ -103,8 +103,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a thread", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:thread]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, thread} = Gmail.Thread.get(context[:thread_id])
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.get_config
@@ -114,8 +114,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a thread for a specified user", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:thread]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, thread} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.get_config
@@ -125,8 +125,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "reports :not_found for a thread that doesn't exist", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:thread_not_found] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:thread_not_found]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, :not_found} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
@@ -135,8 +135,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "handles a 400 error from the API", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:four_hundred_error] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:four_hundred_error]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, "Error #1"} = Gmail.Thread.get("user@example.com", context[:thread_id])
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
@@ -145,8 +145,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "performs a thread search", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> context[:search_results] end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> context[:search_results] end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, results} = Gmail.Thread.search("in:Inbox")
         assert context[:expected_search_results] === results
         assert called Gmail.OAuth2.get_config
@@ -156,8 +156,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "performs a thread search for a specified user", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> context[:search_results] end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> context[:search_results] end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, results} = Gmail.Thread.search("user@example.com", "in:Inbox")
         assert context[:expected_search_results] === results
         assert called Gmail.OAuth2.get_config
@@ -167,8 +167,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a list of threads", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:threads] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:threads]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, results, next_page_token} = Gmail.Thread.list
         assert context[:expected_search_results] === results
         assert context[:next_page_token] == next_page_token
@@ -179,8 +179,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a list of threads with a user and no params", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:threads] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:threads]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:ok, results, next_page_token} = Gmail.Thread.list("user@example.com")
         assert context[:expected_search_results] === results
         assert context[:next_page_token] == next_page_token
@@ -192,8 +192,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a list of threads with a user and page token", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:threads] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:threads]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         params = %{page_token: "345345345"}
         {:ok, results, next_page_token} = Gmail.Thread.list("user@example.com", params)
         assert context[:expected_search_results] === results
@@ -206,8 +206,8 @@ defmodule Gmail.ThreadTest do
   end
 
   test "gets a list of threads with a user and params without page token", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:threads] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
+    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:threads]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         params = %{page_token_yarr: "345345345"}
         {:ok, results, _next_page_token} = Gmail.Thread.list("user@example.com", params)
         assert context[:expected_search_results] === results

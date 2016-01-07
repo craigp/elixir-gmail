@@ -1,10 +1,10 @@
 defmodule Gmail.OAuth2 do
 
-  use Timex
-
   @moduledoc """
   OAuth2 access token handling.
   """
+
+  use Timex
 
   defstruct user_id: "",
     client_id: "",

@@ -1,10 +1,10 @@
 defmodule Gmail.Message do
 
-  import Gmail.Base
-
   @moduledoc """
   An email message.
   """
+
+  import Gmail.Base
 
   @doc """
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages#resource

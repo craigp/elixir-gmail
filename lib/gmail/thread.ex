@@ -1,10 +1,10 @@
 defmodule Gmail.Thread do
 
-  import Gmail.Base
-
   @moduledoc """
   A collection of messages representing a conversation.
   """
+
+  import Gmail.Base
 
   @doc """
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads#resource
@@ -82,7 +82,7 @@ defmodule Gmail.Thread do
   def list(user_id \\ "me", params \\ %{}) do
     case Enum.empty?(params) do
       true ->
-        get_list "users/#{user_id}/threads"
+        do_list "users/#{user_id}/threads"
       false ->
         query = %{}
         if Map.has_key?(params, :page_token) do
@@ -91,13 +91,13 @@ defmodule Gmail.Thread do
         if Enum.empty?(query) do
           list(user_id)
         else
-          get_list "users/#{user_id}/threads?#{URI.encode_query(query)}"
+          do_list "users/#{user_id}/threads?#{URI.encode_query(query)}"
         end
     end
   end
 
-  @spec get_list(String.t) :: {atom, [Gmail.Thread.t], String.t}
-  defp get_list(url) do
+  @spec do_list(String.t) :: {atom, [Gmail.Thread.t], String.t}
+  defp do_list(url) do
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
         threads = Enum.map(raw_threads,

@@ -1,10 +1,10 @@
 defmodule Gmail.Draft do
 
-  import Gmail.Base
-
   @moduledoc"""
   A draft email in the user's mailbox.
   """
+
+  import Gmail.Base
 
   @doc """
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts#resource
