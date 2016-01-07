@@ -17,7 +17,9 @@ defmodule Gmail.LabelTest do
     label = %{
       "id" => label_id,
       "name" => label_name,
-      "type" => label_type
+      "type" => label_type,
+      "labelListVisibility" => "labelShow",
+      "messageListVisibility" => "show"
     }
 
     labels = %{"labels" => [label]}
@@ -25,7 +27,9 @@ defmodule Gmail.LabelTest do
     expected_result = %Gmail.Label{
       id: label_id,
       name: label_name,
-      type: label_type
+      type: label_type,
+      labelListVisibility: "labelShow",
+      messageListVisibility: "show"
     }
 
     expected_results = [expected_result]
@@ -69,7 +73,8 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         :ok = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.delete(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
@@ -79,7 +84,8 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         :not_found = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.delete(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
@@ -89,7 +95,8 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:error, "Error #1"} = Gmail.Label.delete(context[:label_id])
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.delete(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
@@ -100,7 +107,8 @@ defmodule Gmail.LabelTest do
         {:ok, labels} = Gmail.Label.list
         assert context[:expected_results] == labels
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels")
+        assert called Gmail.HTTP.get(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels")
       end
     end
   end
@@ -112,7 +120,13 @@ defmodule Gmail.LabelTest do
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id], %{"name" => context[:label_name]})
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
+          %{
+            "id" => context[:label_id],
+            "name" => context[:label_name],
+            "labelListVisibility" => "labelShow",
+            "messageListVisibility" => "show"
+          })
       end
     end
   end
@@ -125,7 +139,13 @@ defmodule Gmail.LabelTest do
         assert context[:four_hundred_error_content] == error_detail
         assert called Gmail.OAuth2.get_config
         assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id], %{"name" => context[:label_name]})
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
+          %{
+            "id" => context[:label_id],
+            "name" => context[:label_name],
+            "labelListVisibility" => "labelShow",
+            "messageListVisibility" => "show"
+          })
       end
     end
   end
@@ -136,7 +156,8 @@ defmodule Gmail.LabelTest do
         {:ok, label} = Gmail.Label.get(context[:label_id])
         assert context[:expected_result] == label
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.get(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
@@ -146,7 +167,8 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         :not_found = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.get(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
@@ -156,7 +178,8 @@ defmodule Gmail.LabelTest do
       with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
         {:error, "Error #1"} = Gmail.Label.get(context[:label_id])
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
+        assert called Gmail.HTTP.get(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
       end
     end
   end
