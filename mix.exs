@@ -22,15 +22,16 @@ defmodule Gmail.Mixfile do
       {:poison, "~> 1.5.0"},
       {:timex, "~> 0.19.3"},
       {:mock, "~> 0.1.1", only: :test},
-      {:excoveralls, "~> 0.4.2", only: :test},
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.11", only: :dev}
+      {:excoveralls, "0.4.2", only: :test},
+      {:earmark, "0.1.17", only: :dev},
+      {:ex_doc, "0.11.2", only: :dev}
     ]
   end
 
   defp package do
     [
-      files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+      # files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+      files: ["lib", "mix.exs", "README*"],
       licenses: ["MIT"],
       maintainers: ["Craig Paterson"],
       links: %{"Github" => "https://github.com/craigp/elixir-gmail"}]
