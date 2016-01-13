@@ -18,13 +18,13 @@ defmodule Gmail.Mixfile do
 
   defp deps do
     [
-      {:httpoison, "~> 0.7.3"},
-      {:poison, "~> 1.5.0"},
-      {:timex, "~> 0.19.3"},
-      {:mock, "~> 0.1.1", only: :test},
-      {:excoveralls, "0.4.2", only: :test},
-      {:earmark, "0.1.17", only: :dev},
-      {:ex_doc, "0.11.2", only: :dev},
+      {:httpoison, "~> 0.8"},
+      {:poison, "~> 1.5"},
+      {:timex, "~> 0.19"},
+      {:mock, "~> 0.1", only: :test},
+      {:excoveralls, "~> 0.4", only: :test},
+      {:earmark, "~> 0.2", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
       {:credo, "~> 0.2", only: :dev}
     ]
