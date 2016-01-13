@@ -5,16 +5,17 @@ defmodule Gmail do
   @moduledoc """
   A simple Gmail REST API client for Elixir, mostly built as a learning exercise.
 
+  You can find the hex package [here](https://hex.pm/packages/gmail), and the docs [here](http://hexdocs.pm/gmail).
+
   You can find documentation for Gmail's API at https://developers.google.com/gmail/api/
 
-  At this stage the client supports API endpoints for:
-  - threads
-  - messages
-  - labels
+  ### Client support is planned for:
 
-  Still missing is support for:
-  - drafts
-  - history
+  * [x] Threads
+  * [x] Messages
+  * [x] Labels
+  * [ ] Drafts
+  * [ ] History
 
   As of now the library doesn't do the initial auth generation for you; you'll
   need to create an app on the [Google Developer
