@@ -1,7 +1,7 @@
 defmodule Gmail.Message do
 
-  alias Gmail.Message, as: Message
-  alias Gmail.Payload, as: Payload
+  alias __MODULE__
+  alias Gmail.Payload
 
   @moduledoc """
   An email message.

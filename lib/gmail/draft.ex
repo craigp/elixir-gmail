@@ -1,7 +1,7 @@
 defmodule Gmail.Draft do
 
-  alias Gmail.Message, as: Message
-  alias Gmail.Draft, as: Draft
+  alias __MODULE__
+  alias Gmail.Message
 
   @moduledoc"""
   A draft email in the user's mailbox.

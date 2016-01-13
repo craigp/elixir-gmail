@@ -1,6 +1,6 @@
 defmodule Gmail.Body do
 
-  alias Gmail.Body, as: Body
+  alias __MODULE__
 
   @moduledoc """
   Helper functions for dealing with email bodies.

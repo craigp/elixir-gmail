@@ -1,7 +1,7 @@
 defmodule Gmail.Thread do
 
-  alias Gmail.Message, as: Message
-  alias Gmail.Thread, as: Thread
+  alias __MODULE__
+  alias Gmail.Message
 
   @moduledoc """
   A collection of messages representing a conversation.

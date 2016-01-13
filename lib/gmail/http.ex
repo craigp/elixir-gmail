@@ -1,6 +1,7 @@
 defmodule Gmail.HTTP do
 
-  alias HTTPoison.Response, as: Response
+  alias HTTPoison.Response
+  import Poison, only: [decode: 1, encode: 1]
 
   @moduledoc """
   HTTP request handling.
@@ -11,10 +12,10 @@ defmodule Gmail.HTTP do
   """
   @spec post(String.t, String.t, map) :: {atom, map}
   def post(token, url, data) do
-    headers = get_headers(token)
-    {:ok, json} = Poison.encode(data)
-    {:ok, response} = HTTPoison.post(url, json, headers)
-    {:ok, parse_body(response)}
+    with {:ok, headers} <- get_headers(token),
+      {:ok, json} <- encode(data),
+      {:ok, response} <- HTTPoison.post(url, json, headers),
+      do: {:ok, parse_body(response)}
   end
 
   @doc """
@@ -22,10 +23,10 @@ defmodule Gmail.HTTP do
   """
   @spec put(String.t, String.t, map) :: {atom, map}
   def put(token, url, data) do
-    headers = get_headers(token)
-    {:ok, json} = Poison.encode(data)
-    {:ok, response} = HTTPoison.put(url, json, headers)
-    {:ok, parse_body(response)}
+    with {:ok, headers} <- get_headers(token),
+      {:ok, json} <- encode(data),
+      {:ok, response} <- HTTPoison.put(url, json, headers),
+      do: {:ok, parse_body(response)}
   end
 
   @doc """
@@ -33,9 +34,9 @@ defmodule Gmail.HTTP do
   """
   @spec get(String.t, String.t) :: {atom, map}
   def get(token, url) do
-    headers = get_headers(token)
-    {:ok, response} = HTTPoison.get(url, headers)
-    {:ok, parse_body(response)}
+    with {:ok, headers} <- get_headers(token),
+      {:ok, response} <- HTTPoison.get(url, headers),
+      do: {:ok, parse_body(response)}
   end
 
   @doc """
@@ -43,25 +44,24 @@ defmodule Gmail.HTTP do
   """
   @spec delete(String.t, String.t) :: {atom, map}
   def delete(token, url) do
-    headers = get_headers(token)
-    {:ok, response} = HTTPoison.delete(url, headers)
-    {:ok, parse_body(response)}
+    with {:ok, headers} <- get_headers(token),
+      {:ok, response} <- HTTPoison.delete(url, headers),
+      do: {:ok, parse_body(response)}
   end
 
   @spec parse_body(Response.t) :: map
   defp parse_body(%Response{body: body}) do
-    # case Poison.Parser.parse(body) do
-    case Poison.decode(body) do
+    case decode(body) do
       {:ok, body} -> body
       {:error, _error} -> nil
     end
   end
 
   defp get_headers(token) do
-    [
+    {:ok, [
       {"Authorization", "Bearer #{token}"},
       {"Content-Type", "application/json"}
-    ]
+    ]}
   end
 
 end

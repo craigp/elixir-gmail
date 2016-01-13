@@ -1,6 +1,6 @@
 defmodule Gmail do
 
-  alias Gmail.Thread, as: Thread
+  alias Gmail.Thread
 
   @moduledoc """
   A simple Gmail REST API client for Elixir, mostly built as a learning exercise.

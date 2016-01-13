@@ -1,7 +1,7 @@
 defmodule Gmail.OAuth2 do
 
-  alias Gmail.OAuth2, as: OAuth2
-  alias Poison.Parser, as: Parser
+  alias __MODULE__
+  import Poison, only: [decode: 1]
 
   @moduledoc """
   OAuth2 access token handling.
@@ -67,7 +67,7 @@ defmodule Gmail.OAuth2 do
     } |> URI.encode_query
     case HTTPoison.post(@token_url, payload, @token_headers) do
       {:ok, %HTTPoison.Response{body: body}} ->
-        case Parser.parse(body) do
+        case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
             {:ok, %{opts | access_token: access_token, expires_at: (Date.to_secs(Date.now) + expires_in)}}
           fml -> {:error, fml}
