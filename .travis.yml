@@ -2,10 +2,8 @@ language: elixir
 env: 
   - MIX_ENV=test
 elixir:
-  - 1.0.0
-  - 1.0.4
+  - 1.2.0
 otp_release:
-  - 17.0
-  - 17.4
+  - 18.2.0
 script:
   - "MIX_ENV=test mix do deps.get, test && mix compile && mix coveralls.travis"
