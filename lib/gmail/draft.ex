@@ -1,5 +1,8 @@
 defmodule Gmail.Draft do
 
+  alias Gmail.Message, as: Message
+  alias Gmail.Draft, as: Draft
+
   @moduledoc"""
   A draft email in the user's mailbox.
   """
@@ -19,7 +22,7 @@ defmodule Gmail.Draft do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, Gmail.Message.t} | {atom, String.t} | {atom, map}
+  @spec get(String.t | String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
   def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/drafts/#{id}?format=full") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -39,7 +42,7 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/list
   """
-  @spec list(String.t) :: {atom, [Gmail.Draft.t]}
+  @spec list(String.t) :: {atom, [Draft.t]}
   def list(user_id  \\ "me") do
     case do_get("users/#{user_id}/drafts") do
       {:ok, %{"error" => details}} ->
@@ -49,12 +52,12 @@ defmodule Gmail.Draft do
     end
   end
 
-  @spec convert(Map.t) :: Gmail.Draft.t
+  @spec convert(Map.t) :: Draft.t
   defp convert(%{"id" => id,
     "message" => %{"id" => message_id, "threadId" => thread_id}}) do
     %Gmail.Draft{
       id: id,
-      message: %Gmail.Message{id: message_id, thread_id: thread_id}
+      message: %Message{id: message_id, thread_id: thread_id}
     }
   end
 

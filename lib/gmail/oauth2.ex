@@ -1,5 +1,8 @@
 defmodule Gmail.OAuth2 do
 
+  alias Gmail.OAuth2, as: OAuth2
+  alias Poison.Parser, as: Parser
+
   @moduledoc """
   OAuth2 access token handling.
   """
@@ -33,15 +36,15 @@ defmodule Gmail.OAuth2 do
       false
 
   """
-  @spec access_token_expired?(Gmail.OAuth2.t) :: boolean
-  def access_token_expired?(%Gmail.OAuth2{expires_at: expires_at}) do
+  @spec access_token_expired?(OAuth2.t) :: boolean
+  def access_token_expired?(%OAuth2{expires_at: expires_at}) do
     Date.to_secs(Date.now) >= expires_at
   end
 
   @doc """
   Gets the config for a Gmail API connection, including a refreshed access token.
   """
-  @spec get_config() :: Gmail.OAuth2.t
+  @spec get_config() :: OAuth2.t
   def get_config do
     config = from_config
     if access_token_expired?(config) do
@@ -53,9 +56,9 @@ defmodule Gmail.OAuth2 do
   @doc """
   Refreshes an expired access token.
   """
-  @spec refresh_access_token(Gmail.OAuth2.t) :: {atom, Gmail.OAuth2.t}
+  @spec refresh_access_token(OAuth2.t) :: {atom, OAuth2.t}
   def refresh_access_token(opts) do
-    %Gmail.OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
+    %OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -64,7 +67,7 @@ defmodule Gmail.OAuth2 do
     } |> URI.encode_query
     case HTTPoison.post(@token_url, payload, @token_headers) do
       {:ok, %HTTPoison.Response{body: body}} ->
-        case Poison.Parser.parse(body) do
+        case Parser.parse(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
             {:ok, %{opts | access_token: access_token, expires_at: (Date.to_secs(Date.now) + expires_in)}}
           fml -> {:error, fml}
@@ -73,9 +76,9 @@ defmodule Gmail.OAuth2 do
     end
   end
 
-  @spec from_config() :: Gmail.OAuth2.t
+  @spec from_config() :: OAuth2.t
   defp from_config do
-    Map.merge(%Gmail.OAuth2{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
+    Map.merge(%OAuth2{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
   end
 
 end

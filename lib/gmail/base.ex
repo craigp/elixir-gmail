@@ -1,5 +1,8 @@
 defmodule Gmail.Base do
 
+  alias Gmail.HTTP, as: HTTP
+  alias Gmail.OAuth2, as: OAuth2
+
   @moduledoc """
   Base class for common functionality.
   """
@@ -13,7 +16,7 @@ defmodule Gmail.Base do
   """
   @spec do_get(String.t) :: {atom, Map.t}
   def do_get(path) do
-    get_access_token |> Gmail.HTTP.get(base_url <> path)
+    get_access_token |> HTTP.get(base_url <> path)
   end
 
   @doc """
@@ -21,7 +24,7 @@ defmodule Gmail.Base do
   """
   @spec do_post(String.t, Map.t) :: {atom, Map.t}
   def do_post(path, data) do
-    get_access_token |> Gmail.HTTP.post(base_url <> path, data)
+    get_access_token |> HTTP.post(base_url <> path, data)
   end
 
   @doc """
@@ -29,7 +32,7 @@ defmodule Gmail.Base do
   """
   @spec do_put(String.t, Map.t) :: {atom, Map.t}
   def do_put(path, data) do
-    get_access_token |> Gmail.HTTP.put(base_url <> path, data)
+    get_access_token |> HTTP.put(base_url <> path, data)
   end
 
   @doc """
@@ -37,11 +40,11 @@ defmodule Gmail.Base do
   """
   @spec do_delete(String.t) :: {atom, Map.t}
   def do_delete(path) do
-    get_access_token |> Gmail.HTTP.delete(base_url <> path)
+    get_access_token |> HTTP.delete(base_url <> path)
   end
 
   defp get_access_token do
-    %{access_token: access_token} = Gmail.OAuth2.get_config
+    %{access_token: access_token} = OAuth2.get_config
     access_token
   end
 

@@ -1,5 +1,8 @@
 defmodule Gmail.Payload do
 
+  alias Gmail.Payload, as: Payload
+  alias Gmail.Body, as: Body
+
   @moduledoc """
   Helper functions for dealing with email payloads.
   """
@@ -8,7 +11,7 @@ defmodule Gmail.Payload do
     mime_type: "",
     filename: "",
     headers: [],
-    body: %Gmail.Body{},
+    body: %Body{},
     parts: []
 
   @type t :: %__MODULE__{}
@@ -16,18 +19,18 @@ defmodule Gmail.Payload do
   @doc """
   Converts an email payload.
   """
-  @spec convert(map) :: Gmail.Payload.t
+  @spec convert(map) :: Payload.t
   def convert(%{"partId" => part_id,
     "mimeType" => mime_type,
     "filename" => filename,
     "headers" => headers,
     "body" => body,
     "parts" => parts}) do
-    %Gmail.Payload{part_id: part_id,
+    %Payload{part_id: part_id,
       mime_type: mime_type,
       filename: filename,
       headers: headers,
-      body: Gmail.Body.convert(body),
+      body: Body.convert(body),
       parts: Enum.map(parts, &convert/1)}
   end
 
@@ -39,11 +42,11 @@ defmodule Gmail.Payload do
     "filename" => filename,
     "headers" => headers,
     "body" => body}) do
-    %Gmail.Payload{part_id: part_id,
+    %Payload{part_id: part_id,
       mime_type: mime_type,
       filename: filename,
       headers: headers,
-      body: Gmail.Body.convert(body)}
+      body: Body.convert(body)}
   end
 
   @doc """
@@ -54,10 +57,10 @@ defmodule Gmail.Payload do
     "headers" => headers,
     "body" => body,
     "parts" => parts}) do
-    %Gmail.Payload{mime_type: mime_type,
+    %Payload{mime_type: mime_type,
       filename: filename,
       headers: headers,
-      body: Gmail.Body.convert(body),
+      body: Body.convert(body),
       parts: Enum.map(parts, &convert/1)}
   end
 
@@ -68,10 +71,10 @@ defmodule Gmail.Payload do
     "filename" => filename,
     "headers" => headers,
     "body" => body}) do
-    %Gmail.Payload{mime_type: mime_type,
+    %Payload{mime_type: mime_type,
       filename: filename,
       headers: headers,
-      body: Gmail.Body.convert(body)}
+      body: Body.convert(body)}
   end
 
 end

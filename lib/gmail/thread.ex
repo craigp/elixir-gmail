@@ -1,5 +1,8 @@
 defmodule Gmail.Thread do
 
+  alias Gmail.Message, as: Message
+  alias Gmail.Thread, as: Thread
+
   @moduledoc """
   A collection of messages representing a conversation.
   """
@@ -21,7 +24,7 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, Gmail.Thread.t} | {atom, String.t} | {atom, atom}
+  @spec get(String.t | String.t, String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
   def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/threads/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -32,10 +35,10 @@ defmodule Gmail.Thread do
       {:ok, %{"error" => details}} ->
         {:error, details}
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-        {:ok, %Gmail.Thread{
+        {:ok, %Thread{
           id: id,
           history_id: history_id,
-          messages: Enum.map(messages, &Gmail.Message.convert/1)
+          messages: Enum.map(messages, &Message.convert/1)
         }}
     end
   end
@@ -45,14 +48,14 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec search(String.t | String.t, String.t) :: {atom, [Gmail.Thread.t]}
+  @spec search(String.t | String.t, String.t) :: {atom, [Thread.t]}
   def search(query, user_id \\ "me") do
     case do_get("users/#{user_id}/threads?q=#{query}") do
       {:ok, %{"threads" => threads}} ->
         {:ok, Enum.map(
           threads,
           fn(%{"historyId" => history_id, "id" => id, "snippet" => snippet}) ->
-            %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
+            %Thread{id: id, history_id: history_id, snippet: snippet}
           end)}
     end
   end
@@ -62,7 +65,7 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec list(String.t, map) :: {atom, [Gmail.Thread.t], String.t}
+  @spec list(String.t, map) :: {atom, [Thread.t], String.t}
   def list(user_id \\ "me", params \\ %{}) do
     if Enum.empty?(params) do
       do_list "users/#{user_id}/threads"
@@ -79,13 +82,13 @@ defmodule Gmail.Thread do
     end
   end
 
-  @spec do_list(String.t) :: {atom, [Gmail.Thread.t], String.t}
+  @spec do_list(String.t) :: {atom, [Thread.t], String.t}
   defp do_list(url) do
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
         threads = Enum.map(raw_threads,
           fn(%{"id" => id, "historyId" => history_id, "snippet" => snippet}) ->
-            %Gmail.Thread{id: id, history_id: history_id, snippet: snippet}
+            %Thread{id: id, history_id: history_id, snippet: snippet}
           end)
         {:ok, threads, next_page_token}
     end

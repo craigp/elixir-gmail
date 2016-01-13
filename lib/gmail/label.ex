@@ -1,5 +1,7 @@
 defmodule Gmail.Label do
 
+  alias Gmail.Label, as: Label
+
   @moduledoc"""
   Labels are used to categorize messages and threads within the user's mailbox.
   """
@@ -26,7 +28,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
-  @spec create(String.t, String.t) :: {atom, Gmail.Label.t}
+  @spec create(String.t, String.t) :: {atom, Label.t}
   def create(name, user_id \\ "me") do
     case do_post("users/#{user_id}/labels", %{"name" => name}) do
       {:ok, %{"error" => %{"errors" => errors}}} ->
@@ -44,7 +46,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/update
   """
-  @spec update(Gmail.Label.t, String.t) :: {atom, Gmail.Label.t}
+  @spec update(Label.t, String.t) :: {atom, Label.t}
   def update(label, user_id \\ "me") do
     case do_put("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
       {:ok, %{"error" => details}} ->
@@ -77,7 +79,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Gmail.Label.t}
+  @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Label.t}
   def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/labels/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -97,8 +99,8 @@ defmodule Gmail.Label do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
-  @spec list(String.t) :: {atom, [Gmail.Label.t]} | {atom, map}
-  @spec list() :: {atom, [Gmail.Label.t]} | {atom, map}
+  @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
+  @spec list() :: {atom, [Label.t]} | {atom, map}
   def list(user_id  \\ "me") do
     case do_get("users/#{user_id}/labels") do
       {:ok, %{"error" => details}} ->
@@ -108,13 +110,13 @@ defmodule Gmail.Label do
     end
   end
 
-  @spec convert(map) :: Gmail.Label.t | nil
+  @spec convert(map) :: Label.t | nil
   defp convert(%{"id" => id,
     "labelListVisibility" => labelListVisibility,
     "messageListVisibility" => messageListVisibility,
     "name" => name,
     "type" => type}) do
-    %Gmail.Label{id: id,
+    %Label{id: id,
       name: name,
       labelListVisibility: labelListVisibility,
       messageListVisibility: messageListVisibility,
@@ -125,7 +127,7 @@ defmodule Gmail.Label do
     "labelListVisibility" => labelListVisibility,
     "messageListVisibility" => messageListVisibility,
     "name" => name}) do
-    %Gmail.Label{id: id,
+    %Label{id: id,
       name: name,
       labelListVisibility: labelListVisibility,
       messageListVisibility: messageListVisibility}
@@ -134,15 +136,15 @@ defmodule Gmail.Label do
   defp convert(%{"id" => id,
     "name" => name,
     "type" => type}) do
-    %Gmail.Label{id: id, name: name, type: type}
+    %Label{id: id, name: name, type: type}
   end
 
   defp convert(_) do
     nil
   end
 
-  @spec convert_for_update(Gmail.Label.t) :: map
-  defp convert_for_update(%Gmail.Label{
+  @spec convert_for_update(Label.t) :: map
+  defp convert_for_update(%Label{
     id: id,
     name: name,
     labelListVisibility: labelListVisibility,

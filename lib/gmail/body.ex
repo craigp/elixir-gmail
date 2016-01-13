@@ -1,5 +1,7 @@
 defmodule Gmail.Body do
 
+  alias Gmail.Body, as: Body
+
   @moduledoc """
   Helper functions for dealing with email bodies.
   """
@@ -10,13 +12,13 @@ defmodule Gmail.Body do
   @doc """
   Converts the email body, attempting to decode from Base64 if there is body data.
   """
-  @spec convert(Map.t) :: Gmail.Body.t
+  @spec convert(Map.t) :: Body.t
   def convert(body) do
     case body do
       %{"data" => data, "size" => size} ->
-        %Gmail.Body{data: decode_body(data), size: size}
+        %Body{data: decode_body(data), size: size}
       %{"size" => size} ->
-        %Gmail.Body{size: size}
+        %Body{size: size}
     end
   end
 

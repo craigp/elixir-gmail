@@ -1,5 +1,8 @@
 defmodule Gmail.Message do
 
+  alias Gmail.Message, as: Message
+  alias Gmail.Payload, as: Payload
+
   @moduledoc """
   An email message.
   """
@@ -25,7 +28,7 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, Gmail.Message.t} | {atom, String.t} | {atom, map}
+  @spec get(String.t | String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
   def get(id, user_id \\ "me") do
     case do_get("users/#{user_id}/messages/#{id}?format=full") do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -45,13 +48,13 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec search(String.t | String.t, String.t) :: {atom, [Gmail.Message.t]}
+  @spec search(String.t | String.t, String.t) :: {atom, [Message.t]}
   def search(query, user_id \\ "me") do
     case do_get("users/#{user_id}/messages?q=#{query}") do
       {:ok, %{"messages" => msgs}} ->
         {:ok, Enum.map(
           msgs, fn(%{"id" => id, "threadId" => thread_id}) ->
-            %Gmail.Message{id: id, thread_id: thread_id}
+            %Message{id: id, thread_id: thread_id}
           end)}
     end
   end
@@ -61,18 +64,18 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec list(String.t) :: {atom, [Gmail.Message.t]}
+  @spec list(String.t) :: {atom, [Message.t]}
   def list(user_id \\ "me") do
     case do_get("users/#{user_id}/messages") do
       {:ok, %{"messages" => msgs}} ->
-        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Gmail.Message{id: id, thread_id: thread_id} end)}
+        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
     end
   end
 
   @doc """
   Converts a Gmail API message resource into a local struct
   """
-  @spec convert(map) :: Gmail.Message.t
+  @spec convert(map) :: Message.t
   def convert(%{"id" => id,
     "threadId" => thread_id,
     "labelIds" => label_ids,
@@ -80,12 +83,12 @@ defmodule Gmail.Message do
     "historyId" => history_id,
     "payload" => payload,
     "sizeEstimate" => size_estimate}) do
-    %Gmail.Message{id: id,
+    %Message{id: id,
       thread_id: thread_id,
       label_ids: label_ids,
       snippet: snippet,
       history_id: history_id,
-      payload: Gmail.Payload.convert(payload),
+      payload: Payload.convert(payload),
       size_estimate: size_estimate}
     end
 

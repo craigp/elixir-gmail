@@ -1,5 +1,7 @@
 defmodule Gmail.HTTP do
 
+  alias HTTPoison.Response, as: Response
+
   @moduledoc """
   HTTP request handling.
   """
@@ -46,8 +48,8 @@ defmodule Gmail.HTTP do
     {:ok, parse_body(response)}
   end
 
-  @spec parse_body(HTTPoison.Response.t) :: map
-  defp parse_body(%HTTPoison.Response{body: body}) do
+  @spec parse_body(Response.t) :: map
+  defp parse_body(%Response{body: body}) do
     # case Poison.Parser.parse(body) do
     case Poison.decode(body) do
       {:ok, body} -> body
