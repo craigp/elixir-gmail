@@ -1,10 +1,10 @@
 defmodule Gmail.Base do
 
-  alias Gmail.{HTTP, OAuth2}
-
   @moduledoc """
   Base class for common functionality.
   """
+
+  alias Gmail.{HTTP, OAuth2}
 
   @base_url "https://www.googleapis.com/gmail/v1/"
 

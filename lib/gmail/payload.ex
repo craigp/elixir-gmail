@@ -1,11 +1,11 @@
 defmodule Gmail.Payload do
 
-  alias __MODULE__
-  alias Gmail.Body
-
   @moduledoc """
   Helper functions for dealing with email payloads.
   """
+
+  alias __MODULE__
+  alias Gmail.Body
 
   defstruct part_id: "",
     mime_type: "",

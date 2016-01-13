@@ -1,11 +1,11 @@
 defmodule Gmail.OAuth2 do
 
-  alias __MODULE__
-  import Poison, only: [decode: 1]
-
   @moduledoc """
   OAuth2 access token handling.
   """
+
+  alias __MODULE__
+  import Poison, only: [decode: 1]
 
   use Timex
 

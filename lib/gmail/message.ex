@@ -1,12 +1,11 @@
 defmodule Gmail.Message do
 
-  alias __MODULE__
-  alias Gmail.Payload
-
   @moduledoc """
   An email message.
   """
 
+  alias __MODULE__
+  alias Gmail.Payload
   import Gmail.Base
 
   @doc """

@@ -1,11 +1,11 @@
 defmodule Gmail.HTTP do
 
-  alias HTTPoison.Response
-  import Poison, only: [decode: 1, encode: 1]
-
   @moduledoc """
   HTTP request handling.
   """
+
+  alias HTTPoison.Response
+  import Poison, only: [decode: 1, encode: 1]
 
   @doc """
   Performs an HTTP POST request.

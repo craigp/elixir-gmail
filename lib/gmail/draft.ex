@@ -1,12 +1,11 @@
 defmodule Gmail.Draft do
 
-  alias __MODULE__
-  alias Gmail.Message
-
   @moduledoc"""
   A draft email in the user's mailbox.
   """
 
+  alias __MODULE__
+  alias Gmail.Message
   import Gmail.Base
 
   @doc """

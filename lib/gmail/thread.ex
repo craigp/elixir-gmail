@@ -1,12 +1,11 @@
 defmodule Gmail.Thread do
 
-  alias __MODULE__
-  alias Gmail.Message
-
   @moduledoc """
   A collection of messages representing a conversation.
   """
 
+  alias __MODULE__
+  alias Gmail.Message
   import Gmail.Base
 
   @doc """

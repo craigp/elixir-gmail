@@ -1,11 +1,10 @@
 defmodule Gmail.Label do
 
-  alias __MODULE__
-
   @moduledoc"""
   Labels are used to categorize messages and threads within the user's mailbox.
   """
 
+  alias __MODULE__
   import Gmail.Base
 
   @doc """

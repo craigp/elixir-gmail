@@ -1,10 +1,10 @@
 defmodule Gmail.Body do
 
-  alias __MODULE__
-
   @moduledoc """
   Helper functions for dealing with email bodies.
   """
+
+  alias __MODULE__
 
   defstruct size: 0, data: ""
   @type t :: %__MODULE__{}
