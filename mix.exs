@@ -26,7 +26,7 @@ defmodule Gmail.Mixfile do
       {:earmark, "0.1.17", only: :dev},
       {:ex_doc, "0.11.2", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
-      {:credo, "~> 0.2", only: [:dev, :test]}
+      {:credo, "~> 0.2", only: :dev}
     ]
   end
 
