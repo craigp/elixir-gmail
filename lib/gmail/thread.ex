@@ -64,19 +64,18 @@ defmodule Gmail.Thread do
   """
   @spec list(String.t, map) :: {atom, [Gmail.Thread.t], String.t}
   def list(user_id \\ "me", params \\ %{}) do
-    case Enum.empty?(params) do
-      true ->
-        do_list "users/#{user_id}/threads"
-      false ->
-        query = %{}
-        if Map.has_key?(params, :page_token) do
-          query = Map.put(query, "pageToken", params[:page_token])
-        end
-        if Enum.empty?(query) do
-          list(user_id)
-        else
-          do_list "users/#{user_id}/threads?#{URI.encode_query(query)}"
-        end
+    if Enum.empty?(params) do
+      do_list "users/#{user_id}/threads"
+    else
+      query = %{}
+      if Map.has_key?(params, :page_token) do
+        query = Map.put(query, "pageToken", params[:page_token])
+      end
+      if Enum.empty?(query) do
+        list(user_id)
+      else
+        do_list "users/#{user_id}/threads?#{URI.encode_query(query)}"
+      end
     end
   end
 

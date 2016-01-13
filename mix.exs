@@ -4,7 +4,7 @@ defmodule Gmail.Mixfile do
   def project do
     [app: :gmail,
      version: "0.0.11",
-     elixir: "~> 1.0",
+     elixir: "~> 1.2",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test],
@@ -25,7 +25,8 @@ defmodule Gmail.Mixfile do
       {:excoveralls, "0.4.2", only: :test},
       {:earmark, "0.1.17", only: :dev},
       {:ex_doc, "0.11.2", only: :dev},
-      {:dialyxir, "~> 0.3", only: :dev}
+      {:dialyxir, "~> 0.3", only: :dev},
+      {:credo, "~> 0.2", only: [:dev, :test]}
     ]
   end
 
