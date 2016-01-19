@@ -54,33 +54,23 @@ defmodule Gmail.HTTP do
       do: {:ok, json}
   end
 
-  @spec get_headers(String.t) :: {atom, map}
+  @spec get_headers(String.t) :: {atom, [{String.t, String.t}]}
   defp get_headers(token) do
     {:ok, do_get_headers(token)}
   end
 
-  ## EXPERIMENTAL ############################################################
+  ## EXPERIMENTAL ################################################################
 
+  @spec do_parse_response({atom, Response.t}) :: {atom, map}
   defp do_parse_response({:ok, %Response{body: body}}) when byte_size(body) > 0 do
-    case decode(body) do
-      {:ok, decoded} ->
-        {:ok, decoded}
-      {:error, _error} ->
-        nil
-    end
+    decode(body)
   end
 
   defp do_parse_response({:ok, _response}) do
     nil
   end
 
-  # TODO how should I handle errors? Should I, or should I just let it fail?
-  # {:error, %HTTPoison.Error{id: nil, reason: :econnrefused}}
-  defp do_parse_response(some_other_shit) do
-    IO.inspect some_other_shit
-    nil
-  end
-
+  @spec do_get_headers(String.t) :: [{String.t, String.t}]
   defp do_get_headers(token) do
     [
       {"Authorization", "Bearer #{token}"},
@@ -88,10 +78,12 @@ defmodule Gmail.HTTP do
     ]
   end
 
+  @spec get_with_headers(list(tuple)) :: (String.t -> Response.t)
   defp get_with_headers(headers) do
     fn(url) -> HTTPoison.get(url, headers) end
   end
 
+  @spec do_get((String.t -> Response.t), String.t) :: Response.t
   defp do_get(fun, url) do
     fun.(url)
   end
