@@ -102,6 +102,29 @@ defmodule Gmail.ThreadTest do
     }
   end
 
+  if File.exists?("./config/test.local.exs") do # TODO just for now
+    test "gets a thread (test using bypass server)",
+      %{thread: thread,
+        thread_id: thread_id,
+        access_token_rec: access_token_rec,
+        expected_result: expected_result} do
+      bypass = Bypass.open
+      Bypass.expect bypass, fn conn ->
+        assert "/gmail/v1/users/me/threads/#{thread_id}" == conn.request_path
+        assert "GET" == conn.method
+        {:ok, json} = Poison.encode(thread)
+        Plug.Conn.resp(conn, 200, json)
+      end
+      Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
+      with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+        {:ok, thread} = Gmail.Thread.get(thread_id)
+        assert expected_result == thread
+        assert called Gmail.OAuth2.get_config
+      end
+      Application.delete_env :gmail, :api
+    end
+  end
+
   test "gets a thread", context do
     with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:thread]} end] do
       with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do

@@ -9,3 +9,4 @@ config/dev.exs
 config/test.local.exs
 .envrc
 doc
+tags

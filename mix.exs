@@ -3,7 +3,7 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.0.12",
+     version: "0.0.13",
      elixir: "~> 1.2",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
@@ -26,7 +26,8 @@ defmodule Gmail.Mixfile do
       {:earmark, "~> 0.2", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
-      {:credo, "~> 0.2", only: :dev}
+      {:credo, "~> 0.2", only: :dev},
+      {:bypass, "~> 0.1", only: :test}
     ]
   end
 
