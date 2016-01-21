@@ -126,8 +126,8 @@ defmodule Gmail.Label do
 
   @spec convert(map) :: Label.t
   defp convert(result) do
-    Enum.reduce(result, %Label{}, fn({k, v}, l) ->
-      %{l | (Macro.underscore(k) |> String.to_atom) => v}
+    Enum.reduce(result, %Label{}, fn({key, value}, label) ->
+      %{label | (key |> Macro.underscore |> String.to_atom) => value}
     end)
   end
 

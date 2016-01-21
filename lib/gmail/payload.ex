@@ -30,7 +30,7 @@ defmodule Gmail.Payload do
         _ ->
           value
       end
-      %{payload | (Macro.underscore(key) |> String.to_atom) => converted_value}
+      %{payload | (key |> Macro.underscore |> String.to_atom) => converted_value}
     end)
   end
 
