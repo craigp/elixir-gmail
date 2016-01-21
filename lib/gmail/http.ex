@@ -12,11 +12,11 @@ defmodule Gmail.HTTP do
   """
   @spec post(String.t, String.t, map) :: {atom, map}
   def post(token, url, data) do
-    with {:ok, headers} <- get_headers(token),
-      {:ok, json} <- encode(data),
-      {:ok, %Response{body: body}} <- HTTPoison.post(url, json, headers),
-      {:ok, json} <- decode(body),
-      do: {:ok, json}
+    token
+      |> do_get_headers
+      |> post_with_headers
+      |> do_post(url, encode(data))
+      |> do_parse_response
   end
 
   @doc """
@@ -36,11 +36,11 @@ defmodule Gmail.HTTP do
   """
   @spec get(String.t, String.t) :: {atom, map}
   def get(token, url) do
-    token |> do_get_headers |> get_with_headers |> do_get(url) |> do_parse_response
-    # with {:ok, headers} <- get_headers(token),
-    #   {:ok, %Response{body: body}} <- HTTPoison.get(url, headers),
-    #   {:ok, json} <- decode(body),
-    #   do: {:ok, json}
+    token
+      |> do_get_headers
+      |> get_with_headers
+      |> do_get(url)
+      |> do_parse_response
   end
 
   @doc """
@@ -59,7 +59,7 @@ defmodule Gmail.HTTP do
     {:ok, do_get_headers(token)}
   end
 
-  ## EXPERIMENTAL ################################################################
+  # --> private methods <--------------------------------------------------------------------------
 
   @spec do_parse_response({atom, Response.t}) :: {atom, map}
   defp do_parse_response({:ok, %Response{body: body}}) when byte_size(body) > 0 do
@@ -83,9 +83,19 @@ defmodule Gmail.HTTP do
     fn(url) -> HTTPoison.get(url, headers) end
   end
 
+  @spec post_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)
+  defp post_with_headers(headers) do
+    fn(url, json) -> HTTPoison.post(url, json, headers) end
+  end
+
   @spec do_get((String.t -> Response.t), String.t) :: Response.t
   defp do_get(fun, url) do
     fun.(url)
+  end
+
+  @spec do_post((String.t, String.t -> Response.t), String.t, {atom, String.t}) :: Response.t
+  defp do_post(fun, url, {:ok, json}) do
+    fun.(url, json)
   end
 
 end
