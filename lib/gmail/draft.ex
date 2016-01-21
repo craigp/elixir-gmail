@@ -51,10 +51,10 @@ defmodule Gmail.Draft do
     end
   end
 
-  @spec convert(Map.t) :: Draft.t
+  @spec convert(map) :: Draft.t
   defp convert(%{"id" => id,
     "message" => %{"id" => message_id, "threadId" => thread_id}}) do
-    %Gmail.Draft{
+    %Draft{
       id: id,
       message: %Message{id: message_id, thread_id: thread_id}
     }

@@ -28,8 +28,8 @@ defmodule Gmail.LabelTest do
       id: label_id,
       name: label_name,
       type: label_type,
-      labelListVisibility: "labelShow",
-      messageListVisibility: "show"
+      label_list_visibility: "labelShow",
+      message_list_visibility: "show"
     }
 
     expected_results = [expected_result]
@@ -184,7 +184,11 @@ defmodule Gmail.LabelTest do
     end
   end
 
-  # test "patches a label" do
+  # test "patches a label", context do
+
+  # end
+
+  # test "handles an error when patching a label", context do
 
   # end
 

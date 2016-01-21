@@ -10,15 +10,15 @@ defmodule Gmail.Label do
   @doc """
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels#resource
   """
-  defstruct id: "",
-    name: "",
-    messageListVisibility: "",
-    labelListVisibility: "",
-    type: "",
-    messagesTotal: "",
-    messagesUnread: "",
-    threadsTotal: "",
-    threadsUnread: ""
+  defstruct id: nil,
+    name: nil,
+    message_list_visibility: nil,
+    label_list_visibility: nil,
+    type: nil,
+    messages_total: nil,
+    messages_unread: nil,
+    threads_total: nil,
+    threads_unread: nil
 
   @type t :: %__MODULE__{}
 
@@ -54,6 +54,21 @@ defmodule Gmail.Label do
         {:ok, convert(raw_label)}
     end
   end
+
+  # @doc """
+  # Updates the specified label. This method supports patch semantics.
+
+  # Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/patch
+  # """
+  # @spec patch(Label.t, String.t) :: {atom, Label.t}
+  # def patch(label, user_id \\ "me") do
+  #   case do_patch("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
+  #     {:ok, %{"error" => details}} ->
+  #       {:error, details}
+  #     {:ok, raw_label} ->
+  #       {:ok, convert(raw_label)}
+  #   end
+  # end
 
   @doc """
   Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to.
@@ -109,51 +124,25 @@ defmodule Gmail.Label do
     end
   end
 
-  @spec convert(map) :: Label.t | nil
-  defp convert(%{"id" => id,
-    "labelListVisibility" => labelListVisibility,
-    "messageListVisibility" => messageListVisibility,
-    "name" => name,
-    "type" => type}) do
-    %Label{id: id,
-      name: name,
-      labelListVisibility: labelListVisibility,
-      messageListVisibility: messageListVisibility,
-      type: type}
-  end
-
-  defp convert(%{"id" => id,
-    "labelListVisibility" => labelListVisibility,
-    "messageListVisibility" => messageListVisibility,
-    "name" => name}) do
-    %Label{id: id,
-      name: name,
-      labelListVisibility: labelListVisibility,
-      messageListVisibility: messageListVisibility}
-  end
-
-  defp convert(%{"id" => id,
-    "name" => name,
-    "type" => type}) do
-    %Label{id: id, name: name, type: type}
-  end
-
-  defp convert(_) do
-    nil
+  @spec convert(map) :: Label.t
+  defp convert(result) do
+    Enum.reduce(result, %Label{}, fn({k, v}, l) ->
+      %{l | (Macro.underscore(k) |> String.to_atom) => v}
+    end)
   end
 
   @spec convert_for_update(Label.t) :: map
   defp convert_for_update(%Label{
     id: id,
     name: name,
-    labelListVisibility: labelListVisibility,
-    messageListVisibility: messageListVisibility
+    label_list_visibility: label_list_visibility,
+    message_list_visibility: message_list_visibility
   }) do
     %{
       "id" => id,
       "name" => name,
-      "labelListVisibility" => labelListVisibility,
-      "messageListVisibility" => messageListVisibility
+      "labelListVisibility" => label_list_visibility,
+      "messageListVisibility" => message_list_visibility
     }
   end
 

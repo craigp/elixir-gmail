@@ -33,6 +33,14 @@ defmodule Gmail.Base do
   end
 
   @doc """
+  Performs an HTTP PATCH request.
+  """
+  @spec do_patch(String.t, map) :: {atom, map}
+  def do_patch(path, data) do
+    get_access_token |> HTTP.patch(base_url <> path, data)
+  end
+
+  @doc """
   Performs an HTTP DELETE reauest.
   """
   @spec do_delete(String.t) :: {atom, map}

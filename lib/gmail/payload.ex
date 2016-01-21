@@ -20,61 +20,18 @@ defmodule Gmail.Payload do
   Converts an email payload.
   """
   @spec convert(map) :: Payload.t
-  def convert(%{"partId" => part_id,
-    "mimeType" => mime_type,
-    "filename" => filename,
-    "headers" => headers,
-    "body" => body,
-    "parts" => parts}) do
-    %Payload{part_id: part_id,
-      mime_type: mime_type,
-      filename: filename,
-      headers: headers,
-      body: Body.convert(body),
-      parts: Enum.map(parts, &convert/1)}
-  end
-
-  @doc """
-  Converts an email payload.
-  """
-  def convert(%{"partId" => part_id,
-    "mimeType" => mime_type,
-    "filename" => filename,
-    "headers" => headers,
-    "body" => body}) do
-    %Payload{part_id: part_id,
-      mime_type: mime_type,
-      filename: filename,
-      headers: headers,
-      body: Body.convert(body)}
-  end
-
-  @doc """
-  Converts an email payload.
-  """
-  def convert(%{"mimeType" => mime_type,
-    "filename" => filename,
-    "headers" => headers,
-    "body" => body,
-    "parts" => parts}) do
-    %Payload{mime_type: mime_type,
-      filename: filename,
-      headers: headers,
-      body: Body.convert(body),
-      parts: Enum.map(parts, &convert/1)}
-  end
-
-  @doc """
-  Converts an email payload.
-  """
-  def convert(%{"mimeType" => mime_type,
-    "filename" => filename,
-    "headers" => headers,
-    "body" => body}) do
-    %Payload{mime_type: mime_type,
-      filename: filename,
-      headers: headers,
-      body: Body.convert(body)}
+  def convert(result) do
+    Enum.reduce(result, %Payload{}, fn({key, value}, payload) ->
+      converted_value = case key do
+        "body" ->
+          Body.convert(value)
+        "parts" ->
+          Enum.map(value, &convert/1)
+        _ ->
+          value
+      end
+      %{payload | (Macro.underscore(key) |> String.to_atom) => converted_value}
+    end)
   end
 
 end

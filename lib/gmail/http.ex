@@ -32,6 +32,18 @@ defmodule Gmail.HTTP do
   end
 
   @doc """
+  Performs an HTTP PATCH request.
+  """
+  @spec patch(String.t, String.t, map) :: {atom, map}
+  def patch(token, url, data) do
+    with {:ok, headers} <- get_headers(token),
+      {:ok, json} <- encode(data),
+      {:ok, %Response{body: body}} <- HTTPoison.patch(url, json, headers),
+      {:ok, response_json} <- decode(body),
+      do: {:ok, response_json}
+  end
+
+  @doc """
   Performs an HTTP GET request.
   """
   @spec get(String.t, String.t) :: {atom, map}
@@ -59,7 +71,7 @@ defmodule Gmail.HTTP do
     {:ok, do_get_headers(token)}
   end
 
-  # --> private methods <--------------------------------------------------------------------------
+  #---> private methods <---------------------------------------------------------------------------
 
   @spec do_parse_response({atom, Response.t}) :: {atom, map}
   defp do_parse_response({:ok, %Response{body: body}}) when byte_size(body) > 0 do
