@@ -55,20 +55,20 @@ defmodule Gmail.Label do
     end
   end
 
-  # @doc """
-  # Updates the specified label. This method supports patch semantics.
+  @doc """
+  Updates the specified label. This method supports patch semantics.
 
-  # Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/patch
-  # """
-  # @spec patch(Label.t, String.t) :: {atom, Label.t}
-  # def patch(label, user_id \\ "me") do
-  #   case do_patch("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
-  #     {:ok, %{"error" => details}} ->
-  #       {:error, details}
-  #     {:ok, raw_label} ->
-  #       {:ok, convert(raw_label)}
-  #   end
-  # end
+  Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/patch
+  """
+  @spec patch(Label.t, String.t) :: {atom, Label.t}
+  def patch(label, user_id \\ "me") do
+    case do_patch("users/#{user_id}/labels/#{label.id}", convert_for_patch(label)) do
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_label} ->
+        {:ok, convert(raw_label)}
+    end
+  end
 
   @doc """
   Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to.
@@ -128,6 +128,18 @@ defmodule Gmail.Label do
   defp convert(result) do
     Enum.reduce(result, %Label{}, fn({key, value}, label) ->
       %{label | (key |> Macro.underscore |> String.to_atom) => value}
+    end)
+  end
+
+  @spec convert_for_patch(Label.t) :: map
+  defp convert_for_patch(label) do
+    label |> Map.from_struct |> Enum.reduce(%{}, fn({key, value}, map) ->
+      if value do
+        {first_letter, rest} = key |> Atom.to_string |> Macro.camelize |> String.split_at(1)
+        Map.put(map, String.downcase(first_letter) <> rest, value)
+      else
+        map
+      end
     end)
   end
 
