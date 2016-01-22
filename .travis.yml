@@ -1,9 +1,12 @@
 language: elixir
-env: 
-  - MIX_ENV=test
+env:
+- MIX_ENV=test
 elixir:
-  - 1.2.0
+- 1.2.0
 otp_release:
-  - 18.2.1
+- 18.2.1
 script:
-  - "MIX_ENV=test mix do deps.get, test && mix compile && mix coveralls.travis"
+- MIX_ENV=test mix do deps.get, test && mix compile && mix coveralls.travis
+notifications:
+  slack:
+    secure: kRpGSGtNgRXLdNMZkfs9pB9/9mezVpboGazwNsDH77Ym9JT1UW9hVx0JI0mI8jvRrHiKbnY/HbirGZdRraxt0VbRPwv1psPhWAv/r0xpHikDOXVxxdS1wcLZNuMyO1tdP6IQzD2Gkr0MA9TkvpiE6bjQ7dTDJiCrQxwBeplShX47p7KPij5VLDsHmt6eF8KFmZF6ftL1o1EjVA81+hU1uTvx+IJQ2uFG40dYVONGtNOH4gug2Kx8xuJq5lnqvViIm3BVGjnjid1O+9daHdypTcZWAoG6Y1Hx1+/1CHhZ9V5ndN4T4LasztaNc2pJmxALv1Q8osxzmpXMYGkkUukZnbN/MfmS1/yef7Z7ahdCSSOyCHAhFfo9jeNBMiqVmm5L6LacCIyN5fnC6wd8S7FkzMEJP2gP94h+v8MIiCGzOraJxxG0WFCpaQ7I9/0vjjqjPAMAmhdl5ym8/0f+G7xl+1Fx9UmHDTRpJEQ9l8XoVdbNA330xNrNImZd+ZTC0KdYHkRGWKm72bK4aMpaHFtfCG5E1Er7c8ifSATjgbscD5n991ixrzyksDOLoJGe8xxN9oPZVYP6onUk8K9pUKuXHH0FPvw0uOjeMuu8dX8crFfa/EzXRQWBR9VsIc1x6KCnMA73wnAtaJVNs2wQKkp8Oi689n+7KBD/YUMaQWpDaOA=
