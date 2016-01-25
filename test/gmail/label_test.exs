@@ -184,12 +184,42 @@ defmodule Gmail.LabelTest do
     end
   end
 
-  # test "patches a label", context do
+  test "patches a label", context do
+    new_label_name = "Something Else"
+    patched_label = %{context[:label] | "name" => new_label_name}
+    expected_result = %{context[:expected_result] | name: new_label_name}
+    patch_label = %Gmail.Label{id: context[:label_id], name: new_label_name}
+    with_mock Gmail.HTTP, [patch: fn _at, _url, _data -> {:ok, patched_label} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
+        {:ok, label} = Gmail.Label.patch(patch_label)
+        assert expected_result == label
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.patch(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
+          %{
+            "id" => context[:label_id],
+            "name" => new_label_name
+          })
+      end
+    end
+  end
 
-  # end
-
-  # test "handles an error when patching a label", context do
-
-  # end
+  test "handles an error when patching a label", context do
+    new_label_name = "Something Else"
+    patch_label = %Gmail.Label{id: context[:label_id], name: new_label_name}
+    with_mock Gmail.HTTP, [patch: fn _at, _url, _data -> {:ok, context[:four_hundred_error]} end] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
+        {:error, error_detail} = Gmail.Label.patch(patch_label)
+        assert context[:four_hundred_error_content] == error_detail
+        assert called Gmail.OAuth2.get_config
+        assert called Gmail.HTTP.patch(context[:access_token],
+          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
+          %{
+            "id" => context[:label_id],
+            "name" => new_label_name
+          })
+      end
+    end
+  end
 
 end
