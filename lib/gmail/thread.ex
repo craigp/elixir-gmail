@@ -24,8 +24,10 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
   @spec get(String.t | String.t, String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
-  def get(id, user_id \\ "me") do
-    case do_get("users/#{user_id}/threads/#{id}") do
+  def get(id, user_id \\ "me", format \\ "full")
+
+  def get(id, user_id, format) do
+    case do_get("users/#{user_id}/threads/#{id}?format=#{format}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
         {:error, :not_found}
       {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->

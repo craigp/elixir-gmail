@@ -131,7 +131,7 @@ defmodule Gmail.ThreadTest do
         {:ok, thread} = Gmail.Thread.get(context[:thread_id])
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/threads/" <> context[:thread_id])
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/threads/" <> context[:thread_id] <> "?format=full")
       end
     end
   end
@@ -142,7 +142,7 @@ defmodule Gmail.ThreadTest do
         {:ok, thread} = Gmail.Thread.get(context[:thread_id], "user@example.com")
         assert context[:expected_result] == thread
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id] <> "?format=full")
       end
     end
   end
@@ -152,7 +152,7 @@ defmodule Gmail.ThreadTest do
       with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, :not_found} = Gmail.Thread.get(context[:thread_id], "user@example.com")
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id] <> "?format=full")
       end
     end
   end
@@ -162,7 +162,7 @@ defmodule Gmail.ThreadTest do
       with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
         {:error, "Error #1"} = Gmail.Thread.get(context[:thread_id], "user@example.com")
         assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id])
+        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/user@example.com/threads/" <> context[:thread_id] <> "?format=full")
       end
     end
   end

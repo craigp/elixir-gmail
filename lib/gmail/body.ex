@@ -5,6 +5,7 @@ defmodule Gmail.Body do
   """
 
   alias __MODULE__
+  alias Gmail.Helper
 
   defstruct size: 0, data: ""
   @type t :: %__MODULE__{}
@@ -14,12 +15,9 @@ defmodule Gmail.Body do
   """
   @spec convert(Map.t) :: Body.t
   def convert(body) do
-    case body do
-      %{"data" => data, "size" => size} ->
-        %Body{data: decode_body(data), size: size}
-      %{"size" => size} ->
-        %Body{size: size}
-    end
+    {data, body} = body |> Helper.atomise_keys |> Map.pop(:data)
+    if data, do: body = Map.put(body, :data, decode_body(data))
+    struct(Body, body)
   end
 
   @spec decode_body(String.t) :: String.t

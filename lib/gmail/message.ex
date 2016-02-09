@@ -5,7 +5,7 @@ defmodule Gmail.Message do
   """
 
   alias __MODULE__
-  alias Gmail.Payload
+  alias Gmail.{Payload, Helper}
   import Gmail.Base
 
   @doc """
@@ -75,20 +75,14 @@ defmodule Gmail.Message do
   Converts a Gmail API message resource into a local struct
   """
   @spec convert(map) :: Message.t
-  def convert(%{"id" => id,
-    "threadId" => thread_id,
-    "labelIds" => label_ids,
-    "snippet" => snippet,
-    "historyId" => history_id,
-    "payload" => payload,
-    "sizeEstimate" => size_estimate}) do
-    %Message{id: id,
-      thread_id: thread_id,
-      label_ids: label_ids,
-      snippet: snippet,
-      history_id: history_id,
-      payload: Payload.convert(payload),
-      size_estimate: size_estimate}
-    end
+  def convert(message) do
+    {payload, message} =
+      message
+      |> Helper.atomise_keys
+      |> Map.pop(:payload)
+    message = struct(Message, message)
+    if payload, do: message = Map.put(message, :payload, Payload.convert(payload))
+    message
+  end
 
 end
