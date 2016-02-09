@@ -14,6 +14,7 @@ You can find documentation for Gmail's API at https://developers.google.com/gmai
 * [x] Labels
 * [ ] Drafts
 * [ ] History
+* [ ] Attachments
 
 As of now the library doesn't do the initial auth generation for you; you'll
 need to create an app on the [Google Developer
@@ -25,5 +26,7 @@ The library will however, when you supply a refresh token, use that to refresh
 an expired access token for you. Take a look in the `dev.exs.sample` config
 file to see what your config should look like.
 
-
+### TODO
+* [ ] Add format option when fetching threads or messages
+* [ ] Batched requests
 
