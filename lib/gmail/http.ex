@@ -4,19 +4,52 @@ defmodule Gmail.HTTP do
   HTTP request handling.
   """
 
-  alias HTTPoison.Response
+  use GenServer
   import Poison, only: [decode: 1, encode: 1]
+  alias HTTPoison.Response
+  alias Gmail.OAuth2
 
-  @doc """
-  Performs an HTTP POST request.
-  """
-  @spec post(String.t, String.t, map) :: {atom, map}
-  def post(token, url, data) do
-    token
+  #  Server API {{{ #
+
+  def start_link do
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  end
+
+  def init(:ok) do
+    {:ok, %{}}
+  end
+
+  @spec handle_call({atom, String.t}, pid, map) :: {atom, map, map}
+  def handle_call({:get, url}, _from, state) do
+    %{access_token: token} = OAuth2.get_config
+    result =
+      token
+      |> do_get_headers
+      |> get_with_headers
+      |> do_get(url)
+      |> do_parse_response
+    {:reply, result, state}
+  end
+
+  def handle_call({:post, url, data}, _from, state) do
+    %{access_token: token} = OAuth2.get_config
+    result =
+      token
       |> do_get_headers
       |> post_with_headers
       |> do_post(url, encode(data))
       |> do_parse_response
+    {:reply, result, state}
+  end
+
+  #  }}} Server API #
+
+  @doc """
+  Performs an HTTP POST request.
+  """
+  @spec post(String.t, map) :: {atom, map}
+  def post(url, data) do
+    GenServer.call(__MODULE__, {:post, url, data})
   end
 
   @doc """
@@ -46,13 +79,9 @@ defmodule Gmail.HTTP do
   @doc """
   Performs an HTTP GET request.
   """
-  @spec get(String.t, String.t) :: {atom, map}
-  def get(token, url) do
-    token
-      |> do_get_headers
-      |> get_with_headers
-      |> do_get(url)
-      |> do_parse_response
+  @spec get(String.t) :: {atom, map}
+  def get(url) do
+    GenServer.call(__MODULE__, {:get, url})
   end
 
   @doc """
@@ -71,7 +100,7 @@ defmodule Gmail.HTTP do
     {:ok, do_get_headers(token)}
   end
 
-  #---> private methods <---------------------------------------------------------------------------
+  #  Private functions {{{ #
 
   @spec do_parse_response({atom, Response.t}) :: {atom, map}
   defp do_parse_response({:ok, %Response{body: body}}) when byte_size(body) > 0 do
@@ -109,5 +138,7 @@ defmodule Gmail.HTTP do
   defp do_post(fun, url, {:ok, json}) do
     fun.(url, json)
   end
+
+  #  }}} Private functions #
 
 end

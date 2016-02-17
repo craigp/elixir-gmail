@@ -1,7 +1,5 @@
 defmodule Gmail do
 
-  alias Gmail.Thread
-
   @moduledoc """
   A simple Gmail REST API client for Elixir, mostly built as a learning exercise.
 
@@ -28,7 +26,19 @@ defmodule Gmail do
   file to see what your config should look like.
   """
 
+  use Application
+  alias Gmail.Thread
+
   @spec search(String.t) :: {atom, [Thread.t]}
   defdelegate search(query), to: Thread
+
+  def start(_type, _args) do
+    {:ok, _pid} = Gmail.Supervisor.start_link
+    {:ok, self}
+  end
+
+  def stop(_args) do
+    # noop
+  end
 
 end

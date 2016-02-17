@@ -13,7 +13,7 @@ defmodule Gmail.Base do
   """
   @spec do_get(String.t) :: {atom, map}
   def do_get(path) do
-    get_access_token |> HTTP.get(base_url <> path)
+    HTTP.get(base_url <> path)
   end
 
   @doc """
@@ -21,7 +21,7 @@ defmodule Gmail.Base do
   """
   @spec do_post(String.t, map) :: {atom, map}
   def do_post(path, data) do
-    get_access_token |> HTTP.post(base_url <> path, data)
+    HTTP.post(base_url <> path, data)
   end
 
   @doc """
