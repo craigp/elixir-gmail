@@ -20,29 +20,60 @@ defmodule Gmail.HTTP do
   end
 
   @spec handle_call({atom, String.t}, pid, map) :: {atom, map, map}
+
   def handle_call({:get, url}, _from, state) do
-    %{access_token: token} = OAuth2.get_config
     result =
-      token
-      |> do_get_headers
+      get_token
+      |> get_headers
       |> get_with_headers
-      |> do_get(url)
+      |> make_request(url)
+      |> do_parse_response
+    {:reply, result, state}
+  end
+
+  def handle_call({:delete, url}, _from, state) do
+    result =
+      get_token
+      |> get_headers
+      |> delete_with_headers
+      |> make_request(url)
       |> do_parse_response
     {:reply, result, state}
   end
 
   def handle_call({:post, url, data}, _from, state) do
-    %{access_token: token} = OAuth2.get_config
     result =
-      token
-      |> do_get_headers
+      get_token
+      |> get_headers
       |> post_with_headers
-      |> do_post(url, encode(data))
+      |> make_request_with_data(url, encode(data))
+      |> do_parse_response
+    {:reply, result, state}
+  end
+
+  def handle_call({:put, url, data}, _from, state) do
+    result =
+      get_token
+      |> get_headers
+      |> put_with_headers
+      |> make_request_with_data(url, encode(data))
+      |> do_parse_response
+    {:reply, result, state}
+  end
+
+  def handle_call({:patch, url, data}, _from, state) do
+    result =
+      get_token
+      |> get_headers
+      |> patch_with_headers
+      |> make_request_with_data(url, encode(data))
       |> do_parse_response
     {:reply, result, state}
   end
 
   #  }}} Server API #
+
+  #  Client API {{{ #
 
   @doc """
   Performs an HTTP POST request.
@@ -55,25 +86,17 @@ defmodule Gmail.HTTP do
   @doc """
   Performs an HTTP PUT request.
   """
-  @spec put(String.t, String.t, map) :: {atom, map}
-  def put(token, url, data) do
-    with {:ok, headers} <- get_headers(token),
-      {:ok, json} <- encode(data),
-      {:ok, %Response{body: body}} <- HTTPoison.put(url, json, headers),
-      {:ok, response_json} <- decode(body),
-      do: {:ok, response_json}
+  @spec put(String.t, map) :: {atom, map}
+  def put(url, data) do
+    GenServer.call(__MODULE__, {:put, url, data})
   end
 
   @doc """
   Performs an HTTP PATCH request.
   """
-  @spec patch(String.t, String.t, map) :: {atom, map}
-  def patch(token, url, data) do
-    with {:ok, headers} <- get_headers(token),
-      {:ok, json} <- encode(data),
-      {:ok, %Response{body: body}} <- HTTPoison.patch(url, json, headers),
-      {:ok, response_json} <- decode(body),
-      do: {:ok, response_json}
+  @spec patch(String.t, map) :: {atom, map}
+  def patch(url, data) do
+    GenServer.call(__MODULE__, {:patch, url, data})
   end
 
   @doc """
@@ -87,18 +110,12 @@ defmodule Gmail.HTTP do
   @doc """
   Performs an HTTP DELETE request.
   """
-  @spec delete(String.t, String.t) :: {atom, map}
-  def delete(token, url) do
-    with {:ok, headers} <- get_headers(token),
-      {:ok, %Response{body: body}} <- HTTPoison.delete(url, headers),
-      {:ok, json} <- decode(body),
-      do: {:ok, json}
+  @spec delete(String.t) :: {atom, map}
+  def delete(url) do
+    GenServer.call(__MODULE__, {:delete, url})
   end
 
-  @spec get_headers(String.t) :: {atom, [{String.t, String.t}]}
-  defp get_headers(token) do
-    {:ok, do_get_headers(token)}
-  end
+  #  }}} Client API #
 
   #  Private functions {{{ #
 
@@ -111,8 +128,8 @@ defmodule Gmail.HTTP do
     nil
   end
 
-  @spec do_get_headers(String.t) :: [{String.t, String.t}]
-  defp do_get_headers(token) do
+  @spec get_headers(String.t) :: [{String.t, String.t}]
+  defp get_headers(token) do
     [
       {"Authorization", "Bearer #{token}"},
       {"Content-Type", "application/json"}
@@ -124,19 +141,40 @@ defmodule Gmail.HTTP do
     fn(url) -> HTTPoison.get(url, headers) end
   end
 
+  @spec delete_with_headers(list(tuple)) :: (String.t -> Response.t)
+  defp delete_with_headers(headers) do
+    fn(url) -> HTTPoison.delete(url, headers) end
+  end
+
   @spec post_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)
   defp post_with_headers(headers) do
     fn(url, json) -> HTTPoison.post(url, json, headers) end
   end
 
-  @spec do_get((String.t -> Response.t), String.t) :: Response.t
-  defp do_get(fun, url) do
+  @spec put_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)
+  defp put_with_headers(headers) do
+    fn(url, json) -> HTTPoison.put(url, json, headers) end
+  end
+
+  @spec patch_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)
+  defp patch_with_headers(headers) do
+    fn(url, json) -> HTTPoison.patch(url, json, headers) end
+  end
+
+  @spec make_request((String.t -> Response.t), String.t) :: Response.t
+  defp make_request(fun, url) do
     fun.(url)
   end
 
-  @spec do_post((String.t, String.t -> Response.t), String.t, {atom, String.t}) :: Response.t
-  defp do_post(fun, url, {:ok, json}) do
+  @spec make_request_with_data((String.t, String.t -> Response.t), String.t, {atom, String.t}) :: Response.t
+  defp make_request_with_data(fun, url, {:ok, json}) do
     fun.(url, json)
+  end
+
+  @spec get_token :: String.t
+  defp get_token do
+    %{access_token: token} = OAuth2.get_config
+    token
   end
 
   #  }}} Private functions #

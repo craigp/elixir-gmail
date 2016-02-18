@@ -193,6 +193,7 @@ defmodule Gmail.ThreadTest do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads" == conn.request_path
       assert "q=in:Inbox" == conn.query_string
+      assert "GET" == conn.method
       {:ok, json} = Poison.encode(search_results)
       Plug.Conn.resp(conn, 200, json)
     end
@@ -235,6 +236,7 @@ defmodule Gmail.ThreadTest do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads" == conn.request_path
       assert "" == conn.query_string
+      assert "GET" == conn.method
       {:ok, json} = Poison.encode(threads)
       Plug.Conn.resp(conn, 200, json)
     end

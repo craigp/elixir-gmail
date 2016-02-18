@@ -38,24 +38,38 @@ defmodule Gmail.HTTPTest do
     end
   end
 
-  test "performs a PUT request and parses the output" do
+  test "performs a PUT request and parses the output", context do
     data = %{"some" => "stuff"}
     url = "http://nothing.com"
-    token = "some_token"
     body = "{ \"groovy\": \"this is some json\"}"
     response = %HTTPoison.Response{body: body}
     with_mock HTTPoison, [ put: fn _url, _data, _headers -> {:ok, response} end ] do
-      assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.put(token, url, data)
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
+        assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.put(url, data)
+      end
     end
   end
 
-  test "Performs a DELETE request and parses the output" do
+  test "performs a PATCH request and parses the output", context do
+    data = %{"some" => "stuff"}
     url = "http://nothing.com"
-    token = "some_token"
+    body = "{ \"groovy\": \"this is some json\"}"
+    response = %HTTPoison.Response{body: body}
+    with_mock HTTPoison, [ patch: fn _url, _data, _headers -> {:ok, response} end ] do
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
+        assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.patch(url, data)
+      end
+    end
+  end
+
+  test "Performs a DELETE request and parses the output", context do
+    url = "http://nothing.com"
     body = "{ \"groovy\": \"this is some json\"}"
     response = %HTTPoison.Response{body: body}
     with_mock HTTPoison, [ delete: fn _url, _headers -> {:ok, response} end ] do
-      assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.delete(token, url)
+      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
+        assert {:ok, %{"groovy" => "this is some json"}} == Gmail.HTTP.delete(url)
+      end
     end
   end
 

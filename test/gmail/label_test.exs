@@ -41,6 +41,9 @@ defmodule Gmail.LabelTest do
 
     error_content = %{"code" => 400, "errors" => errors}
 
+    bypass = Bypass.open
+    Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
+
     {:ok, %{
         access_token: access_token,
         access_token_rec: access_token_rec,
@@ -52,173 +55,267 @@ defmodule Gmail.LabelTest do
         expected_results: expected_results,
         label_not_found: %{"error" => %{"code" => 404}},
         four_hundred_error: %{"error" => error_content},
-        four_hundred_error_content: error_content
+        four_hundred_error_content: error_content,
+        bypass: bypass
       }}
   end
 
-  test "creates a new label", context do
-    with_mock Gmail.HTTP, [post: fn _at, _url, _data -> {:ok, context[:label]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:ok, label} = Gmail.Label.create(context[:label_name])
-        assert context[:expected_result] == label
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.post(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels", %{"name" => context[:label_name]})
-      end
+  test "creates a new label", %{
+    label: label,
+    access_token_rec: access_token_rec,
+    label_name: label_name,
+    expected_result: expected_result,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels" == conn.request_path
+      assert "" == conn.query_string
+      assert "POST" == conn.method
+      {:ok, json} = Poison.encode(label)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, label} = Gmail.Label.create(label_name)
+      assert expected_result == label
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "deletes a label", context do
-    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, nil} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        :ok = Gmail.Label.delete(context[:label_id])
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "deletes a label", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "DELETE" == conn.method
+      {:ok, json} = Poison.encode(nil)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      :ok = Gmail.Label.delete(label_id)
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "reports a :not_found when deleting a label that doesn't exist", context do
-    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, context[:label_not_found]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        :not_found = Gmail.Label.delete(context[:label_id])
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "reports a :not_found when deleting a label that doesn't exist", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    label_not_found: label_not_found,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(label_not_found)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      :not_found = Gmail.Label.delete(label_id)
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "handles a 400 error when deleting a label", context do
-    with_mock Gmail.HTTP, [delete: fn _at, _url -> {:ok, context[:four_hundred_error]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:error, "Error #1"} = Gmail.Label.delete(context[:label_id])
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.delete(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "handles a 400 error when deleting a label", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    label_id: label_id,
+    four_hundred_error: four_hundred_error
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(four_hundred_error)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:error, "Error #1"} = Gmail.Label.delete(label_id)
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "lists all labels", context do
-    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:labels]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:ok, labels} = Gmail.Label.list
-        assert context[:expected_results] == labels
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels")
-      end
+  test "lists all labels", %{
+    labels: labels,
+    access_token_rec: access_token_rec,
+    expected_results: expected_results,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels" == conn.request_path
+      assert "" == conn.query_string
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(labels)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, labels} = Gmail.Label.list
+      assert expected_results == labels
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "updates a label", context do
-    with_mock Gmail.HTTP, [put: fn _at, _url, _data -> {:ok, context[:label]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:ok, label} = Gmail.Label.update(context[:expected_result])
-        assert context[:expected_result] == label
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
-          %{
-            "id" => context[:label_id],
-            "name" => context[:label_name],
-            "labelListVisibility" => "labelShow",
-            "messageListVisibility" => "show"
-          })
-      end
+  test "updates a label", %{
+    label: label,
+    label_name: label_name,
+    access_token_rec: access_token_rec,
+    expected_result: expected_result,
+    bypass: bypass,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      {:ok, body, _} = Plug.Conn.read_body(conn)
+      {:ok, body_params} = body |> Poison.decode
+      assert body_params == %{
+        "id" => label_id,
+        "name" => label_name,
+        "labelListVisibility" => "labelShow",
+        "messageListVisibility" => "show"
+      }
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "PUT" == conn.method
+      {:ok, json} = Poison.encode(label)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, label} = Gmail.Label.update(expected_result)
+      assert expected_result == label
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "handles an error when updating a label", context do
-    with_mock Gmail.HTTP, [put: fn _at, _url, _data -> {:ok, context[:four_hundred_error]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        # {:error, context[:four_hundred_error_content]} = Gmail.Label.update(context[:expected_result])
-        {:error, error_detail} = Gmail.Label.update(context[:expected_result])
-        assert context[:four_hundred_error_content] == error_detail
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.put(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
-          %{
-            "id" => context[:label_id],
-            "name" => context[:label_name],
-            "labelListVisibility" => "labelShow",
-            "messageListVisibility" => "show"
-          })
-      end
+  test "handles an error when updating a label", %{
+    access_token_rec: access_token_rec,
+    expected_result: expected_result,
+    bypass: bypass,
+    label_id: label_id,
+    four_hundred_error: four_hundred_error,
+    four_hundred_error_content: four_hundred_error_content
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(four_hundred_error)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:error, error_detail} = Gmail.Label.update(expected_result)
+      assert four_hundred_error_content == error_detail
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "gets a label", context do
-    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:label]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:ok, label} = Gmail.Label.get(context[:label_id])
-        assert context[:expected_result] == label
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "gets a label", %{
+    label: label,
+    access_token_rec: access_token_rec,
+    expected_result: expected_result,
+    bypass: bypass,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(label)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, label} = Gmail.Label.get(label_id)
+      assert expected_result == label
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "reports :not_found for a label that doesn't exist", context do
-    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:label_not_found]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:error, :not_found} = Gmail.Label.get(context[:label_id])
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "reports :not_found for a label that doesn't exist", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    label_not_found: label_not_found,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(label_not_found)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:error, :not_found} = Gmail.Label.get(label_id)
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "handles a 400 error when getting a label", context do
-    with_mock Gmail.HTTP, [get: fn _at, _url -> {:ok, context[:four_hundred_error]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:error, "Error #1"} = Gmail.Label.get(context[:label_id])
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id])
-      end
+  test "handles a 400 error when getting a label", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    four_hundred_error: four_hundred_error,
+    label_id: label_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(four_hundred_error)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:error, "Error #1"} = Gmail.Label.get(label_id)
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "patches a label", context do
+  test "patches a label", %{
+    label: label,
+    access_token_rec: access_token_rec,
+    label_name: label_name,
+    expected_result: expected_result,
+    bypass: bypass,
+    label_name: label_name,
+    label_id: label_id,
+    expected_result: expected_result
+  } do
     new_label_name = "Something Else"
-    patched_label = %{context[:label] | "name" => new_label_name}
-    expected_result = %{context[:expected_result] | name: new_label_name}
-    patch_label = %Gmail.Label{id: context[:label_id], name: new_label_name}
-    with_mock Gmail.HTTP, [patch: fn _at, _url, _data -> {:ok, patched_label} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:ok, label} = Gmail.Label.patch(patch_label)
-        assert expected_result == label
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.patch(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
-          %{
-            "id" => context[:label_id],
-            "name" => new_label_name
-          })
-      end
+    patched_label = %{label | "name" => new_label_name}
+    expected_result = %{expected_result | name: new_label_name}
+    patch_label = %Gmail.Label{id: label_id, name: new_label_name}
+    Bypass.expect bypass, fn conn ->
+      {:ok, body, _} = Plug.Conn.read_body(conn)
+      {:ok, body_params} = body |> Poison.decode
+      assert body_params == %{
+        "id" => label_id,
+        "name" => new_label_name
+      }
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "PATCH" == conn.method
+      {:ok, json} = Poison.encode(patched_label)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, label} = Gmail.Label.patch(patch_label)
+      assert expected_result == label
+      assert called Gmail.OAuth2.get_config
     end
   end
 
-  test "handles an error when patching a label", context do
+  test "handles an error when patching a label", %{
+    access_token_rec: access_token_rec,
+    bypass: bypass,
+    four_hundred_error: four_hundred_error,
+    four_hundred_error_content: four_hundred_error_content,
+    label_id: label_id
+  } do
     new_label_name = "Something Else"
-    patch_label = %Gmail.Label{id: context[:label_id], name: new_label_name}
-    with_mock Gmail.HTTP, [patch: fn _at, _url, _data -> {:ok, context[:four_hundred_error]} end] do
-      with_mock Gmail.OAuth2, [get_config: fn -> context[:access_token_rec] end] do
-        {:error, error_detail} = Gmail.Label.patch(patch_label)
-        assert context[:four_hundred_error_content] == error_detail
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.patch(context[:access_token],
-          Gmail.Base.base_url <> "users/me/labels/" <> context[:label_id],
-          %{
-            "id" => context[:label_id],
-            "name" => new_label_name
-          })
-      end
+    patch_label = %Gmail.Label{id: label_id, name: new_label_name}
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "" == conn.query_string
+      {:ok, json} = Poison.encode(four_hundred_error)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:error, error_detail} = Gmail.Label.patch(patch_label)
+      assert four_hundred_error_content == error_detail
+      assert called Gmail.OAuth2.get_config
     end
   end
 

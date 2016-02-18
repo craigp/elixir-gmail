@@ -29,7 +29,7 @@ defmodule Gmail.Base do
   """
   @spec do_put(String.t, map) :: {atom, map}
   def do_put(path, data) do
-    get_access_token |> HTTP.put(base_url <> path, data)
+    HTTP.put(base_url <> path, data)
   end
 
   @doc """
@@ -37,7 +37,7 @@ defmodule Gmail.Base do
   """
   @spec do_patch(String.t, map) :: {atom, map}
   def do_patch(path, data) do
-    get_access_token |> HTTP.patch(base_url <> path, data)
+    HTTP.patch(base_url <> path, data)
   end
 
   @doc """
@@ -45,7 +45,7 @@ defmodule Gmail.Base do
   """
   @spec do_delete(String.t) :: {atom, map}
   def do_delete(path) do
-    get_access_token |> HTTP.delete(base_url <> path)
+    HTTP.delete(base_url <> path)
   end
 
   @doc """
