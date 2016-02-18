@@ -40,11 +40,15 @@ defmodule Gmail.DraftTest do
         }
       }]
 
+    bypass = Bypass.open
+    Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
+
     {:ok, %{
         access_token: access_token,
         access_token_rec: access_token_rec,
         drafts: drafts,
-        expected_results: expected_results
+        expected_results: expected_results,
+        bypass: bypass
       }}
   end
 
@@ -55,14 +59,25 @@ defmodule Gmail.DraftTest do
 
   # end
 
-  test "lists all drafts", context do
-    with_mock Gmail.HTTP, [ get: fn _at, _url -> { :ok, context[:drafts] } end] do
-      with_mock Gmail.OAuth2, [ get_config: fn -> context[:access_token_rec] end ] do
-        {:ok, results} = Gmail.Draft.list
-        assert results == context[:expected_results]
-        assert called Gmail.OAuth2.get_config
-        assert called Gmail.HTTP.get(context[:access_token], Gmail.Base.base_url <> "users/me/drafts")
-      end
+  test "lists all drafts", %{
+    drafts: drafts,
+    access_token_rec: access_token_rec,
+    expected_results: expected_results,
+    access_token: access_token,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/drafts" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(drafts)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
+      {:ok, results} = Gmail.Draft.list
+      assert results == expected_results
+      assert called Gmail.OAuth2.get_config
     end
   end
 

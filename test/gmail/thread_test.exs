@@ -299,12 +299,10 @@ defmodule Gmail.ThreadTest do
     bypass: bypass,
     expected_search_results: expected_search_results,
     access_token_rec: access_token_rec,
-    threads: threads,
-    next_page_token: next_page_token
+    threads: threads
   } do
     email = "user@example.com"
     email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
-    requested_page_token = "435453455"
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email_encoded}/threads" == conn.request_path
       assert "" == conn.query_string

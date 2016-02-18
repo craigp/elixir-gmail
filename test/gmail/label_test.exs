@@ -65,12 +65,14 @@ defmodule Gmail.LabelTest do
     access_token_rec: access_token_rec,
     label_name: label_name,
     expected_result: expected_result,
-    bypass: bypass
+    bypass: bypass,
+    access_token: access_token
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/labels" == conn.request_path
       assert "" == conn.query_string
       assert "POST" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       {:ok, json} = Poison.encode(label)
       Plug.Conn.resp(conn, 200, json)
     end

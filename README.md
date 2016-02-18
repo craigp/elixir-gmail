@@ -7,7 +7,31 @@ You can find the hex package [here](https://hex.pm/packages/gmail), and the docs
 
 You can find documentation for Gmail's API at https://developers.google.com/gmail/api/
 
-### Client support is planned for:
+## Usage
+
+First, add the client to your `mix.exs` dependencies:
+
+```elixir
+def deps do
+  [{:gmail, "~> 0.0.17"}]
+end
+```
+
+Then run `$ mix do deps.get, compile` to download and compile your dependencies.
+
+Finally, add the `:gmail` application as your list of applications in `mix.exs`:
+
+```elixir
+def application do
+  [applications: [:logger, :gmail]]
+end
+```
+
+## Notes
+
+#### API Support
+
+Client support is planned for:
 
 * [x] Threads
 * [x] Messages
@@ -15,6 +39,8 @@ You can find documentation for Gmail's API at https://developers.google.com/gmai
 * [ ] Drafts
 * [ ] History
 * [ ] Attachments
+
+#### Auth
 
 As of now the library doesn't do the initial auth generation for you; you'll
 need to create an app on the [Google Developer
@@ -27,6 +53,9 @@ an expired access token for you. Take a look in the `dev.exs.sample` config
 file to see what your config should look like.
 
 ### TODO
-* [ ] Add format option when fetching threads or messages
+* [x] Stop mocking HTTP requests and use [Bypass](https://github.com/PSPDFKit-labs/bypass) instead
+* [x] Add format option when fetching threads
+* [ ] .. and messages
+* [ ] .. and drafts
 * [ ] Batched requests
 
