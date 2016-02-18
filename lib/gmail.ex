@@ -7,13 +7,29 @@ defmodule Gmail do
 
   You can find documentation for Gmail's API at https://developers.google.com/gmail/api/
 
-  ### Client support is planned for:
+  ## Usage
 
-  * [x] Threads
-  * [x] Messages
-  * [x] Labels
-  * [ ] Drafts
-  * [ ] History
+  First, add the client to your `mix.exs` dependencies:
+
+  ```elixir
+  def deps do
+  [{:gmail, "~> 0.0.17"}]
+  end
+  ```
+
+  Then run `$ mix do deps.get, compile` to download and compile your dependencies.
+
+  Finally, add the `:gmail` application as your list of applications in `mix.exs`:
+
+  ```elixir
+  def application do
+  [applications: [:logger, :gmail]]
+  end
+  ```
+
+  ## Notes
+
+  #### Auth
 
   As of now the library doesn't do the initial auth generation for you; you'll
   need to create an app on the [Google Developer

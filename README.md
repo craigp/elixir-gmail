@@ -53,6 +53,7 @@ an expired access token for you. Take a look in the `dev.exs.sample` config
 file to see what your config should look like.
 
 ### TODO
+
 * [x] Stop mocking HTTP requests and use [Bypass](https://github.com/PSPDFKit-labs/bypass) instead
 * [x] Add format option when fetching threads
 * [ ] .. and messages
