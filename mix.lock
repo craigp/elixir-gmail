@@ -13,6 +13,7 @@
   "hackney": {:hex, :hackney, "1.4.8"},
   "httpoison": {:hex, :httpoison, "0.8.1"},
   "idna": {:hex, :idna, "1.0.3"},
+  "inch_ex": {:hex, :inch_ex, "0.5.1"},
   "jsx": {:hex, :jsx, "2.6.2"},
   "meck": {:hex, :meck, "0.8.4"},
   "mimerl": {:hex, :mimerl, "1.0.2"},
