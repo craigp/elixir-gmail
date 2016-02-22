@@ -73,9 +73,9 @@ defmodule Gmail.DraftTest do
   # test "creates a new draft" do
   # end
 
-  # test "deletes a draft" do
+  test "deletes a draft" do
 
-  # end
+  end
 
   test "lists all drafts", %{
     drafts: drafts,

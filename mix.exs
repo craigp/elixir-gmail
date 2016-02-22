@@ -28,7 +28,8 @@ defmodule Gmail.Mixfile do
       {:ex_doc, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
       {:credo, "~> 0.2", only: :dev},
-      {:bypass, "~> 0.1", only: :test}
+      {:bypass, "~> 0.1", only: :test},
+      {:inch_ex, only: :docs}
     ]
   end
 
