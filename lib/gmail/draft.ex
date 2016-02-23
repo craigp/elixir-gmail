@@ -5,7 +5,7 @@ defmodule Gmail.Draft do
   """
 
   alias __MODULE__
-  alias Gmail.Message
+  alias Gmail.{Message, Thread}
   import Gmail.Base
 
   @doc """
@@ -63,6 +63,23 @@ defmodule Gmail.Draft do
         {:error, :not_found}
       nil ->
         :ok
+    end
+  end
+
+  @doc """
+  Sends the specified, existing draft to the recipients in the `To`, `Cc`, and `Bcc` headers.
+
+  > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/send
+  """
+  @spec send(String.t) :: {atom, Thread.t}
+  def send(id, user_id \\ "me") do
+    case do_post("users/#{user_id}/drafts/send", %{"id" => id}) do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        {:error, :not_found}
+      {:ok, %{"error" => detail}} ->
+        {:error, detail}
+      {:ok, %{"threadId" => thread_id}} ->
+        {:ok, %{thread_id: thread_id}}
     end
   end
 

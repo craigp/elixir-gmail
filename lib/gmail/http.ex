@@ -148,7 +148,9 @@ defmodule Gmail.HTTP do
 
   @spec post_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)
   defp post_with_headers(headers) do
-    fn(url, json) -> HTTPoison.post(url, json, headers) end
+    fn(url, json) ->
+      HTTPoison.post(url, json, headers)
+    end
   end
 
   @spec put_with_headers(list(tuple)) :: (String.t, String.t -> Response.t)

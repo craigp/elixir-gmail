@@ -42,6 +42,13 @@ Client support is planned for:
 * [x] Messages
 * [x] Labels
 * [ ] Drafts
+  * [x] `list`
+  * [x] `get`
+  * [x] `delete`
+  * [ ] `update`
+  * [ ] `create`
+  * [x] `send`
+  * [ ] `send` (with upload)
 * [ ] History
 * [ ] Attachments
 
