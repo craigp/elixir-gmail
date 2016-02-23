@@ -51,6 +51,21 @@ defmodule Gmail.Draft do
     end
   end
 
+  @doc """
+  Immediately and permanently deletes the specified draft. Does not simply trash it.
+
+  > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/delete
+  """
+  @spec delete(String.t) :: atom
+  def delete(id, user_id \\ "me") do
+    case do_delete("users/#{user_id}/drafts/#{id}") do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        {:error, :not_found}
+      nil ->
+        :ok
+    end
+  end
+
   @spec convert(map) :: Draft.t
   defp convert(%{"id" => id,
     "message" => %{"id" => message_id, "threadId" => thread_id}}) do

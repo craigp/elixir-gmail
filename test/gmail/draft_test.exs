@@ -73,8 +73,21 @@ defmodule Gmail.DraftTest do
   # test "creates a new draft" do
   # end
 
-  test "deletes a draft" do
-
+  test "deletes a draft", %{
+    draft_id: draft_id,
+    access_token_rec: access_token_rec,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/drafts/#{draft_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "DELETE" == conn.method
+      Plug.Conn.resp(conn, 200, "")
+    end
+    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
+      assert :ok == Gmail.Draft.delete(draft_id)
+      assert called Gmail.OAuth2.get_config
+    end
   end
 
   test "lists all drafts", %{
