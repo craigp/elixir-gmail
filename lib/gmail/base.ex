@@ -43,7 +43,7 @@ defmodule Gmail.Base do
   @doc """
   Performs an HTTP DELETE reauest.
   """
-  @spec do_delete(String.t) :: {atom, map}
+  @spec do_delete(String.t) :: {atom, map} | nil
   def do_delete(path) do
     HTTP.delete(base_url <> path)
   end
@@ -63,12 +63,6 @@ defmodule Gmail.Base do
         Application.put_env(:gmail, :api, %{url: @default_base_url})
         base_url
     end
-  end
-
-  @spec get_access_token() :: String.t
-  defp get_access_token do
-    %{access_token: access_token} = OAuth2.get_config
-    access_token
   end
 
 end

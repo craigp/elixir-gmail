@@ -11,15 +11,15 @@ defmodule Gmail.HTTP do
 
   #  Server API {{{ #
 
+  @doc false
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @doc false
   def init(:ok) do
     {:ok, %{}}
   end
-
-  @spec handle_call({atom, String.t}, pid, map) :: {atom, map, map}
 
   def handle_call({:get, url}, _from, state) do
     result =
@@ -110,7 +110,7 @@ defmodule Gmail.HTTP do
   @doc """
   Performs an HTTP DELETE request.
   """
-  @spec delete(String.t) :: {atom, map}
+  @spec delete(String.t) :: {atom, map} | nil
   def delete(url) do
     GenServer.call(__MODULE__, {:delete, url})
   end

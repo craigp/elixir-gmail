@@ -56,7 +56,7 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/delete
   """
-  @spec delete(String.t) :: atom
+  @spec delete(String.t) :: {atom, atom} | atom
   def delete(id, user_id \\ "me") do
     case do_delete("users/#{user_id}/drafts/#{id}") do
       {:ok, %{"error" => %{"code" => 404}}} ->
