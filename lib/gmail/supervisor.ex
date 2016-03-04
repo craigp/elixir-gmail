@@ -7,7 +7,8 @@ defmodule Gmail.Supervisor do
 
   def init(:ok) do
     children = [
-      worker(Gmail.HTTP, [])
+      worker(Gmail.HTTP, []),
+      worker(Gmail.OAuth2, [])
     ]
     supervise(children, strategy: :one_for_one)
   end

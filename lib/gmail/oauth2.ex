@@ -4,9 +4,9 @@ defmodule Gmail.OAuth2 do
   OAuth2 access token handling.
   """
 
+  use GenServer
   alias __MODULE__
   import Poison, only: [decode: 1]
-
   use Timex
 
   defstruct user_id: "",
@@ -16,8 +16,31 @@ defmodule Gmail.OAuth2 do
     refresh_token: "",
     expires_at: "",
     token_type: "Bearer"
-
   @type t :: %__MODULE__{}
+
+  #  Server API {{{ #
+
+  @doc false
+  def start_link, do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+
+  @doc false
+  def init(:ok) do
+    config = from_config_file
+    if access_token_expired?(config) do
+      {:ok, config} = refresh_access_token(config)
+    end
+    {:ok, %{config: config}}
+  end
+
+  def handle_call(:config, _from, %{config: config} = state) do
+    if access_token_expired?(config) do
+      {:ok, config} = refresh_access_token(config)
+      state = %{state | config: config}
+    end
+    {:reply, config, state}
+  end
+
+  #  }}} Server API #
 
   # @auth_url "https://accounts.google.com/o/oauth2/auth"
   @token_url "https://accounts.google.com/o/oauth2/token"
@@ -46,11 +69,7 @@ defmodule Gmail.OAuth2 do
   """
   @spec get_config() :: OAuth2.t
   def get_config do
-    config = from_config
-    if access_token_expired?(config) do
-      {:ok, config} = refresh_access_token(config)
-    end
-    config
+    GenServer.call(__MODULE__, :config)
   end
 
   @doc """
@@ -76,8 +95,8 @@ defmodule Gmail.OAuth2 do
     end
   end
 
-  @spec from_config() :: OAuth2.t
-  defp from_config do
+  @spec from_config_file() :: OAuth2.t
+  defp from_config_file do
     Map.merge(%OAuth2{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
   end
 

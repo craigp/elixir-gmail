@@ -12,14 +12,10 @@ defmodule Gmail.HTTP do
   #  Server API {{{ #
 
   @doc false
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
-  end
+  def start_link, do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
 
   @doc false
-  def init(:ok) do
-    {:ok, %{}}
-  end
+  def init(:ok), do: {:ok, %{}}
 
   def handle_call({:get, url}, _from, state) do
     result =
