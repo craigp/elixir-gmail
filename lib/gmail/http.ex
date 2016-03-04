@@ -76,7 +76,7 @@ defmodule Gmail.HTTP do
   """
   @spec post(String.t, map) :: {atom, map}
   def post(url, data) do
-    GenServer.call(__MODULE__, {:post, url, data})
+    GenServer.call(__MODULE__, {:post, url, data}, :infinity)
   end
 
   @doc """
@@ -84,7 +84,7 @@ defmodule Gmail.HTTP do
   """
   @spec put(String.t, map) :: {atom, map}
   def put(url, data) do
-    GenServer.call(__MODULE__, {:put, url, data})
+    GenServer.call(__MODULE__, {:put, url, data}, :infinity)
   end
 
   @doc """
@@ -92,7 +92,7 @@ defmodule Gmail.HTTP do
   """
   @spec patch(String.t, map) :: {atom, map}
   def patch(url, data) do
-    GenServer.call(__MODULE__, {:patch, url, data})
+    GenServer.call(__MODULE__, {:patch, url, data}, :infinity)
   end
 
   @doc """
@@ -100,7 +100,7 @@ defmodule Gmail.HTTP do
   """
   @spec get(String.t) :: {atom, map}
   def get(url) do
-    GenServer.call(__MODULE__, {:get, url})
+    GenServer.call(__MODULE__, {:get, url}, :infinity)
   end
 
   @doc """
@@ -108,7 +108,7 @@ defmodule Gmail.HTTP do
   """
   @spec delete(String.t) :: {atom, map} | nil
   def delete(url) do
-    GenServer.call(__MODULE__, {:delete, url})
+    GenServer.call(__MODULE__, {:delete, url}, :infinity)
   end
 
   #  }}} Client API #
