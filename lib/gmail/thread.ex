@@ -66,6 +66,14 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
+  @spec list(map) :: {atom, [Thread.t], String.t}
+  def list(params) when is_map(params), do: list("me", params)
+
+  @doc """
+  Lists the threads in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
+  """
   @spec list(String.t, map) :: {atom, [Thread.t], String.t}
   def list(user_id \\ "me", params \\ %{}) do
     if Enum.empty?(params) do

@@ -291,6 +291,25 @@ defmodule Gmail.ThreadTest do
     end
   end
 
+  test "properly sends the maxResults query parameter", %{
+    bypass: bypass,
+    access_token_rec: access_token_rec,
+    threads: threads
+  } do
+    max_results = 20
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/threads" == conn.request_path
+      assert "maxResults=#{max_results}" == conn.query_string
+      {:ok, json} = Poison.encode(threads)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      params = %{max_results: max_results}
+      {:ok, results, _page_token} = Gmail.Thread.list(params)
+      assert called Gmail.OAuth2.get_config
+    end
+  end
+
   test "gets a list of threads with a user and params without page token", %{
     bypass: bypass,
     expected_search_results: expected_search_results,
