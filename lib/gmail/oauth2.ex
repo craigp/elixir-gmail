@@ -19,7 +19,7 @@ defmodule Gmail.OAuth2 do
 
   @type t :: %__MODULE__{}
 
-  @auth_url "https://accounts.google.com/o/oauth2/auth"
+  # @auth_url "https://accounts.google.com/o/oauth2/auth"
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
   @scope "https://mail.google.com/"

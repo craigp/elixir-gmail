@@ -6,7 +6,7 @@ elixir-gmail
 [![hex.pm downloads](https://img.shields.io/hexpm/dt/gmail.svg)](https://hex.pm/packages/gmail)
 [![Inline docs](http://inch-ci.org/github/craigp/elixir-gmail.svg?branch=master&style=flat)](http://inch-ci.org/github/craigp/elixir-gmail)
 
-A simple Gmail REST API client for Elixir, mostly built as a learning exercise.
+A simple Gmail REST API client for Elixir.
 
 You can find the hex package [here](https://hex.pm/packages/gmail), and the docs [here](http://hexdocs.pm/gmail).
 
@@ -18,7 +18,7 @@ First, add the client to your `mix.exs` dependencies:
 
 ```elixir
 def deps do
-  [{:gmail, "~> 0.0.17"}]
+  [{:gmail, "~> 0.1"}]
 end
 ```
 

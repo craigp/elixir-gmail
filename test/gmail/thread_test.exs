@@ -136,9 +136,8 @@ defmodule Gmail.ThreadTest do
     expected_result: expected_result
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/threads/#{thread_id}" == conn.request_path
+      assert "/gmail/v1/users/#{email}/threads/#{thread_id}" == conn.request_path
       assert "format=full" == conn.query_string
       assert "GET" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
@@ -211,10 +210,9 @@ defmodule Gmail.ThreadTest do
     access_token_rec: access_token_rec,
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     query = "in:Inbox"
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/threads" == conn.request_path
+      assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "q=#{query}" == conn.query_string
       {:ok, json} = Poison.encode(search_results)
       Plug.Conn.resp(conn, 200, json)
@@ -255,9 +253,8 @@ defmodule Gmail.ThreadTest do
     threads: threads
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/threads" == conn.request_path
+      assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "" == conn.query_string
       {:ok, json} = Poison.encode(threads)
       Plug.Conn.resp(conn, 200, json)
@@ -278,10 +275,9 @@ defmodule Gmail.ThreadTest do
     next_page_token: next_page_token
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     requested_page_token = "435453455"
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/threads" == conn.request_path
+      assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "pageToken=#{requested_page_token}" == conn.query_string
       {:ok, json} = Poison.encode(threads)
       Plug.Conn.resp(conn, 200, json)
@@ -302,9 +298,8 @@ defmodule Gmail.ThreadTest do
     threads: threads
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/threads" == conn.request_path
+      assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "" == conn.query_string
       {:ok, json} = Poison.encode(threads)
       Plug.Conn.resp(conn, 200, json)

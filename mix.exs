@@ -3,12 +3,12 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.0.18",
+     version: "0.1.0",
      elixir: "~> 1.2",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test],
-     description: "A simple Gmail REST API client for Elixir, mostly built as a learning exercise",
+     description: "A simple Gmail REST API client for Elixir",
      package: package]
   end
 
@@ -20,16 +20,16 @@ defmodule Gmail.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.8"},
-      {:poison, "~> 1.5"},
-      {:timex, "~> 0.19"},
+      {:poison, "~> 2.1"},
+      {:timex, "~> 1.0"},
       {:mock, "~> 0.1", only: :test},
-      {:excoveralls, "~> 0.4", only: :test},
+      {:excoveralls, "~> 0.5", only: :test},
       {:earmark, "~> 0.2", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
       {:dialyxir, "~> 0.3", only: :dev},
-      {:credo, "~> 0.2", only: :dev},
+      {:credo, "~> 0.3", only: :dev},
       {:bypass, "~> 0.1", only: :test},
-      {:inch_ex, only: :docs}
+      {:inch_ex, "~> 0.5", only: :docs}
     ]
   end
 
@@ -39,7 +39,8 @@ defmodule Gmail.Mixfile do
       files: ["lib", "mix.exs", "README*"],
       licenses: ["MIT"],
       maintainers: ["Craig Paterson"],
-      links: %{"Github" => "https://github.com/craigp/elixir-gmail"}]
+      links: %{"Github" => "https://github.com/craigp/elixir-gmail"}
+    ]
   end
 
 end

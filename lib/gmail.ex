@@ -1,7 +1,7 @@
 defmodule Gmail do
 
   @moduledoc """
-  A simple Gmail REST API client for Elixir, mostly built as a learning exercise.
+  A simple Gmail REST API client for Elixir.
 
   You can find the hex package [here](https://hex.pm/packages/gmail), and the docs [here](http://hexdocs.pm/gmail).
 
@@ -13,7 +13,7 @@ defmodule Gmail do
 
   ```elixir
   def deps do
-  [{:gmail, "~> 0.0.17"}]
+    [{:gmail, "~> 0.0.17"}]
   end
   ```
 
@@ -23,7 +23,7 @@ defmodule Gmail do
 
   ```elixir
   def application do
-  [applications: [:logger, :gmail]]
+    [applications: [:logger, :gmail]]
   end
   ```
 

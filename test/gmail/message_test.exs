@@ -110,9 +110,8 @@ defmodule Gmail.MessageTest do
     bypass: bypass
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/messages/#{message_id}" == conn.request_path
+      assert "/gmail/v1/users/#{email}/messages/#{message_id}" == conn.request_path
       assert "format=full" == conn.query_string
       {:ok, json} = Poison.encode(message)
       Plug.Conn.resp(conn, 200, json)
@@ -131,9 +130,8 @@ defmodule Gmail.MessageTest do
     message_not_found: message_not_found
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/messages/#{message_id}" == conn.request_path
+      assert "/gmail/v1/users/#{email}/messages/#{message_id}" == conn.request_path
       assert "format=full" == conn.query_string
       {:ok, json} = Poison.encode(message_not_found)
       Plug.Conn.resp(conn, 200, json)
@@ -151,9 +149,8 @@ defmodule Gmail.MessageTest do
     four_hundred_error: four_hundred_error
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/messages/#{message_id}" == conn.request_path
+      assert "/gmail/v1/users/#{email}/messages/#{message_id}" == conn.request_path
       assert "format=full" == conn.query_string
       {:ok, json} = Poison.encode(four_hundred_error)
       Plug.Conn.resp(conn, 200, json)
@@ -192,9 +189,8 @@ defmodule Gmail.MessageTest do
     bypass: bypass
   } do
     email = "user@example.com"
-    email_encoded = "user%40example.com" # for some reason URI.encode/1 doesn't encode the @
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/#{email_encoded}/messages" == conn.request_path
+      assert "/gmail/v1/users/#{email}/messages" == conn.request_path
       assert "q=in:Inbox" == conn.query_string
       {:ok, json} = Poison.encode(%{"messages" => [message]})
       Plug.Conn.resp(conn, 200, json)
