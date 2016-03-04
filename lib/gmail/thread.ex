@@ -51,14 +51,7 @@ defmodule Gmail.Thread do
   """
   @spec search(String.t | String.t, String.t) :: {atom, [Thread.t]}
   def search(query, user_id \\ "me") do
-    case do_get("users/#{user_id}/threads?q=#{query}") do
-      {:ok, %{"threads" => threads}} ->
-        {:ok, Enum.map(
-          threads,
-          fn(%{"historyId" => history_id, "id" => id, "snippet" => snippet}) ->
-            %Thread{id: id, history_id: history_id, snippet: snippet}
-          end)}
-    end
+    list(user_id, %{q: query})
   end
 
   @doc """
@@ -79,13 +72,16 @@ defmodule Gmail.Thread do
     if Enum.empty?(params) do
       do_list "users/#{user_id}/threads"
     else
-      query = %{}
-      if Map.has_key?(params, :page_token) do
-        query = Map.put(query, "pageToken", params[:page_token])
-      end
-      if Map.has_key?(params, :max_results) do
-        query = Map.put(query, "maxResults", params[:max_results])
-      end
+      available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
+      query =
+        Map.keys(params)
+        |> Enum.filter(fn key -> key in available_options end)
+        |> Enum.reduce(Map.new, fn key, query ->
+          IO.puts "using option #{key}"
+          stringKey = Gmail.Helper.camelize(key)
+          IO.puts "stringKey #{stringKey}"
+          Map.put(query, stringKey, params[key])
+        end)
       if Enum.empty?(query) do
         list(user_id)
       else
@@ -98,11 +94,23 @@ defmodule Gmail.Thread do
   defp do_list(url) do
     case do_get(url) do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-        threads = Enum.map(raw_threads,
-          fn(%{"id" => id, "historyId" => history_id, "snippet" => snippet}) ->
-            %Thread{id: id, history_id: history_id, snippet: snippet}
+        # threads = Enum.map(raw_threads,
+        #   fn(%{"id" => id, "historyId" => history_id, "snippet" => snippet}) ->
+        #     %Thread{id: id, history_id: history_id, snippet: snippet}
+        #   end)
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            Gmail.Helper.atomise_keys(thread)
           end)
         {:ok, threads, next_page_token}
+      {:ok, %{"threads" => raw_threads}} ->
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            Gmail.Helper.atomise_keys(thread)
+          end)
+        {:ok, threads}
     end
   end
 
