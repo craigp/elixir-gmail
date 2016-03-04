@@ -75,6 +75,9 @@ defmodule Gmail.Thread do
       if Map.has_key?(params, :page_token) do
         query = Map.put(query, "pageToken", params[:page_token])
       end
+      if Map.has_key?(params, :max_results) do
+        query = Map.put(query, "maxResults", params[:max_results])
+      end
       if Enum.empty?(query) do
         list(user_id)
       else
