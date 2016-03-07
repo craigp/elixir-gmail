@@ -220,6 +220,34 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:label, {:update, label}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Label.update(label)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, raw_label} ->
+          {:ok, Label.convert(raw_label)}
+      end
+    {:reply, result, state}
+  end
+
+  def handle_call({:label, {:patch, label}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Label.patch(label)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, raw_label} ->
+          {:ok, Label.convert(raw_label)}
+      end
+    {:reply, result, state}
+  end
+
   #  }}} Labels #
 
   #  }}} Server API #
@@ -312,6 +340,14 @@ defmodule Gmail.User do
 
   def label(:delete, user_id, label_id) do
     GenServer.call(String.to_atom(user_id), {:label, {:delete, label_id}}, :infinity)
+  end
+
+  def label(:update, user_id, %Label{} = label) do
+    GenServer.call(String.to_atom(user_id), {:label, {:update, label}}, :infinity)
+  end
+
+  def label(:patch, user_id, %Label{} = label) do
+    GenServer.call(String.to_atom(user_id), {:label, {:patch, label}}, :infinity)
   end
 
   #  }}} Labels #

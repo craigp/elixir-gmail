@@ -38,13 +38,8 @@ defmodule Gmail.Label do
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/update
   """
   @spec update(Label.t, String.t) :: {atom, Label.t}
-  def update(label, user_id \\ "me") do
-    case do_put("users/#{user_id}/labels/#{label.id}", convert_for_update(label)) do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_label} ->
-        {:ok, convert(raw_label)}
-    end
+  def update(user_id, %Label{id: id} = label) do
+    {:put, base_url, "users/#{user_id}/labels/#{id}", convert_for_update(label)}
   end
 
   @doc """
@@ -53,13 +48,8 @@ defmodule Gmail.Label do
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/patch
   """
   @spec patch(Label.t, String.t) :: {atom, Label.t}
-  def patch(label, user_id \\ "me") do
-    case do_patch("users/#{user_id}/labels/#{label.id}", convert_for_patch(label)) do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_label} ->
-        {:ok, convert(raw_label)}
-    end
+  def patch(user_id, %Label{id: id} = label) do
+    {:patch, base_url, "users/#{user_id}/labels/#{id}", convert_for_patch(label)}
   end
 
   @doc """
