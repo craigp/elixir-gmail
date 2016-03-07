@@ -66,6 +66,19 @@ defmodule Gmail.ThreadTest do
         }]
     }
 
+    list_results = %{"threads" => [%{
+          "id"         => thread_id,
+          "historyId"  => "2435435",
+          "snippet"    => "Thread #1"
+        },
+        %{
+          "id"         => "6576897",
+          "historyId"  => "2435435",
+          "snippet"    => "Thread #1"
+        }],
+      "nextPageToken" => next_page_token
+    }
+
     expected_search_results = [
       %Gmail.Thread{
         id: thread_id,
@@ -100,7 +113,8 @@ defmodule Gmail.ThreadTest do
       expected_search_results: expected_search_results,
       thread_not_found: %{"error" => %{"code" => 404}},
       four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}},
-      bypass: bypass
+      bypass: bypass,
+      list_results: list_results
     }
   end
 
@@ -114,7 +128,7 @@ defmodule Gmail.ThreadTest do
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads/#{thread_id}" == conn.request_path
-      assert "format=full" == conn.query_string
+      assert "" == conn.query_string
       assert "GET" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       {:ok, json} = Poison.encode(thread)
@@ -138,7 +152,7 @@ defmodule Gmail.ThreadTest do
     email = "user@example.com"
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email}/threads/#{thread_id}" == conn.request_path
-      assert "format=full" == conn.query_string
+      assert "" == conn.query_string
       assert "GET" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       {:ok, json} = Poison.encode(thread)
@@ -146,6 +160,52 @@ defmodule Gmail.ThreadTest do
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
       {:ok, thread} = Gmail.Thread.get(thread_id, email)
+      assert expected_result == thread
+      assert called Gmail.OAuth2.get_config
+    end
+  end
+
+  test "gets a thread, specifying the full format", %{
+    thread: thread,
+    thread_id: thread_id,
+    access_token_rec: access_token_rec,
+    access_token: access_token,
+    expected_result: expected_result,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/threads/#{thread_id}" == conn.request_path
+      assert "format=full" == conn.query_string
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, thread} = Gmail.Thread.get(thread_id, %{format: "full"})
+      assert expected_result == thread
+      assert called Gmail.OAuth2.get_config
+    end
+  end
+
+  test "gets a thread, specifying the metadata format, with headers", %{
+    thread: thread,
+    thread_id: thread_id,
+    access_token_rec: access_token_rec,
+    access_token: access_token,
+    expected_result: expected_result,
+    bypass: bypass
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/me/threads/#{thread_id}" == conn.request_path
+      assert URI.encode_query(%{"format" => "metadata", "metadataHeaders" => "header1,header1"}) == conn.query_string
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
+      {:ok, thread} = Gmail.Thread.get(thread_id, %{format: "metadata", metadata_headers: ["header1", "header1"]})
       assert expected_result == thread
       assert called Gmail.OAuth2.get_config
     end
@@ -191,7 +251,7 @@ defmodule Gmail.ThreadTest do
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads" == conn.request_path
-      assert "q=in:Inbox" == conn.query_string
+      assert URI.encode_query(%{"q" => "in:Inbox"}) == conn.query_string
       assert "GET" == conn.method
       {:ok, json} = Poison.encode(search_results)
       Plug.Conn.resp(conn, 200, json)
@@ -213,12 +273,12 @@ defmodule Gmail.ThreadTest do
     query = "in:Inbox"
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email}/threads" == conn.request_path
-      assert "q=#{query}" == conn.query_string
+      assert URI.encode_query(%{"q" => query}) == conn.query_string
       {:ok, json} = Poison.encode(search_results)
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:ok, results} = Gmail.Thread.search(query, email)
+      {:ok, results} = Gmail.Thread.search(email, query)
       assert expected_search_results === results
       assert called Gmail.OAuth2.get_config
     end
@@ -228,19 +288,19 @@ defmodule Gmail.ThreadTest do
     bypass: bypass,
     expected_search_results: expected_search_results,
     access_token_rec: access_token_rec,
-    threads: threads,
+    list_results: list_results,
     next_page_token: next_page_token
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads" == conn.request_path
       assert "" == conn.query_string
       assert "GET" == conn.method
-      {:ok, json} = Poison.encode(threads)
+      {:ok, json} = Poison.encode(list_results)
       Plug.Conn.resp(conn, 200, json)
     end
       with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
         {:ok, results, page_token} = Gmail.Thread.list
-        assert expected_search_results === results
+        assert expected_search_results == results
         assert page_token == next_page_token
         assert called Gmail.OAuth2.get_config
       end
@@ -250,13 +310,13 @@ defmodule Gmail.ThreadTest do
     bypass: bypass,
     expected_search_results: expected_search_results,
     access_token_rec: access_token_rec,
-    threads: threads
+    list_results: list_results
   } do
     email = "user@example.com"
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "" == conn.query_string
-      {:ok, json} = Poison.encode(threads)
+      {:ok, json} = Poison.encode(list_results)
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
@@ -271,7 +331,7 @@ defmodule Gmail.ThreadTest do
     bypass: bypass,
     expected_search_results: expected_search_results,
     access_token_rec: access_token_rec,
-    threads: threads,
+    list_results: list_results,
     next_page_token: next_page_token
   } do
     email = "user@example.com"
@@ -279,7 +339,7 @@ defmodule Gmail.ThreadTest do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "pageToken=#{requested_page_token}" == conn.query_string
-      {:ok, json} = Poison.encode(threads)
+      {:ok, json} = Poison.encode(list_results)
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
@@ -294,13 +354,13 @@ defmodule Gmail.ThreadTest do
   test "properly sends the maxResults query parameter", %{
     bypass: bypass,
     access_token_rec: access_token_rec,
-    threads: threads
+    list_results: list_results
   } do
     max_results = 20
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/me/threads" == conn.request_path
       assert "maxResults=#{max_results}" == conn.query_string
-      {:ok, json} = Poison.encode(threads)
+      {:ok, json} = Poison.encode(list_results)
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
@@ -310,22 +370,22 @@ defmodule Gmail.ThreadTest do
     end
   end
 
-  test "gets a list of threads with a user and params without page token", %{
+  test "gets a list of threads with a user and params without page token (ignoring invalid param)", %{
     bypass: bypass,
     expected_search_results: expected_search_results,
     access_token_rec: access_token_rec,
-    threads: threads
+    list_results: list_results
   } do
     email = "user@example.com"
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{email}/threads" == conn.request_path
       assert "" == conn.query_string
-      {:ok, json} = Poison.encode(threads)
+      {:ok, json} = Poison.encode(list_results)
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
       params = %{page_token_yarr: "345345345"}
-      {:ok, results, _next_page_token} = Gmail.Thread.list(email, params)
+      {:ok, results, _page_token} = Gmail.Thread.list(email, params)
       assert expected_search_results === results
       assert called Gmail.OAuth2.get_config
     end
