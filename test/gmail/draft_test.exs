@@ -7,6 +7,7 @@ defmodule Gmail.DraftTest do
 
   setup do
 
+    user_id = "user@example.com"
     access_token = "xxx-xxx-xxx"
     access_token_rec = %{access_token: access_token}
 
@@ -57,6 +58,10 @@ defmodule Gmail.DraftTest do
     bypass = Bypass.open
     Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
 
+    with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {access_token, 100000000000000} end] do
+      {:ok, _server_pid} = Gmail.User.start(user_id, "dummy-refresh-token")
+    end
+
     {:ok, %{
         draft_id: draft_id,
         draft: draft,
@@ -67,7 +72,8 @@ defmodule Gmail.DraftTest do
         expected_results: expected_results,
         draft_not_found: %{"error" => %{"code" => 404}},
         bypass: bypass,
-        send_response: %{"id" => "1530e43ba9b4c6e0", "labelIds" => ["SENT"], "threadId" => "14c99e3025c516a0"}
+        send_response: %{"id" => "1530e43ba9b4c6e0", "labelIds" => ["SENT"], "threadId" => "14c99e3025c516a0"},
+        user_id: user_id
       }}
   end
 
@@ -76,14 +82,15 @@ defmodule Gmail.DraftTest do
     bypass: bypass,
     access_token_rec: access_token_rec,
     access_token: access_token,
-    send_response: send_response
+    send_response: send_response,
+    user_id: user_id
   } do
     data = %{"id" => draft_id}
     Bypass.expect bypass, fn conn ->
       {:ok, body, _} = Plug.Conn.read_body(conn)
       {:ok, body_params} = body |> Poison.decode
       assert body_params == data
-      assert "/gmail/v1/users/me/drafts/send" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/send" == conn.request_path
       assert "" == conn.query_string
       assert "POST" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
@@ -101,10 +108,11 @@ defmodule Gmail.DraftTest do
     bypass: bypass,
     access_token_rec: access_token_rec,
     access_token: access_token,
-    draft_not_found: draft_not_found
+    draft_not_found: draft_not_found,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts/send" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/send" == conn.request_path
       assert "" == conn.query_string
       assert "POST" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
@@ -123,10 +131,11 @@ defmodule Gmail.DraftTest do
   test "deletes a draft", %{
     draft_id: draft_id,
     access_token_rec: access_token_rec,
-    bypass: bypass
+    bypass: bypass,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts/#{draft_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
       assert "" == conn.query_string
       assert "DELETE" == conn.method
       Plug.Conn.resp(conn, 200, "")
@@ -141,10 +150,11 @@ defmodule Gmail.DraftTest do
     draft_id: draft_id,
     access_token_rec: access_token_rec,
     bypass: bypass,
-    draft_not_found: draft_not_found
+    draft_not_found: draft_not_found,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts/#{draft_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
       assert "" == conn.query_string
       assert "DELETE" == conn.method
       {:ok, json} = Poison.encode(draft_not_found)
@@ -158,24 +168,21 @@ defmodule Gmail.DraftTest do
 
   test "lists all drafts", %{
     drafts: drafts,
-    access_token_rec: access_token_rec,
     expected_results: expected_results,
     access_token: access_token,
-    bypass: bypass
+    bypass: bypass,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts" == conn.request_path
       assert "" == conn.query_string
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       assert "GET" == conn.method
       {:ok, json} = Poison.encode(drafts)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
-      {:ok, results} = Gmail.Draft.list
-      assert results == expected_results
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, results} = Gmail.User.drafts(user_id)
+    assert results == expected_results
   end
 
   # test "updates a draft" do
@@ -187,10 +194,11 @@ defmodule Gmail.DraftTest do
     draft_id: draft_id,
     access_token_rec: access_token_rec,
     expected_result: expected_result,
-    bypass: bypass
+    bypass: bypass,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts/#{draft_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
       assert "format=full" == conn.query_string
       {:ok, json} = Poison.encode(draft)
       Plug.Conn.resp(conn, 200, json)
@@ -206,10 +214,11 @@ defmodule Gmail.DraftTest do
     draft_id: draft_id,
     access_token_rec: access_token_rec,
     bypass: bypass,
-    draft_not_found: draft_not_found
+    draft_not_found: draft_not_found,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/drafts/#{draft_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
       assert "format=full" == conn.query_string
       {:ok, json} = Poison.encode(draft_not_found)
       Plug.Conn.resp(conn, 200, json)

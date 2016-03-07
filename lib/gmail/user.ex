@@ -5,7 +5,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, Helper, HTTP, Label}
+  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft}
 
   #  Server API {{{ #
 
@@ -164,7 +164,7 @@ defmodule Gmail.User do
         {:ok, %{"labels" => raw_labels}} ->
           {:ok, Enum.map(raw_labels, &Label.convert/1)}
       end
-      {:reply, result, state}
+    {:reply, result, state}
   end
 
   def handle_call({:label, {:get, label_id}}, _from, %{user_id: user_id} = state) do
@@ -192,7 +192,7 @@ defmodule Gmail.User do
       |> Label.create(label_name)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"errors" => errors}}} ->
+        {:ok, %{"error" => %{"errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -209,9 +209,9 @@ defmodule Gmail.User do
       |> Label.delete(label_id)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, _} ->
@@ -250,12 +250,34 @@ defmodule Gmail.User do
 
   #  }}} Labels #
 
+  #  Drafts {{{ #
+
+  def handle_call({:draft, {:list}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Draft.list
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, %{"resultSizeEstimate" => 0}} ->
+          {:ok, []}
+        {:ok, %{"drafts" => raw_drafts}} ->
+          {:ok, Enum.map(raw_drafts, &Draft.convert/1)}
+      end
+    {:reply, result, state}
+  end
+
+  #  }}} Drafts #
+
   #  }}} Server API #
 
   #  Client API {{{ #
 
+  #  Server control {{{ #
+
   @doc """
-  Starts a process for dealing with the mail belonging to a specific user.
+  Starts the process for the specified user.
   """
   def start(user_id, refresh_token) do
     case Supervisor.start_child(Gmail.UserManager, [{user_id, refresh_token}]) do
@@ -268,12 +290,17 @@ defmodule Gmail.User do
     end
   end
 
+  @doc """
+  Stops the process for the specified user.
+  """
   def stop(user_id) do
     :ok =
       user_id
       |> String.to_atom
       |> GenServer.stop(:normal)
   end
+
+  #  }}} Server control #
 
   #  Threads {{{ #
 
@@ -351,6 +378,18 @@ defmodule Gmail.User do
   end
 
   #  }}} Labels #
+
+  #  Drafts {{{ #
+
+  def drafts(user_id) do
+    GenServer.call(String.to_atom(user_id), {:draft, {:list}}, :infinity)
+  end
+
+  def draft(user_id, draft_id) do
+    GenServer.call(String.to_atom(user_id), {:draft, {:get, draft_id}}, :infinity)
+  end
+
+  #  }}} Drafts #
 
   #  }}} Client API #
 

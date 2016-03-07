@@ -42,13 +42,8 @@ defmodule Gmail.Draft do
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/list
   """
   @spec list(String.t) :: {atom, [Draft.t]}
-  def list(user_id  \\ "me") do
-    case do_get("users/#{user_id}/drafts") do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, %{"drafts" => raw_drafts}} ->
-        {:ok, Enum.map(raw_drafts, &convert/1)}
-    end
+  def list(user_id) do
+    {:get, base_url, "users/#{user_id}/drafts"}
   end
 
   @doc """
@@ -84,7 +79,7 @@ defmodule Gmail.Draft do
   end
 
   @spec convert(map) :: Draft.t
-  defp convert(%{"id" => id,
+  def convert(%{"id" => id,
     "message" => %{"id" => message_id, "threadId" => thread_id}}) do
     %Draft{
       id: id,
