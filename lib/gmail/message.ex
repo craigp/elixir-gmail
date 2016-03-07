@@ -27,9 +27,31 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
-  def get(user_id, message_id) do
-    {:get, base_url, "users/#{user_id}/messages/#{message_id}?format=full"}
+  @spec get(String.t, String.t, map) :: {atom, Message.t} | {atom, String.t} | {atom, map}
+  def get(user_id, message_id, params) do
+    path = if Enum.empty?(params) do
+      "users/#{user_id}/messages/#{message_id}"
+    else
+      available_options = [:format, :metadata_headers]
+      query =
+        Map.keys(params)
+        |> Enum.filter(fn key -> key in available_options end)
+        |> Enum.reduce(Map.new, fn key, query ->
+          stringKey = Gmail.Helper.camelize(key)
+          val = if is_list(params[key]) do
+            Enum.join(params[key], ",")
+          else
+            params[key]
+          end
+          Map.put(query, stringKey, val)
+        end)
+      if Enum.empty?(query) do
+        "users/#{user_id}/messages/#{message_id}"
+      else
+        "users/#{user_id}/messages/#{message_id}?#{URI.encode_query(query)}"
+      end
+    end
+    {:get, base_url, path}
   end
 
   @doc """
@@ -37,15 +59,9 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec search(String.t | String.t, String.t) :: {atom, [Message.t]}
-  def search(query, user_id \\ "me") do
-    case do_get("users/#{user_id}/messages?q=#{query}") do
-      {:ok, %{"messages" => msgs}} ->
-        {:ok, Enum.map(
-          msgs, fn(%{"id" => id, "threadId" => thread_id}) ->
-            %Message{id: id, thread_id: thread_id}
-          end)}
-    end
+  @spec search(String.t, String.t, map) :: {atom, [Message.t]}
+  def search(user_id, query, params) when is_binary(query) do
+    list(user_id, Map.put(params, :q, query))
   end
 
   @doc """
@@ -53,9 +69,26 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec list(String.t) :: {atom, [Message.t]}
-  def list(user_id \\ "me") do
-    {:get, base_url, "users/#{user_id}/messages"}
+  @spec list(String.t, map) :: {atom, [Message.t]}
+  def list(user_id, params) do
+    path = if Enum.empty?(params) do
+      "users/#{user_id}/messages"
+    else
+      available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
+      query =
+        Map.keys(params)
+        |> Enum.filter(fn key -> key in available_options end)
+        |> Enum.reduce(Map.new, fn key, query ->
+          stringKey = Gmail.Helper.camelize(key)
+          Map.put(query, stringKey, params[key])
+        end)
+      if Enum.empty?(query) do
+        "users/#{user_id}/messages"
+      else
+        "users/#{user_id}/messages?#{URI.encode_query(query)}"
+      end
+    end
+    {:get, base_url, path}
   end
 
   @doc """

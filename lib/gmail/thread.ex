@@ -5,7 +5,6 @@ defmodule Gmail.Thread do
   """
 
   alias __MODULE__
-  alias Gmail.Message
   import Gmail.Base
 
   @doc """
@@ -23,31 +22,7 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
-  @spec get(String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
-  def get(id), do: get(id, %{})
-
-  @doc """
-  Gets the specified thread.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
-  """
-  @spec get(String.t, map) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
-  def get(id, params) when is_map(params), do: get(id, "me", params)
-
-  @doc """
-  Gets the specified thread.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
-  """
-  @spec get(String.t, String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
-  def get(id, user_id) when is_binary(user_id), do: get(id, user_id, %{})
-
-  @doc """
-  Gets the specified thread.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
-  """
-  @spec get(String.t | String.t, String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
+  @spec get(String.t, String.t, map) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
   def get(user_id, thread_id, params) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads/#{thread_id}"
@@ -79,16 +54,10 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec search(String.t | String.t, String.t) :: {atom, [Thread.t]}
-  def search(user_id, query) when is_binary(query), do: list(user_id, %{q: query})
-
-  @doc """
-  Lists the threads in the user's mailbox.
-
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
-  """
-  @spec list(map) :: {atom, [Thread.t], String.t}
-  def list(params) when is_map(params), do: list("me", params)
+  @spec search(String.t, String.t, map) :: {atom, [Thread.t]}
+  def search(user_id, query, params) when is_binary(query) do
+    list(user_id, Map.put(params, :q, query))
+  end
 
   @doc """
   Lists the threads in the user's mailbox.
@@ -96,7 +65,7 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec list(String.t, map) :: {atom, [Thread.t], String.t}
-  def list(user_id, params \\ %{}) when is_binary(user_id) do
+  def list(user_id, params) when is_binary(user_id) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads"
     else

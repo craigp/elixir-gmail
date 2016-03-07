@@ -36,11 +36,32 @@ end
 
 #### API Support
 
-Client support is planned for:
-
-* [x] Threads
-* [x] Messages
+* [ ] Threads
+  * [x] `get`
+  * [x] `list`
+  * [ ] `modify`
+  * [ ] `delete`
+  * [ ] `trash`
+  * [ ] `untrash`
+* [ ] Messages
+  * [ ] `delete`
+  * [x] `get`
+  * [ ] `insert`
+  * [x] `list`
+  * [ ] `modify`
+  * [ ] `send`
+  * [ ] `trash`
+  * [ ] `untrash`
+  * [ ] `import`
+  * [ ] `batchDelete`
 * [x] Labels
+  * [x] `create`
+  * [x] `delete`
+  * [x] `list`
+  * [x] `update`
+  * [x] `get`
+  * [x] `update`
+  * [x] `patch`
 * [ ] Drafts
   * [x] `list`
   * [x] `get`

@@ -15,7 +15,6 @@ defmodule Gmail.User do
 
   @doc false
   def init({user_id, refresh_token}) do
-    # fetch a new access token for this user when the server starts
     {access_token, expires_at} = Gmail.OAuth2.refresh_access_token(user_id, refresh_token)
     state = Map.new(user_id: user_id, refresh_token: refresh_token,
       access_token: access_token, expires_at: expires_at)
@@ -47,6 +46,7 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  @doc false
   def handle_call({:thread, {:get, thread_id, params}}, _from, %{user_id: user_id} = state) do
     result =
       user_id
@@ -70,22 +70,24 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
-  def handle_call({:message, {:list, _params}}, _from, %{user_id: user_id} = state) do
+  @doc false
+  def handle_call({:message, {:list, params}}, _from, %{user_id: user_id} = state) do
     result =
       user_id
-      |> Message.list
+      |> Message.list(params)
       |> HTTP.execute(state)
       |> case do
         {:ok, %{"messages" => msgs}} ->
           {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
       end
-      {:reply, result, state}
+    {:reply, result, state}
   end
 
-  def handle_call({:message, {:get, message_id, _params}}, _from, %{user_id: user_id} = state) do
+  @doc false
+  def handle_call({:message, {:get, message_id, params}}, _from, %{user_id: user_id} = state) do
     result  =
       user_id
-      |> Message.get(message_id)
+      |> Message.get(message_id, params)
       |> HTTP.execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}}} ->
@@ -98,17 +100,48 @@ defmodule Gmail.User do
         {:ok, raw_message} ->
           {:ok, Message.convert(raw_message)}
       end
-      {:reply, result, state}
+    {:reply, result, state}
   end
 
+  @doc false
   def handle_call({:search, :thread, query, params}, _from, %{user_id: user_id} = state) do
-    {:reply, nil, state}
+    result =
+      user_id
+      |> Thread.search(query, params)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+          threads =
+            raw_threads
+            |> Enum.map(fn thread ->
+              struct(Thread, Helper.atomise_keys(thread))
+            end)
+          {:ok, threads, next_page_token}
+        {:ok, %{"threads" => raw_threads}} ->
+          threads =
+            raw_threads
+            |> Enum.map(fn thread ->
+              struct(Thread, Helper.atomise_keys(thread))
+            end)
+          {:ok, threads}
+      end
+    {:reply, result, state}
   end
 
+  @doc false
   def handle_call({:search, :message, query, params}, _from, %{user_id: user_id} = state) do
-    {:reply, nil, state}
+    result =
+      user_id
+      |> Message.search(query, params)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"messages" => msgs}} ->
+          {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+      end
+    {:reply, result, state}
   end
 
+  @doc false
   def handle_call({:label, {:list}}, _from, %{user_id: user_id} = state) do
     result =
       user_id
@@ -171,34 +204,49 @@ defmodule Gmail.User do
   Lists the threads in the specified user's mailbox.
   """
   def threads(user_id, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:thread, {:list, params}})
+    GenServer.call(String.to_atom(user_id), {:thread, {:list, params}}, :infinity)
   end
 
   @doc """
   Gets a thread from the specified user's mailbox.
   """
   def thread(user_id, thread_id, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:thread, {:get, thread_id, params}})
+    GenServer.call(String.to_atom(user_id), {:thread, {:get, thread_id, params}}, :infinity)
   end
 
+  @doc """
+  Lists the messages in the specified user's mailbox.
+  """
   def messages(user_id, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:message, {:list, params}})
+    GenServer.call(String.to_atom(user_id), {:message, {:list, params}}, :infinity)
   end
 
+  @doc """
+  Gets a message from the specified user's mailbox.
+  """
   def message(user_id, message_id, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}})
+    GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}}, :infinity)
   end
 
+  @doc """
+  Searches for messages or threads in the specified user's mailbox.
+  """
   def search(user_id, thread_or_message, query, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:search, thread_or_message, query, params})
+    GenServer.call(String.to_atom(user_id), {:search, thread_or_message, query, params}, :infinity)
   end
 
+  @doc """
+  Lists all labels in the specified user's mailbox.
+  """
   def labels(user_id) do
-    GenServer.call(String.to_atom(user_id), {:label, {:list}})
+    GenServer.call(String.to_atom(user_id), {:label, {:list}}, :infinity)
   end
 
+  @doc """
+  Gets a label from the specified user's mailbox.
+  """
   def label(user_id, label_id) do
-    GenServer.call(String.to_atom(user_id), {:label, {:get, label_id}})
+    GenServer.call(String.to_atom(user_id), {:label, {:get, label_id}}, :infinity)
   end
 
   #  }}} Client API #

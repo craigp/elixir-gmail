@@ -103,8 +103,7 @@ defmodule Gmail.Label do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
-  # @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
-  # @spec list() :: {atom, [Label.t]} | {atom, map}
+  @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
   def list(user_id) do
     {:get, base_url, "users/#{user_id}/labels"}
   end
