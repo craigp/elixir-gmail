@@ -61,9 +61,9 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
   @spec get(String.t | String.t, String.t) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
-  def get(id, user_id, params) do
-    url = if Enum.empty?(params) do
-      "users/#{user_id}/threads/#{id}"
+  def get(user_id, thread_id, params) do
+    path = if Enum.empty?(params) do
+      "users/#{user_id}/threads/#{thread_id}"
     else
       available_options = [:format, :metadata_headers]
       query =
@@ -79,26 +79,27 @@ defmodule Gmail.Thread do
           Map.put(query, stringKey, val)
         end)
       if Enum.empty?(query) do
-        "users/#{user_id}/threads/#{id}"
+        "users/#{user_id}/threads/#{thread_id}"
       else
-        "users/#{user_id}/threads/#{id}?#{URI.encode_query(query)}"
+        "users/#{user_id}/threads/#{thread_id}?#{URI.encode_query(query)}"
       end
     end
-    case do_get(url) do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-        {:ok, %Thread{
-          id: id,
-          history_id: history_id,
-          messages: Enum.map(messages, &Message.convert/1)
-        }}
-    end
+    {:get, base_url, path}
+    # case do_get(path) do
+    #   {:ok, %{"error" => %{"code" => 404}}} ->
+    #     {:error, :not_found}
+    #   {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+    #     [%{"message" => error_message}|_rest] = errors
+    #     {:error, error_message}
+    #   {:ok, %{"error" => details}} ->
+    #     {:error, details}
+    #   {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
+    #     {:ok, %Thread{
+    #       id: id,
+    #       history_id: history_id,
+    #       messages: Enum.map(messages, &Message.convert/1)
+    #     }}
+    # end
   end
 
   @doc """
@@ -146,23 +147,6 @@ defmodule Gmail.Thread do
         "users/#{user_id}/threads?#{URI.encode_query(query)}"
       end
     end
-    config = Map.put(config, :path, path)
-    # case do_get(path) do
-    #   {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-    #     threads =
-    #       raw_threads
-    #       |> Enum.map(fn thread ->
-    #         struct(Thread, Gmail.Helper.atomise_keys(thread))
-    #       end)
-    #     {:ok, threads, next_page_token}
-    #   {:ok, %{"threads" => raw_threads}} ->
-    #     threads =
-    #       raw_threads
-    #       |> Enum.map(fn thread ->
-    #         struct(Thread, Gmail.Helper.atomise_keys(thread))
-    #       end)
-    #     {:ok, threads}
-    # end
     {:get, base_url, path}
   end
 

@@ -1,5 +1,11 @@
 defmodule Gmail.User do
+
+  @moduledoc """
+  TODO
+  """
+
   use GenServer
+  alias Gmail.{Thread, Message, Helper, HTTP}
 
   #  Server API {{{ #
 
@@ -27,31 +33,46 @@ defmodule Gmail.User do
     # 5. parse the results
     # 6. potentially, cache the results
     # 7. return the results
-    {_method, _url, _path} = command = Gmail.Thread.list(state, params)
-    response = Gmail.HTTP.execute(command, state)
+    {_method, _url, _path} = command = Thread.list(state, params)
+    response = HTTP.execute(command, state)
     result = case response do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
         threads =
           raw_threads
           |> Enum.map(fn thread ->
-            struct(Gmail.Thread, Gmail.Helper.atomise_keys(thread))
+            struct(Thread, Helper.atomise_keys(thread))
           end)
         {:ok, threads, next_page_token}
       {:ok, %{"threads" => raw_threads}} ->
         threads =
           raw_threads
           |> Enum.map(fn thread ->
-            struct(Gmail.Thread, Gmail.Helper.atomise_keys(thread))
+            struct(Thread, Helper.atomise_keys(thread))
           end)
         {:ok, threads}
     end
     {:reply, result, state}
   end
 
-  @doc false
   def handle_call({:thread, {:get, thread_id, params}}, _from, %{user_id: user_id} = state) do
-    response = Gmail.Thread.get(user_id, thread_id, params)
-    {:reply, response, state}
+    command = Thread.get(user_id, thread_id, params)
+    response = HTTP.execute(command, state)
+    result = case response do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
+        {:ok, %Thread{
+          id: id,
+          history_id: history_id,
+          messages: Enum.map(messages, &Message.convert/1)
+        }}
+    end
+    {:reply, result, state}
   end
 
   #  }}} Server API #

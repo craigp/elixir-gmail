@@ -71,12 +71,14 @@ defmodule Gmail.HTTP do
 
   #  Client API {{{ #
 
-  def execute({method, url, path} = command, %{user_id: user_id, access_token: access_token} = config) do
-    IO.inspect command
-    IO.inspect config
+  def execute({:get, url, path} = command, %{user_id: user_id, access_token: access_token} = config) do
     headers = get_headers(access_token)
     HTTPoison.get(url <> path, headers)
     |> do_parse_response
+  end
+
+  def execute({:post, blah}) do
+    # TODO do something
   end
 
   @doc """
