@@ -41,14 +41,9 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/delete
   """
-  @spec delete(String.t) :: {atom, atom} | atom
-  def delete(id, user_id \\ "me") do
-    case do_delete("users/#{user_id}/drafts/#{id}") do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      nil ->
-        :ok
-    end
+  @spec delete(String.t, String.t) :: {atom, atom} | atom
+  def delete(user_id, draft_id) do
+    {:delete, base_url, "users/#{user_id}/drafts/#{draft_id}"}
   end
 
   @doc """
@@ -56,16 +51,9 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/send
   """
-  @spec send(String.t) :: {atom, Thread.t}
-  def send(id, user_id \\ "me") do
-    case do_post("users/#{user_id}/drafts/send", %{"id" => id}) do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => detail}} ->
-        {:error, detail}
-      {:ok, %{"threadId" => thread_id}} ->
-        {:ok, %{thread_id: thread_id}}
-    end
+  @spec send(String.t, String.t) :: {atom, Thread.t}
+  def send(user_id, draft_id) do
+    {:post, base_url, "users/#{user_id}/drafts/send", %{"id" => draft_id}}
   end
 
   @spec convert(map) :: Draft.t

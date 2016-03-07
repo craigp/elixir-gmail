@@ -287,6 +287,36 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:draft, {:delete, draft_id}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Draft.delete(draft_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        nil ->
+          :ok
+      end
+    {:reply, result, state}
+  end
+
+  def handle_call({:draft, {:send, draft_id}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Draft.send(draft_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        {:ok, %{"error" => detail}} ->
+          {:error, detail}
+        {:ok, %{"threadId" => thread_id}} ->
+          {:ok, %{thread_id: thread_id}}
+      end
+    {:reply, result, state}
+  end
+
   #  }}} Drafts #
 
   #  }}} Server API #
@@ -406,6 +436,14 @@ defmodule Gmail.User do
 
   def draft(user_id, draft_id) do
     GenServer.call(String.to_atom(user_id), {:draft, {:get, draft_id}}, :infinity)
+  end
+
+  def draft(:delete, user_id, draft_id) do
+    GenServer.call(String.to_atom(user_id), {:draft, {:delete, draft_id}}, :infinity)
+  end
+
+  def draft(:send, user_id, draft_id) do
+    GenServer.call(String.to_atom(user_id), {:draft, {:send, draft_id}}, :infinity)
   end
 
   #  }}} Drafts #

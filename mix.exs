@@ -3,7 +3,7 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.1.2",
+     version: "0.1.3",
      elixir: "~> 1.2",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
@@ -35,8 +35,7 @@ defmodule Gmail.Mixfile do
 
   defp package do
     [
-      # files: ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
-      files: ["lib", "mix.exs", "README*"],
+      files: ["lib", "mix.exs", "README*", "LICENSE*"],
       licenses: ["MIT"],
       maintainers: ["Craig Paterson"],
       links: %{"Github" => "https://github.com/craigp/elixir-gmail"}

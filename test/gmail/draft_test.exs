@@ -80,7 +80,6 @@ defmodule Gmail.DraftTest do
   test "sends a draft", %{
     draft_id: draft_id,
     bypass: bypass,
-    access_token_rec: access_token_rec,
     access_token: access_token,
     send_response: send_response,
     user_id: user_id
@@ -97,16 +96,12 @@ defmodule Gmail.DraftTest do
       {:ok, json} = Poison.encode(send_response)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:ok, %{thread_id: _thread_id}} = Gmail.Draft.send(draft_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, %{thread_id: _thread_id}} = Gmail.User.draft(:send, user_id, draft_id)
   end
 
   test "reports a :not_found when sending a draft that doesn't exist", %{
     draft_id: draft_id,
     bypass: bypass,
-    access_token_rec: access_token_rec,
     access_token: access_token,
     draft_not_found: draft_not_found,
     user_id: user_id
@@ -119,10 +114,7 @@ defmodule Gmail.DraftTest do
       {:ok, json} = Poison.encode(draft_not_found)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:error, :not_found} = Gmail.Draft.send(draft_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    {:error, :not_found} = Gmail.User.draft(:send, user_id, draft_id)
   end
 
   # test "creates a new draft" do
@@ -130,7 +122,6 @@ defmodule Gmail.DraftTest do
 
   test "deletes a draft", %{
     draft_id: draft_id,
-    access_token_rec: access_token_rec,
     bypass: bypass,
     user_id: user_id
   } do
@@ -140,15 +131,11 @@ defmodule Gmail.DraftTest do
       assert "DELETE" == conn.method
       Plug.Conn.resp(conn, 200, "")
     end
-    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
-      assert :ok == Gmail.Draft.delete(draft_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    assert :ok == Gmail.User.draft(:delete, user_id, draft_id)
   end
 
   test "reports :not_found when deleting a draft that doesn't exist", %{
     draft_id: draft_id,
-    access_token_rec: access_token_rec,
     bypass: bypass,
     draft_not_found: draft_not_found,
     user_id: user_id
@@ -160,10 +147,7 @@ defmodule Gmail.DraftTest do
       {:ok, json} = Poison.encode(draft_not_found)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
-      {:error, :not_found} = Gmail.Draft.delete(draft_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    {:error, :not_found} = Gmail.User.draft(:delete, user_id, draft_id)
   end
 
   test "lists all drafts", %{
