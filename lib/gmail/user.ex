@@ -85,6 +85,23 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:message, {:get, message_id, params}}, _from, %{user_id: user_id} = state) do
+    command = Message.get(user_id, message_id)
+    response = HTTP.execute(command, state)
+    result = case response do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_message} ->
+        {:ok, Message.convert(raw_message)}
+    end
+    {:reply, result, state}
+  end
+
   #  }}} Server API #
 
   #  Client API {{{ #

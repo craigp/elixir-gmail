@@ -80,7 +80,7 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec search(String.t | String.t, String.t) :: {atom, [Thread.t]}
-  def search(user_id \\ "me", query) when is_binary(query), do: list(user_id, %{q: query})
+  def search(user_id, query) when is_binary(query), do: list(user_id, %{q: query})
 
   @doc """
   Lists the threads in the user's mailbox.
@@ -96,7 +96,7 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec list(String.t, map) :: {atom, [Thread.t], String.t}
-  def list(user_id \\ "me", params \\ %{}) when is_binary(user_id) do
+  def list(user_id, params \\ %{}) when is_binary(user_id) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads"
     else
