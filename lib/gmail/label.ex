@@ -28,16 +28,8 @@ defmodule Gmail.Label do
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
   @spec create(String.t, String.t) :: {atom, Label.t}
-  def create(name, user_id \\ "me") do
-    case do_post("users/#{user_id}/labels", %{"name" => name}) do
-      {:ok, %{"error" => %{"errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_label} ->
-        {:ok, convert(raw_label)}
-    end
+  def create(user_id, label_name) do
+    {:post, base_url, "users/#{user_id}/labels", %{"name" => label_name}}
   end
 
   @doc """

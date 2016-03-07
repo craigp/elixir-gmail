@@ -68,25 +68,22 @@ defmodule Gmail.LabelTest do
 
   test "creates a new label", %{
     label: label,
-    access_token_rec: access_token_rec,
     label_name: label_name,
     expected_result: expected_result,
     bypass: bypass,
-    access_token: access_token
+    access_token: access_token,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/labels" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/labels" == conn.request_path
       assert "" == conn.query_string
       assert "POST" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       {:ok, json} = Poison.encode(label)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:ok, label} = Gmail.Label.create(label_name)
-      assert expected_result == label
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, label} = Gmail.User.label(:create, user_id, label_name)
+    assert expected_result == label
   end
 
   test "deletes a label", %{
