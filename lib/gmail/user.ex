@@ -1,5 +1,4 @@
 defmodule Gmail.User do
-
   @moduledoc """
   TODO
   """
@@ -25,81 +24,81 @@ defmodule Gmail.User do
 
   @doc false
   def handle_call({:thread, {:list, params}}, _from, %{user_id: user_id} = state) do
-    # Basic flow:
-    # 1. fetch a token for the user (either new or exsiting)
-    # 2. tokens plus the user ID are packaged as the config
-    # 3. call the appropriate api wrapper, passing the config
-    # 4. execute an HTTP request
-    # 5. parse the results
-    # 6. potentially, cache the results
-    # 7. return the results
-    {_method, _url, _path} = command = Thread.list(user_id, params)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
-          end)
-        {:ok, threads, next_page_token}
-      {:ok, %{"threads" => raw_threads}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
-          end)
-        {:ok, threads}
-    end
+    result =
+      user_id
+      Thread.list(params)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+          threads =
+            raw_threads
+            |> Enum.map(fn thread ->
+              struct(Thread, Helper.atomise_keys(thread))
+            end)
+          {:ok, threads, next_page_token}
+        {:ok, %{"threads" => raw_threads}} ->
+          threads =
+            raw_threads
+            |> Enum.map(fn thread ->
+              struct(Thread, Helper.atomise_keys(thread))
+            end)
+          {:ok, threads}
+      end
     {:reply, result, state}
   end
 
   def handle_call({:thread, {:get, thread_id, params}}, _from, %{user_id: user_id} = state) do
-    command = Thread.get(user_id, thread_id, params)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-        {:ok, %Thread{
-          id: id,
-          history_id: history_id,
-          messages: Enum.map(messages, &Message.convert/1)
-        }}
-    end
+    result =
+      user_id
+      Thread.get(thread_id, params)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
+          {:ok, %Thread{
+              id: id,
+              history_id: history_id,
+              messages: Enum.map(messages, &Message.convert/1)
+            }}
+      end
     {:reply, result, state}
   end
 
-  def handle_call({:message, {:list, params}}, _from, %{user_id: user_id} = state) do
-    command = Message.list(user_id)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"messages" => msgs}} ->
-        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
-    end
-    {:reply, result, state}
+  def handle_call({:message, {:list, _params}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Message.list
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"messages" => msgs}} ->
+          {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+      end
+      {:reply, result, state}
   end
 
-  def handle_call({:message, {:get, message_id, params}}, _from, %{user_id: user_id} = state) do
-    command = Message.get(user_id, message_id)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_message} ->
-        {:ok, Message.convert(raw_message)}
-    end
-    {:reply, result, state}
+  def handle_call({:message, {:get, message_id, _params}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> Message.get(message_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, raw_message} ->
+          {:ok, Message.convert(raw_message)}
+      end
+      {:reply, result, state}
   end
 
   def handle_call({:search, :thread, query, params}, _from, %{user_id: user_id} = state) do
@@ -111,31 +110,35 @@ defmodule Gmail.User do
   end
 
   def handle_call({:label, {:list}}, _from, %{user_id: user_id} = state) do
-    command = Label.list(user_id)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, %{"labels" => raw_labels}} ->
-        {:ok, Enum.map(raw_labels, &Label.convert/1)}
-    end
-    {:reply, result, state}
+    result =
+      user_id
+      |> Label.list
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, %{"labels" => raw_labels}} ->
+          {:ok, Enum.map(raw_labels, &Label.convert/1)}
+      end
+      {:reply, result, state}
   end
 
   def handle_call({:label, {:get, label_id}}, _from, %{user_id: user_id} = state) do
-    command = Label.get(user_id, label_id)
-    response = HTTP.execute(command, state)
-    result = case response do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_label} ->
-        {:ok, Label.convert(raw_label)}
-    end
+    result =
+      user_id
+      |> Label.get(label_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, raw_label} ->
+          {:ok, Label.convert(raw_label)}
+      end
     {:reply, result, state}
   end
 
@@ -155,6 +158,13 @@ defmodule Gmail.User do
       {:error, details} ->
         {:error, details}
     end
+  end
+
+  def stop(user_id) do
+    :ok =
+      user_id
+      |> String.to_atom
+      |> GenServer.stop(:normal)
   end
 
   @doc """
