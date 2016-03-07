@@ -21,19 +21,9 @@ defmodule Gmail.Draft do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
-  def get(id, user_id \\ "me") do
-    case do_get("users/#{user_id}/drafts/#{id}?format=full") do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_message} ->
-        {:ok, convert(raw_message)}
-    end
+  @spec get(String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
+  def get(user_id, draft_id) do
+    {:get, base_url, "users/#{user_id}/drafts/#{draft_id}"}
   end
 
   @doc """

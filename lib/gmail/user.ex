@@ -268,6 +268,25 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:draft, {:get, draft_id}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Draft.get(draft_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          {:error, :not_found}
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, %{"error" => details}} ->
+          {:error, details}
+        {:ok, raw_message} ->
+          {:ok, Draft.convert(raw_message)}
+      end
+    {:reply, result, state}
+  end
+
   #  }}} Drafts #
 
   #  }}} Server API #

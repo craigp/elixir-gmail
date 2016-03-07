@@ -192,41 +192,33 @@ defmodule Gmail.DraftTest do
   test "gets a draft", %{
     draft: draft,
     draft_id: draft_id,
-    access_token_rec: access_token_rec,
     expected_result: expected_result,
     bypass: bypass,
     user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
-      assert "format=full" == conn.query_string
+      assert "" == conn.query_string
       {:ok, json} = Poison.encode(draft)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
-      {:ok, draft} = Gmail.Draft.get(draft_id)
-      assert draft == expected_result
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, draft} = Gmail.User.draft(user_id, draft_id)
+    assert draft == expected_result
   end
 
   test "reports :not_found for a draft that doesn't exist", %{
     draft_id: draft_id,
-    access_token_rec: access_token_rec,
     bypass: bypass,
     draft_not_found: draft_not_found,
     user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{user_id}/drafts/#{draft_id}" == conn.request_path
-      assert "format=full" == conn.query_string
+      assert "" == conn.query_string
       {:ok, json} = Poison.encode(draft_not_found)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [ get_config: fn -> access_token_rec end ] do
-      {:error, :not_found} = Gmail.Draft.get(draft_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    {:error, :not_found} = Gmail.User.draft(user_id, draft_id)
   end
 
 end
