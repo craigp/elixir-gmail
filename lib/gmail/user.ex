@@ -1,6 +1,7 @@
 defmodule Gmail.User do
+
   @moduledoc """
-  TODO
+  Represents a user's mailbox, holding it's config and tokens.
   """
 
   use GenServer
@@ -15,7 +16,7 @@ defmodule Gmail.User do
 
   @doc false
   def init({user_id, refresh_token}) do
-    {access_token, expires_at} = Gmail.OAuth2.refresh_access_token(user_id, refresh_token)
+    {access_token, expires_at} = Gmail.OAuth2.refresh_access_token(refresh_token)
     state = Map.new(user_id: user_id, refresh_token: refresh_token,
       access_token: access_token, expires_at: expires_at)
     {:ok, state}
@@ -25,7 +26,7 @@ defmodule Gmail.User do
   def handle_call({:thread, {:list, params}}, _from, %{user_id: user_id} = state) do
     result =
       user_id
-      Thread.list(params)
+      |> Thread.list(params)
       |> HTTP.execute(state)
       |> case do
         {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
@@ -50,12 +51,12 @@ defmodule Gmail.User do
   def handle_call({:thread, {:get, thread_id, params}}, _from, %{user_id: user_id} = state) do
     result =
       user_id
-      Thread.get(thread_id, params)
+      |> Thread.get(thread_id, params)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -90,9 +91,9 @@ defmodule Gmail.User do
       |> Message.get(message_id, params)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -162,9 +163,9 @@ defmodule Gmail.User do
       |> Label.get(label_id)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -184,10 +185,10 @@ defmodule Gmail.User do
   """
   def start(user_id, refresh_token) do
     case Supervisor.start_child(Gmail.UserManager, [{user_id, refresh_token}]) do
-      {:ok, _pid} ->
-        :ok
-      {:error, {:already_started, _pid}} ->
-        :ok
+      {:ok, pid} ->
+        {:ok, pid}
+      {:error, {:already_started, pid}} ->
+        {:ok, pid}
       {:error, details} ->
         {:error, details}
     end

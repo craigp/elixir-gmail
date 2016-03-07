@@ -5,19 +5,8 @@ defmodule Gmail.OAuth2 do
   """
 
   use GenServer
-  alias __MODULE__
   import Poison, only: [decode: 1]
   use Timex
-  require Logger
-
-  # defstruct user_id: nil,
-  #   client_id: nil,
-  #   client_secret: nil,
-  #   access_token: nil,
-  #   refresh_token: nil,
-  #   expires_at: 0,
-  #   token_type: "Bearer"
-  # @type t :: %__MODULE__{}
 
   #  Server API {{{ #
 
@@ -26,70 +15,64 @@ defmodule Gmail.OAuth2 do
 
   @doc false
   def init(:ok) do
-    # if refresh_token do
-    #   IO.puts "refreshing access token"
-    #   if access_token_expired?(config) do
-    #     {:ok, config} = refresh_access_token(config)
-    #   end
-    # else
-    #   IO.puts "FML"
-    #   Logger.warn "No refresh token found in config, cannot refresh access token"
-    # end
     {:ok, %{config: from_config_file}}
   end
 
+  @doc false
   def handle_call(:config, _from, %{config: config} = state) do
-    # if access_token_expired?(config) do
-    #   IO.puts "refreshing acces token"
-    #   {:ok, config} = refresh_access_token(config)
-    #   state = %{state | config: config}
-    # end
     {:reply, config, state}
   end
 
-  def handle_call({:refresh_access_token, user_id, refresh_token}, _from, %{config: config} = state) do
-    {:ok, access_token, expires_at} = do_refresh_access_token(config, user_id, refresh_token)
+  @doc false
+  def handle_call({:refresh_access_token, refresh_token}, _from, %{config: config} = state) do
+    {:ok, access_token, expires_at} = do_refresh_access_token(config, refresh_token)
     {:reply, {access_token, expires_at}, state}
   end
 
   #  }}} Server API #
 
-  # @auth_url "https://accounts.google.com/o/oauth2/auth"
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
   @scope "https://mail.google.com/"
+
+  #  Client API {{{ #
 
   @doc ~S"""
   Checks if an access token has expired.
 
   ### Examples
 
-      iex> Gmail.OAuth2.access_token_expired?(%Gmail.OAuth2{expires_at: 1})
+      iex> Gmail.OAuth2.access_token_expired?(%{expires_at: 1})
       true
 
-      iex> Gmail.OAuth2.access_token_expired?(%Gmail.OAuth2{expires_at: (Timex.Date.to_secs(Timex.Date.now) + 10)})
+      iex> Gmail.OAuth2.access_token_expired?(%{expires_at: (Timex.Date.to_secs(Timex.Date.now) + 10)})
       false
 
   """
-  # @spec access_token_expired?(OAuth2.t) :: boolean
+  @spec access_token_expired?(map) :: boolean
   def access_token_expired?(%{expires_at: expires_at}) do
     Date.to_secs(Date.now) >= expires_at
   end
 
-  def refresh_access_token(user_id, refresh_token) do
-    GenServer.call(__MODULE__, {:refresh_access_token, user_id, refresh_token})
+  @spec refresh_access_token(String.t) :: {String.t, number}
+  def refresh_access_token(refresh_token) do
+    GenServer.call(__MODULE__, {:refresh_access_token, refresh_token})
   end
 
   @doc """
   Gets the config for a Gmail API connection, including a refreshed access token.
   """
-  # @spec get_config() :: OAuth2.t
+  @spec get_config() :: map
   def get_config do
     GenServer.call(__MODULE__, :config)
   end
 
-  # @spec refresh_access_token(OAuth2.t) :: {atom, OAuth2.t}
-  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret} = config, user_id, refresh_token) do
+  #  }}} Client API #
+
+  #  Private functions {{{ #
+
+  @spec do_refresh_access_token(map, String.t) :: {atom, map}
+  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -108,7 +91,7 @@ defmodule Gmail.OAuth2 do
     end
   end
 
-  # @spec from_config_file() :: OAuth2.t
+  @spec from_config_file() :: map
   defp from_config_file do
     case Application.get_env(:gmail, :oauth2) do
       nil ->
@@ -117,5 +100,7 @@ defmodule Gmail.OAuth2 do
         Enum.into(config, Map.new)
     end
   end
+
+  #  }}} Private functions #
 
 end
