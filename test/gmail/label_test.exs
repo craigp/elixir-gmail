@@ -13,6 +13,7 @@ defmodule Gmail.LabelTest do
     label_id = "Label_22"
     label_name = "Cool Label"
     label_type = "user"
+    user_id = "user@example.com"
 
     label = %{
       "id" => label_id,
@@ -44,6 +45,10 @@ defmodule Gmail.LabelTest do
     bypass = Bypass.open
     Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
 
+    with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {access_token, 100000000000000} end] do
+      {:ok, _server_pid} = Gmail.User.start(user_id, "dummy-refresh-token")
+    end
+
     {:ok, %{
         access_token: access_token,
         access_token_rec: access_token_rec,
@@ -56,7 +61,8 @@ defmodule Gmail.LabelTest do
         label_not_found: %{"error" => %{"code" => 404}},
         four_hundred_error: %{"error" => error_content},
         four_hundred_error_content: error_content,
-        bypass: bypass
+        bypass: bypass,
+        user_id: user_id
       }}
   end
 
@@ -139,22 +145,19 @@ defmodule Gmail.LabelTest do
 
   test "lists all labels", %{
     labels: labels,
-    access_token_rec: access_token_rec,
     expected_results: expected_results,
-    bypass: bypass
+    bypass: bypass,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/labels" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/labels" == conn.request_path
       assert "" == conn.query_string
       assert "GET" == conn.method
       {:ok, json} = Poison.encode(labels)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:ok, labels} = Gmail.Label.list
-      assert expected_results == labels
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, labels} = Gmail.User.labels(user_id)
+    assert expected_results == labels
   end
 
   test "updates a label", %{
@@ -210,23 +213,20 @@ defmodule Gmail.LabelTest do
 
   test "gets a label", %{
     label: label,
-    access_token_rec: access_token_rec,
     expected_result: expected_result,
     bypass: bypass,
-    label_id: label_id
+    label_id: label_id,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/labels/#{label_id}" == conn.request_path
       assert "" == conn.query_string
       assert "GET" == conn.method
       {:ok, json} = Poison.encode(label)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      {:ok, label} = Gmail.Label.get(label_id)
-      assert expected_result == label
-      assert called Gmail.OAuth2.get_config
-    end
+    {:ok, label} = Gmail.User.label(user_id, label_id)
+    assert expected_result == label
   end
 
   test "reports :not_found for a label that doesn't exist", %{
