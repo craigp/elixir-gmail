@@ -33,7 +33,7 @@ defmodule Gmail.User do
     # 5. parse the results
     # 6. potentially, cache the results
     # 7. return the results
-    {_method, _url, _path} = command = Thread.list(state, params)
+    {_method, _url, _path} = command = Thread.list(user_id, params)
     response = HTTP.execute(command, state)
     result = case response do
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
@@ -75,6 +75,16 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:message, {:list, params}}, _from, %{user_id: user_id} = state) do
+    command = Message.list(user_id)
+    response = HTTP.execute(command, state)
+    result = case response do
+      {:ok, %{"messages" => msgs}} ->
+        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+    end
+    {:reply, result, state}
+  end
+
   #  }}} Server API #
 
   #  Client API {{{ #
@@ -105,6 +115,14 @@ defmodule Gmail.User do
   """
   def thread(user_id, thread_id, params \\ %{}) do
     GenServer.call(String.to_atom(user_id), {:thread, {:get, thread_id, params}})
+  end
+
+  def messages(user_id, params \\ %{}) do
+    GenServer.call(String.to_atom(user_id), {:message, {:list, params}})
+  end
+
+  def message(user_id, message_id, params \\ %{}) do
+    GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}})
   end
 
   #  }}} Client API #

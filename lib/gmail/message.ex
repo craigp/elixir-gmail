@@ -65,10 +65,11 @@ defmodule Gmail.Message do
   """
   @spec list(String.t) :: {atom, [Message.t]}
   def list(user_id \\ "me") do
-    case do_get("users/#{user_id}/messages") do
-      {:ok, %{"messages" => msgs}} ->
-        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
-    end
+    {:get, base_url, "users/#{user_id}/messages"}
+    # case do_get("users/#{user_id}/messages") do
+    #   {:ok, %{"messages" => msgs}} ->
+    #     {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+    # end
   end
 
   @doc """

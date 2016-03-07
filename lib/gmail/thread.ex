@@ -4,7 +4,6 @@ defmodule Gmail.Thread do
   A collection of messages representing a conversation.
   """
 
-  use GenServer
   alias __MODULE__
   alias Gmail.Message
   import Gmail.Base
@@ -18,18 +17,6 @@ defmodule Gmail.Thread do
     messages: []
 
   @type t :: %__MODULE__{}
-
-  #  Server API {{{ #
-
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
-  end
-
-  def init(:ok) do
-    {:ok, %{}}
-  end
-
-  #  }}} Server API #
 
   @doc """
   Gets the specified thread.
@@ -85,21 +72,6 @@ defmodule Gmail.Thread do
       end
     end
     {:get, base_url, path}
-    # case do_get(path) do
-    #   {:ok, %{"error" => %{"code" => 404}}} ->
-    #     {:error, :not_found}
-    #   {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-    #     [%{"message" => error_message}|_rest] = errors
-    #     {:error, error_message}
-    #   {:ok, %{"error" => details}} ->
-    #     {:error, details}
-    #   {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
-    #     {:ok, %Thread{
-    #       id: id,
-    #       history_id: history_id,
-    #       messages: Enum.map(messages, &Message.convert/1)
-    #     }}
-    # end
   end
 
   @doc """
@@ -125,11 +97,6 @@ defmodule Gmail.Thread do
   """
   @spec list(String.t, map) :: {atom, [Thread.t], String.t}
   def list(user_id \\ "me", params \\ %{}) when is_binary(user_id) do
-    list(%{user_id: user_id}, params)
-  end
-
-  @spec list(map, map) :: {atom, [Thread.t], String.t}
-  def list(%{user_id: user_id} = config, params) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads"
     else
