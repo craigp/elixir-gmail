@@ -68,16 +68,8 @@ defmodule Gmail.Label do
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/delete
   """
   @spec delete(String.t, String.t) :: atom | {atom, String.t}
-  def delete(label_id, user_id \\ "me") do
-    case do_delete("users/#{user_id}/labels/#{label_id}") do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        :not_found
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, _} ->
-        :ok
-    end
+  def delete(user_id, label_id) do
+    {:delete, base_url, "users/#{user_id}/labels/#{label_id}"}
   end
 
   @doc """

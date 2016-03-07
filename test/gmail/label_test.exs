@@ -87,39 +87,33 @@ defmodule Gmail.LabelTest do
   end
 
   test "deletes a label", %{
-    access_token_rec: access_token_rec,
     bypass: bypass,
-    label_id: label_id
+    label_id: label_id,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/labels/#{label_id}" == conn.request_path
       assert "" == conn.query_string
       assert "DELETE" == conn.method
       {:ok, json} = Poison.encode(nil)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      :ok = Gmail.Label.delete(label_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    :ok = Gmail.User.label(:delete, user_id, label_id)
   end
 
   test "reports a :not_found when deleting a label that doesn't exist", %{
-    access_token_rec: access_token_rec,
     bypass: bypass,
     label_not_found: label_not_found,
-    label_id: label_id
+    label_id: label_id,
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
-      assert "/gmail/v1/users/me/labels/#{label_id}" == conn.request_path
+      assert "/gmail/v1/users/#{user_id}/labels/#{label_id}" == conn.request_path
       assert "" == conn.query_string
       {:ok, json} = Poison.encode(label_not_found)
       Plug.Conn.resp(conn, 200, json)
     end
-    with_mock Gmail.OAuth2, [get_config: fn -> access_token_rec end] do
-      :not_found = Gmail.Label.delete(label_id)
-      assert called Gmail.OAuth2.get_config
-    end
+    :not_found = Gmail.User.label(:delete, user_id, label_id)
   end
 
   test "handles a 400 error when deleting a label", %{

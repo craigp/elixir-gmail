@@ -82,6 +82,11 @@ defmodule Gmail.HTTP do
     |> do_parse_response
   end
 
+  def execute({:delete, url, path} = command, %{user_id: user_id, access_token: access_token} = config) do
+    HTTPoison.delete(url <> path, get_headers(access_token))
+    |> do_parse_response
+  end
+
   @doc """
   Performs an HTTP POST request.
   """

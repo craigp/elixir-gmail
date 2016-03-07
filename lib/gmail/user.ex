@@ -203,6 +203,23 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:label, {:delete, label_id}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Label.delete(label_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}}} ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, _} ->
+          :ok
+      end
+    {:reply, result, state}
+  end
+
   #  }}} Labels #
 
   #  }}} Server API #
@@ -291,6 +308,10 @@ defmodule Gmail.User do
 
   def label(:create, user_id, label_name) do
     GenServer.call(String.to_atom(user_id), {:label, {:create, label_name}}, :infinity)
+  end
+
+  def label(:delete, user_id, label_id) do
+    GenServer.call(String.to_atom(user_id), {:label, {:delete, label_id}}, :infinity)
   end
 
   #  }}} Labels #
