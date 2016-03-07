@@ -8,13 +8,14 @@ defmodule Gmail.OAuth2 do
   alias __MODULE__
   import Poison, only: [decode: 1]
   use Timex
+  require Logger
 
-  defstruct user_id: "",
-    client_id: "",
-    client_secret: "",
-    access_token: "",
-    refresh_token: "",
-    expires_at: "",
+  defstruct user_id: nil,
+    client_id: nil,
+    client_secret: nil,
+    access_token: nil,
+    refresh_token: nil,
+    expires_at: 0,
     token_type: "Bearer"
   @type t :: %__MODULE__{}
 
@@ -25,15 +26,22 @@ defmodule Gmail.OAuth2 do
 
   @doc false
   def init(:ok) do
-    config = from_config_file
-    if access_token_expired?(config) do
-      {:ok, config} = refresh_access_token(config)
+    %OAuth2{refresh_token: refresh_token} = config = from_config_file
+    if refresh_token do
+      IO.puts "refreshing access token"
+      if access_token_expired?(config) do
+        {:ok, config} = refresh_access_token(config)
+      end
+    else
+      IO.puts "FML"
+      Logger.warn "No refresh token found in config, cannot refresh access token"
     end
     {:ok, %{config: config}}
   end
 
   def handle_call(:config, _from, %{config: config} = state) do
     if access_token_expired?(config) do
+      IO.puts "refreshing acces token"
       {:ok, config} = refresh_access_token(config)
       state = %{state | config: config}
     end
@@ -76,8 +84,7 @@ defmodule Gmail.OAuth2 do
   Refreshes an expired access token.
   """
   @spec refresh_access_token(OAuth2.t) :: {atom, OAuth2.t}
-  def refresh_access_token(opts) do
-    %OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts
+  def refresh_access_token(%OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -97,7 +104,12 @@ defmodule Gmail.OAuth2 do
 
   @spec from_config_file() :: OAuth2.t
   defp from_config_file do
-    Map.merge(%OAuth2{}, Enum.into(Application.get_env(:gmail, :oauth2), %{}))
+    case Application.get_env(:gmail, :oauth2) do
+      nil ->
+        %OAuth2{}
+      config ->
+        struct(OAuth2, config)
+    end
   end
 
 end
