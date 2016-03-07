@@ -101,7 +101,6 @@ defmodule Gmail.ThreadTest do
     bypass = Bypass.open
     Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
 
-    server_pid = nil
     with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {access_token, 100000000000000} end] do
       {:ok, _server_pid} = Gmail.User.start(user_id, "dummy-refresh-token")
     end
@@ -121,7 +120,6 @@ defmodule Gmail.ThreadTest do
       four_hundred_error: %{"error" => %{"code" => 400, "errors" => errors}},
       bypass: bypass,
       list_results: list_results,
-      server_pid: server_pid,
       user_id: user_id
     }
   end
