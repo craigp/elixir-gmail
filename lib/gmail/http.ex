@@ -71,6 +71,14 @@ defmodule Gmail.HTTP do
 
   #  Client API {{{ #
 
+  def execute({method, url, path} = command, %{user_id: user_id, access_token: access_token} = config) do
+    IO.inspect command
+    IO.inspect config
+    headers = get_headers(access_token)
+    HTTPoison.get(url <> path, headers)
+    |> do_parse_response
+  end
+
   @doc """
   Performs an HTTP POST request.
   """

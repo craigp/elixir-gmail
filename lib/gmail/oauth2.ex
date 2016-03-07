@@ -10,14 +10,14 @@ defmodule Gmail.OAuth2 do
   use Timex
   require Logger
 
-  defstruct user_id: nil,
-    client_id: nil,
-    client_secret: nil,
-    access_token: nil,
-    refresh_token: nil,
-    expires_at: 0,
-    token_type: "Bearer"
-  @type t :: %__MODULE__{}
+  # defstruct user_id: nil,
+  #   client_id: nil,
+  #   client_secret: nil,
+  #   access_token: nil,
+  #   refresh_token: nil,
+  #   expires_at: 0,
+  #   token_type: "Bearer"
+  # @type t :: %__MODULE__{}
 
   #  Server API {{{ #
 
@@ -26,26 +26,30 @@ defmodule Gmail.OAuth2 do
 
   @doc false
   def init(:ok) do
-    %OAuth2{refresh_token: refresh_token} = config = from_config_file
-    if refresh_token do
-      IO.puts "refreshing access token"
-      if access_token_expired?(config) do
-        {:ok, config} = refresh_access_token(config)
-      end
-    else
-      IO.puts "FML"
-      Logger.warn "No refresh token found in config, cannot refresh access token"
-    end
-    {:ok, %{config: config}}
+    # if refresh_token do
+    #   IO.puts "refreshing access token"
+    #   if access_token_expired?(config) do
+    #     {:ok, config} = refresh_access_token(config)
+    #   end
+    # else
+    #   IO.puts "FML"
+    #   Logger.warn "No refresh token found in config, cannot refresh access token"
+    # end
+    {:ok, %{config: from_config_file}}
   end
 
   def handle_call(:config, _from, %{config: config} = state) do
-    if access_token_expired?(config) do
-      IO.puts "refreshing acces token"
-      {:ok, config} = refresh_access_token(config)
-      state = %{state | config: config}
-    end
+    # if access_token_expired?(config) do
+    #   IO.puts "refreshing acces token"
+    #   {:ok, config} = refresh_access_token(config)
+    #   state = %{state | config: config}
+    # end
     {:reply, config, state}
+  end
+
+  def handle_call({:refresh_access_token, user_id, refresh_token}, _from, %{config: config} = state) do
+    {:ok, access_token, expires_at} = do_refresh_access_token(config, user_id, refresh_token)
+    {:reply, {access_token, expires_at}, state}
   end
 
   #  }}} Server API #
@@ -67,24 +71,25 @@ defmodule Gmail.OAuth2 do
       false
 
   """
-  @spec access_token_expired?(OAuth2.t) :: boolean
-  def access_token_expired?(%OAuth2{expires_at: expires_at}) do
+  # @spec access_token_expired?(OAuth2.t) :: boolean
+  def access_token_expired?(%{expires_at: expires_at}) do
     Date.to_secs(Date.now) >= expires_at
+  end
+
+  def refresh_access_token(user_id, refresh_token) do
+    GenServer.call(__MODULE__, {:refresh_access_token, user_id, refresh_token})
   end
 
   @doc """
   Gets the config for a Gmail API connection, including a refreshed access token.
   """
-  @spec get_config() :: OAuth2.t
+  # @spec get_config() :: OAuth2.t
   def get_config do
     GenServer.call(__MODULE__, :config)
   end
 
-  @doc """
-  Refreshes an expired access token.
-  """
-  @spec refresh_access_token(OAuth2.t) :: {atom, OAuth2.t}
-  def refresh_access_token(%OAuth2{client_id: client_id, client_secret: client_secret, refresh_token: refresh_token} = opts) do
+  # @spec refresh_access_token(OAuth2.t) :: {atom, OAuth2.t}
+  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret} = config, user_id, refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -95,20 +100,21 @@ defmodule Gmail.OAuth2 do
       {:ok, %HTTPoison.Response{body: body}} ->
         case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
-            {:ok, %{opts | access_token: access_token, expires_at: (Date.to_secs(Date.now) + expires_in)}}
+            # {:ok, %{opts | access_token: access_token, expires_at: (Date.to_secs(Date.now) + expires_in)}}
+            {:ok, access_token, (Date.to_secs(Date.now) + expires_in)}
           fml -> {:error, fml}
         end
       not_ok -> {:error, not_ok}
     end
   end
 
-  @spec from_config_file() :: OAuth2.t
+  # @spec from_config_file() :: OAuth2.t
   defp from_config_file do
     case Application.get_env(:gmail, :oauth2) do
       nil ->
-        %OAuth2{}
+        %{}
       config ->
-        struct(OAuth2, config)
+        Enum.into(config, Map.new)
     end
   end
 

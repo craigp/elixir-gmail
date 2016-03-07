@@ -4,6 +4,7 @@ defmodule Gmail.Thread do
   A collection of messages representing a conversation.
   """
 
+  use GenServer
   alias __MODULE__
   alias Gmail.Message
   import Gmail.Base
@@ -18,6 +19,17 @@ defmodule Gmail.Thread do
 
   @type t :: %__MODULE__{}
 
+  #  Server API {{{ #
+
+  def start_link do
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  end
+
+  def init(:ok) do
+    {:ok, %{}}
+  end
+
+  #  }}} Server API #
 
   @doc """
   Gets the specified thread.
@@ -111,8 +123,13 @@ defmodule Gmail.Thread do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
   @spec list(String.t, map) :: {atom, [Thread.t], String.t}
-  def list(user_id \\ "me", params \\ %{}) do
-    url = if Enum.empty?(params) do
+  def list(user_id \\ "me", params \\ %{}) when is_binary(user_id) do
+    list(%{user_id: user_id}, params)
+  end
+
+  @spec list(map, map) :: {atom, [Thread.t], String.t}
+  def list(%{user_id: user_id} = config, params) do
+    path = if Enum.empty?(params) do
       "users/#{user_id}/threads"
     else
       available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
@@ -129,22 +146,24 @@ defmodule Gmail.Thread do
         "users/#{user_id}/threads?#{URI.encode_query(query)}"
       end
     end
-    case do_get(url) do
-      {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Gmail.Helper.atomise_keys(thread))
-          end)
-        {:ok, threads, next_page_token}
-      {:ok, %{"threads" => raw_threads}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Gmail.Helper.atomise_keys(thread))
-          end)
-        {:ok, threads}
-    end
+    config = Map.put(config, :path, path)
+    # case do_get(path) do
+    #   {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+    #     threads =
+    #       raw_threads
+    #       |> Enum.map(fn thread ->
+    #         struct(Thread, Gmail.Helper.atomise_keys(thread))
+    #       end)
+    #     {:ok, threads, next_page_token}
+    #   {:ok, %{"threads" => raw_threads}} ->
+    #     threads =
+    #       raw_threads
+    #       |> Enum.map(fn thread ->
+    #         struct(Thread, Gmail.Helper.atomise_keys(thread))
+    #       end)
+    #     {:ok, threads}
+    # end
+    {:get, base_url, path}
   end
 
 end
