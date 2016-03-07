@@ -30,17 +30,6 @@ defmodule Gmail.Message do
   @spec get(String.t | String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
   def get(user_id, message_id) do
     {:get, base_url, "users/#{user_id}/messages/#{message_id}?format=full"}
-    # case do_get("users/#{user_id}/messages/#{id}?format=full") do
-    #   {:ok, %{"error" => %{"code" => 404}}} ->
-    #     {:error, :not_found}
-    #   {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-    #     [%{"message" => error_message}|_rest] = errors
-    #     {:error, error_message}
-    #   {:ok, %{"error" => details}} ->
-    #     {:error, details}
-    #   {:ok, raw_message} ->
-    #     {:ok, convert(raw_message)}
-    # end
   end
 
   @doc """
@@ -67,10 +56,6 @@ defmodule Gmail.Message do
   @spec list(String.t) :: {atom, [Message.t]}
   def list(user_id \\ "me") do
     {:get, base_url, "users/#{user_id}/messages"}
-    # case do_get("users/#{user_id}/messages") do
-    #   {:ok, %{"messages" => msgs}} ->
-    #     {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
-    # end
   end
 
   @doc """

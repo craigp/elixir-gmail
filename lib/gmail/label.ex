@@ -94,18 +94,8 @@ defmodule Gmail.Label do
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
   @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Label.t}
-  def get(id, user_id \\ "me") do
-    case do_get("users/#{user_id}/labels/#{id}") do
-      {:ok, %{"error" => %{"code" => 404}}} ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, raw_label} ->
-        {:ok, convert(raw_label)}
-    end
+  def get(user_id, label_id) do
+    {:get, base_url, "users/#{user_id}/labels/#{label_id}"}
   end
 
   @doc """
@@ -113,19 +103,14 @@ defmodule Gmail.Label do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
-  @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
-  @spec list() :: {atom, [Label.t]} | {atom, map}
-  def list(user_id  \\ "me") do
-    case do_get("users/#{user_id}/labels") do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
-      {:ok, %{"labels" => raw_labels}} ->
-        {:ok, Enum.map(raw_labels, &convert/1)}
-    end
+  # @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
+  # @spec list() :: {atom, [Label.t]} | {atom, map}
+  def list(user_id) do
+    {:get, base_url, "users/#{user_id}/labels"}
   end
 
   @spec convert(map) :: Label.t
-  defp convert(result) do
+  def convert(result) do
     Enum.reduce(result, %Label{}, fn({key, value}, label) ->
       %{label | (key |> Macro.underscore |> String.to_atom) => value}
     end)

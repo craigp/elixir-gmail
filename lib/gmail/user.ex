@@ -5,7 +5,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, Helper, HTTP}
+  alias Gmail.{Thread, Message, Helper, HTTP, Label}
 
   #  Server API {{{ #
 
@@ -102,6 +102,43 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  def handle_call({:search, :thread, query, params}, _from, %{user_id: user_id} = state) do
+    {:reply, nil, state}
+  end
+
+  def handle_call({:search, :message, query, params}, _from, %{user_id: user_id} = state) do
+    {:reply, nil, state}
+  end
+
+  def handle_call({:label, {:list}}, _from, %{user_id: user_id} = state) do
+    command = Label.list(user_id)
+    response = HTTP.execute(command, state)
+    result = case response do
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, %{"labels" => raw_labels}} ->
+        {:ok, Enum.map(raw_labels, &Label.convert/1)}
+    end
+    {:reply, result, state}
+  end
+
+  def handle_call({:label, {:get, label_id}}, _from, %{user_id: user_id} = state) do
+    command = Label.get(user_id, label_id)
+    response = HTTP.execute(command, state)
+    result = case response do
+      {:ok, %{"error" => %{"code" => 404}}} ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_label} ->
+        {:ok, Label.convert(raw_label)}
+    end
+    {:reply, result, state}
+  end
+
   #  }}} Server API #
 
   #  Client API {{{ #
@@ -140,6 +177,18 @@ defmodule Gmail.User do
 
   def message(user_id, message_id, params \\ %{}) do
     GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}})
+  end
+
+  def search(user_id, thread_or_message, query, params \\ %{}) do
+    GenServer.call(String.to_atom(user_id), {:search, thread_or_message, query, params})
+  end
+
+  def labels(user_id) do
+    GenServer.call(String.to_atom(user_id), {:label, {:list}})
+  end
+
+  def label(user_id, label_id) do
+    GenServer.call(String.to_atom(user_id), {:label, {:get, label_id}})
   end
 
   #  }}} Client API #
