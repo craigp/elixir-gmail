@@ -2,8 +2,9 @@ use Mix.Config
 
 config :bypass, enable_debug_log: false
 
-if File.exists?("./config/test.local.exs") do
-  import_config "test.local.exs"
-end
+config :gmail, :oauth2, [
+  client_id: "fake-client-id",
+  client_secret: "fake-client-secret"
+]
 
 
