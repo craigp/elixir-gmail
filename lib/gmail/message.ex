@@ -56,7 +56,7 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Deletes a message in the user's mailbox.
+  Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer `trash` instead
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/delete
   """
@@ -66,13 +66,13 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Trashes a message in the user's mailbox.
+  Moves the specified message to the trash.
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/trash
   """
   @spec trash(String.t, String.t) :: {atom, String.t, String.t}
   def trash(user_id, message_id) do
-    {:trash, base_url, "users/#{user_id}/messages/#{message_id}"}
+    {:post, base_url, "users/#{user_id}/messages/#{message_id}/trash"}
   end
 
   @doc """

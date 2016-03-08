@@ -364,7 +364,8 @@ defmodule Gmail.User do
   @doc """
   Starts the process for the specified user.
   """
-  def start(user_id, refresh_token) do
+
+  def start_mail(user_id, refresh_token) do
     case Supervisor.start_child(Gmail.UserManager, [{user_id, refresh_token}]) do
       {:ok, pid} ->
         {:ok, pid}
@@ -378,11 +379,14 @@ defmodule Gmail.User do
   @doc """
   Stops the process for the specified user.
   """
-  def stop(user_id) do
-    :ok =
-      user_id
-      |> String.to_atom
-      |> GenServer.stop(:normal)
+  def stop_mail(user_id) when is_binary(user_id), do: user_id |> String.to_atom |> stop_mail
+
+  def stop_mail(user_id) do
+    if Process.whereis(user_id) do
+      GenServer.stop(user_id, :normal)
+    else
+      :ok
+    end
   end
 
   #  }}} Server control #

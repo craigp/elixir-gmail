@@ -25,6 +25,11 @@ defmodule Gmail.HTTP do
     |> do_parse_response
   end
 
+  def execute({:post, url, path}, %{access_token: access_token}) do
+    HTTPoison.post(url <> path, "", get_headers(access_token))
+    |> do_parse_response
+  end
+
   def execute({:delete, url, path}, %{access_token: access_token}) do
     HTTPoison.delete(url <> path, get_headers(access_token))
     |> do_parse_response

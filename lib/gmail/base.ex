@@ -17,7 +17,7 @@ defmodule Gmail.Base do
       {:ok, %{url: url}} ->
         url
       {:ok, api_config} ->
-        api_config = %{api_config | url: @default_base_url}
+        Application.put_env(:gmail, :api, Map.put(api_config, :url, @default_base_url))
         base_url
       :error ->
         Application.put_env(:gmail, :api, %{url: @default_base_url})

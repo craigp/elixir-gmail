@@ -35,7 +35,7 @@ end
 Before you can work with mail for a user you'll need to start a process for them.
 
 ```elixir
-{:ok, pid} = Gmail.User.start("user@example.com", "user-refresh-token")
+{:ok, pid} = Gmail.User.start_mail("user@example.com", "user-refresh-token")
 ```
 
 When a user process starts it will automatically fetch a new access token for that user. Then
