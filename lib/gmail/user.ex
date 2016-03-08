@@ -136,6 +136,24 @@ defmodule Gmail.User do
   end
 
   @doc false
+  def handle_call({:message, {:delete, message_id}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> Message.delete(message_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, _} ->
+          :ok
+      end
+    {:reply, result, state}
+  end
+
+  @doc false
   def handle_call({:search, :message, query, params}, _from, %{user_id: user_id} = state) do
     result =
       user_id
@@ -274,9 +292,9 @@ defmodule Gmail.User do
       |> Draft.get(draft_id)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -293,7 +311,7 @@ defmodule Gmail.User do
       |> Draft.delete(draft_id)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
         nil ->
           :ok
@@ -307,7 +325,7 @@ defmodule Gmail.User do
       |> Draft.send(draft_id)
       |> HTTP.execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}}} ->
+        {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
         {:ok, %{"error" => detail}} ->
           {:error, detail}
@@ -376,6 +394,13 @@ defmodule Gmail.User do
   """
   def messages(user_id, params \\ %{}) do
     GenServer.call(String.to_atom(user_id), {:message, {:list, params}}, :infinity)
+  end
+
+  @doc """
+  Deletes the specified message from the user's mailbox.
+  """
+  def message(:delete, user_id, message_id) do
+    GenServer.call(String.to_atom(user_id), {:message, {:delete, message_id}}, :infinity)
   end
 
   @doc """

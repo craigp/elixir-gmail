@@ -55,6 +55,15 @@ defmodule Gmail.Message do
   end
 
   @doc """
+  Deletes a message in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/delete
+  """
+  def delete(user_id, message_id) do
+    {:delete, base_url, "users/#{user_id}/messages/#{message_id}"}
+  end
+
+  @doc """
   Searches for messages in the user's mailbox.
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list

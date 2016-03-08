@@ -32,9 +32,32 @@ def application do
 end
 ```
 
-## Notes
+Before you can work with mail for a user you'll need to start a process for them.
 
-#### API Support
+```elixir
+{:ok, pid} = Gmail.User.start("user@example.com", "user-refresh-token")
+```
+
+When a user process starts it will automatically fetch a new access token for that user. Then
+you can start playing with mail:
+
+```elixir
+# fetch a list of threads
+{:ok, threads, next_page_token} = Gmail.User.threads("user@example.com") 
+
+# fetch the next page of threads using a page token
+{:ok, _, _} = Gmail.User.threads("user@example.com", %{page_token: next_page_token}) 
+
+# fetch a thread by ID
+{:ok, thread} = Gmail.User.thread("user@example.com", "1233454566") 
+
+# fetch a list of labels
+{:ok, labels} = Gmail.User.labels("user@example.com") 
+```
+
+Check the docs for a more complete list of functionality.
+
+## API Support
 
 * [ ] Threads
   * [x] `get`
@@ -44,7 +67,7 @@ end
   * [ ] `trash`
   * [ ] `untrash`
 * [ ] Messages
-  * [ ] `delete`
+  * [x] `delete`
   * [x] `get`
   * [ ] `insert`
   * [x] `list`
