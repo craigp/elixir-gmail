@@ -4,6 +4,7 @@ defmodule Gmail.Message do
   An email message.
   """
 
+  alias __MODULE__
   alias Gmail.{Payload, Helper}
   import Gmail.Base
 
