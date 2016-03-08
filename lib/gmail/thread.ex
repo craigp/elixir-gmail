@@ -4,8 +4,8 @@ defmodule Gmail.Thread do
   A collection of messages representing a conversation.
   """
 
-  alias __MODULE__
   import Gmail.Base
+  alias Gmail.{Helper}
 
   @doc """
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads#resource
@@ -22,23 +22,24 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/get
   """
-  @spec get(String.t, String.t, map) :: {atom, Thread.t} | {atom, String.t} | {atom, atom}
+  @spec get(String.t, String.t, map) :: {atom, String.t, String.t}
   def get(user_id, thread_id, params) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads/#{thread_id}"
     else
       available_options = [:format, :metadata_headers]
       query =
-        Map.keys(params)
+        params
+        |> Map.keys
         |> Enum.filter(fn key -> key in available_options end)
         |> Enum.reduce(Map.new, fn key, query ->
-          stringKey = Gmail.Helper.camelize(key)
+          string_key = Helper.camelize(key)
           val = if is_list(params[key]) do
             Enum.join(params[key], ",")
           else
             params[key]
           end
-          Map.put(query, stringKey, val)
+          Map.put(query, string_key, val)
         end)
       if Enum.empty?(query) do
         "users/#{user_id}/threads/#{thread_id}"
@@ -54,7 +55,7 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec search(String.t, String.t, map) :: {atom, [Thread.t]}
+  @spec search(String.t, String.t, map) :: {atom, String.t, String.t}
   def search(user_id, query, params) when is_binary(query) do
     list(user_id, Map.put(params, :q, query))
   end
@@ -64,18 +65,19 @@ defmodule Gmail.Thread do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/list
   """
-  @spec list(String.t, map) :: {atom, [Thread.t], String.t}
+  @spec list(String.t, map) :: {atom, String.t, String.t}
   def list(user_id, params) when is_binary(user_id) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/threads"
     else
       available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
       query =
-        Map.keys(params)
+        params
+        |> Map.keys
         |> Enum.filter(fn key -> key in available_options end)
         |> Enum.reduce(Map.new, fn key, query ->
-          stringKey = Gmail.Helper.camelize(key)
-          Map.put(query, stringKey, params[key])
+          string_key = Helper.camelize(key)
+          Map.put(query, string_key, params[key])
         end)
       if Enum.empty?(query) do
         "users/#{user_id}/threads"

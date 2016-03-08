@@ -4,7 +4,6 @@ defmodule Gmail.Message do
   An email message.
   """
 
-  alias __MODULE__
   alias Gmail.{Payload, Helper}
   import Gmail.Base
 
@@ -27,23 +26,24 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
-  @spec get(String.t, String.t, map) :: {atom, Message.t} | {atom, String.t} | {atom, map}
+  @spec get(String.t, String.t, map) :: {atom, String.t, String.t}
   def get(user_id, message_id, params) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/messages/#{message_id}"
     else
       available_options = [:format, :metadata_headers]
       query =
-        Map.keys(params)
+        params
+        |> Map.keys
         |> Enum.filter(fn key -> key in available_options end)
         |> Enum.reduce(Map.new, fn key, query ->
-          stringKey = Gmail.Helper.camelize(key)
+          string_key = Helper.camelize(key)
           val = if is_list(params[key]) do
             Enum.join(params[key], ",")
           else
             params[key]
           end
-          Map.put(query, stringKey, val)
+          Map.put(query, string_key, val)
         end)
       if Enum.empty?(query) do
         "users/#{user_id}/messages/#{message_id}"
@@ -59,8 +59,19 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/delete
   """
+  @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, message_id) do
     {:delete, base_url, "users/#{user_id}/messages/#{message_id}"}
+  end
+
+  @doc """
+  Trashes a message in the user's mailbox.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/trash
+  """
+  @spec trash(String.t, String.t) :: {atom, String.t, String.t}
+  def trash(user_id, message_id) do
+    {:trash, base_url, "users/#{user_id}/messages/#{message_id}"}
   end
 
   @doc """
@@ -68,7 +79,7 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec search(String.t, String.t, map) :: {atom, [Message.t]}
+  @spec search(String.t, String.t, map) :: {atom, String.t, String.t}
   def search(user_id, query, params) when is_binary(query) do
     list(user_id, Map.put(params, :q, query))
   end
@@ -78,18 +89,19 @@ defmodule Gmail.Message do
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
-  @spec list(String.t, map) :: {atom, [Message.t]}
+  @spec list(String.t, map) :: {atom, String.t, String.t}
   def list(user_id, params) do
     path = if Enum.empty?(params) do
       "users/#{user_id}/messages"
     else
       available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
       query =
-        Map.keys(params)
+        params
+        |> Map.keys
         |> Enum.filter(fn key -> key in available_options end)
         |> Enum.reduce(Map.new, fn key, query ->
-          stringKey = Gmail.Helper.camelize(key)
-          Map.put(query, stringKey, params[key])
+          string_key = Helper.camelize(key)
+          Map.put(query, string_key, params[key])
         end)
       if Enum.empty?(query) do
         "users/#{user_id}/messages"
@@ -101,7 +113,7 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Converts a Gmail API message resource into a local struct
+  Converts a Gmail API message resource into a local struct.
   """
   @spec convert(map) :: Message.t
   def convert(message) do

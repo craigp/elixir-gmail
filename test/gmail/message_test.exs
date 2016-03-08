@@ -135,6 +135,24 @@ defmodule Gmail.MessageTest do
     :ok = Gmail.User.message(:delete, user_id, message_id)
   end
 
+  test "trashes a message", %{
+    message_id: message_id,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id,
+    message: message
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/messages/#{message_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "DELETE" == conn.method
+      {:ok, json} = Poison.encode(message)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    :ok = Gmail.User.message(:trash, user_id, message_id)
+  end
+
   test "handles a 400 error from the API", %{
     message_id: message_id,
     bypass: bypass,

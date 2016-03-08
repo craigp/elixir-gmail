@@ -5,7 +5,7 @@ defmodule Gmail.Draft do
   """
 
   alias __MODULE__
-  alias Gmail.{Message, Thread}
+  alias Gmail.{Message}
   import Gmail.Base
 
   @doc """
@@ -21,7 +21,7 @@ defmodule Gmail.Draft do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/get
   """
-  @spec get(String.t, String.t) :: {atom, Message.t} | {atom, String.t} | {atom, map}
+  @spec get(String.t, String.t) :: {atom, String.t, String.t}
   def get(user_id, draft_id) do
     {:get, base_url, "users/#{user_id}/drafts/#{draft_id}"}
   end
@@ -31,7 +31,7 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/list
   """
-  @spec list(String.t) :: {atom, [Draft.t]}
+  @spec list(String.t) :: {atom, String.t, String.t}
   def list(user_id) do
     {:get, base_url, "users/#{user_id}/drafts"}
   end
@@ -41,7 +41,7 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/delete
   """
-  @spec delete(String.t, String.t) :: {atom, atom} | atom
+  @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, draft_id) do
     {:delete, base_url, "users/#{user_id}/drafts/#{draft_id}"}
   end
@@ -51,11 +51,14 @@ defmodule Gmail.Draft do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/drafts/send
   """
-  @spec send(String.t, String.t) :: {atom, Thread.t}
+  @spec send(String.t, String.t) :: {atom, String.t, String.t, map}
   def send(user_id, draft_id) do
     {:post, base_url, "users/#{user_id}/drafts/send", %{"id" => draft_id}}
   end
 
+  @doc """
+  Converts a Gmail API draft resource into a local struct.
+  """
   @spec convert(map) :: Draft.t
   def convert(%{"id" => id,
     "message" => %{"id" => message_id, "threadId" => thread_id}}) do

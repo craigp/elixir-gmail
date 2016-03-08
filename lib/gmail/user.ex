@@ -5,7 +5,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft}
+  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft, OAuth2}
 
   #  Server API {{{ #
 
@@ -16,7 +16,7 @@ defmodule Gmail.User do
 
   @doc false
   def init({user_id, refresh_token}) do
-    {access_token, expires_at} = Gmail.OAuth2.refresh_access_token(refresh_token)
+    {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
     state = Map.new(user_id: user_id, refresh_token: refresh_token,
       access_token: access_token, expires_at: expires_at)
     {:ok, state}
@@ -140,6 +140,24 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.delete(message_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, _} ->
+          :ok
+      end
+    {:reply, result, state}
+  end
+
+  @doc false
+  def handle_call({:message, {:trash, message_id}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> Message.trash(message_id)
       |> HTTP.execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
@@ -392,8 +410,22 @@ defmodule Gmail.User do
   @doc """
   Lists the messages in the specified user's mailbox.
   """
+  @spec messages(String.t, map) :: {atom, [Message.t]}
   def messages(user_id, params \\ %{}) do
     GenServer.call(String.to_atom(user_id), {:message, {:list, params}}, :infinity)
+  end
+
+  @doc """
+  Gets a message from the specified user's mailbox.
+  """
+  # @spec message(String.t, String.t | String.t, String.t, map | atom, String.t, String.t) :: atom | {atom, Message.t}
+  def message(user_id, message_id) when is_binary(user_id), do: message(user_id, message_id, %{})
+
+  @doc """
+  Gets a message from the specified user's mailbox.
+  """
+  def message(user_id, message_id, params) when is_binary(user_id) do
+    GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}}, :infinity)
   end
 
   @doc """
@@ -404,15 +436,16 @@ defmodule Gmail.User do
   end
 
   @doc """
-  Gets a message from the specified user's mailbox.
+  Trashes the specified message from the user's mailbox.
   """
-  def message(user_id, message_id, params \\ %{}) do
-    GenServer.call(String.to_atom(user_id), {:message, {:get, message_id, params}}, :infinity)
+  def message(:trash, user_id, message_id) do
+    GenServer.call(String.to_atom(user_id), {:message, {:trash, message_id}}, :infinity)
   end
 
   @doc """
   Searches for messages or threads in the specified user's mailbox.
   """
+  @spec search(String.t, atom, String.t, map) :: {atom, []}
   def search(user_id, thread_or_message, query, params \\ %{}) do
     GenServer.call(String.to_atom(user_id), {:search, thread_or_message, query, params}, :infinity)
   end
@@ -435,18 +468,30 @@ defmodule Gmail.User do
     GenServer.call(String.to_atom(user_id), {:label, {:get, label_id}}, :infinity)
   end
 
+  @doc """
+  Creates a label in the specified user's mailbox.
+  """
   def label(:create, user_id, label_name) do
     GenServer.call(String.to_atom(user_id), {:label, {:create, label_name}}, :infinity)
   end
 
+  @doc """
+  Deletes a label from the specified user's mailbox.
+  """
   def label(:delete, user_id, label_id) do
     GenServer.call(String.to_atom(user_id), {:label, {:delete, label_id}}, :infinity)
   end
 
+  @doc """
+  Updates a label in the specified user's mailbox.
+  """
   def label(:update, user_id, %Label{} = label) do
     GenServer.call(String.to_atom(user_id), {:label, {:update, label}}, :infinity)
   end
 
+  @doc """
+  Patches a label in the specified user's mailbox.
+  """
   def label(:patch, user_id, %Label{} = label) do
     GenServer.call(String.to_atom(user_id), {:label, {:patch, label}}, :infinity)
   end
@@ -455,18 +500,30 @@ defmodule Gmail.User do
 
   #  Drafts {{{ #
 
+  @doc """
+  Lists the drafts in the specified user's mailbox.
+  """
   def drafts(user_id) do
     GenServer.call(String.to_atom(user_id), {:draft, {:list}}, :infinity)
   end
 
+  @doc """
+  Gets a draft from the specified user's mailbox.
+  """
   def draft(user_id, draft_id) do
     GenServer.call(String.to_atom(user_id), {:draft, {:get, draft_id}}, :infinity)
   end
 
+  @doc """
+  Deletes a draft from the specified user's mailbox.
+  """
   def draft(:delete, user_id, draft_id) do
     GenServer.call(String.to_atom(user_id), {:draft, {:delete, draft_id}}, :infinity)
   end
 
+  @doc """
+  Sends a draft from the specified user's mailbox.
+  """
   def draft(:send, user_id, draft_id) do
     GenServer.call(String.to_atom(user_id), {:draft, {:send, draft_id}}, :infinity)
   end

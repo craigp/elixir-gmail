@@ -96,7 +96,7 @@ Check the docs for a more complete list of functionality.
 * [ ] History
 * [ ] Attachments
 
-#### Auth
+## Auth
 
 As of now the library doesn't do the initial auth generation for you; you'll
 need to create an app on the [Google Developer
@@ -108,7 +108,7 @@ The library will however, when you supply a refresh token, use that to refresh
 an expired access token for you. Take a look in the `dev.exs.sample` config
 file to see what your config should look like.
 
-### TODO
+## TODO
 
 * [x] Stop mocking HTTP requests and use [Bypass](https://github.com/PSPDFKit-labs/bypass) instead
 * [x] Add format option when fetching threads

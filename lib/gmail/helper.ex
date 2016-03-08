@@ -1,5 +1,9 @@
 defmodule Gmail.Helper do
 
+  @moduledoc """
+  General helper functions.
+  """
+
   @doc """
   Converts a map with string keys to a map with atom keys
   """
@@ -10,6 +14,9 @@ defmodule Gmail.Helper do
     end)
   end
 
+  @doc """
+  Camelizes a string (with the first letter in lower case)
+  """
   def camelize(str) when is_atom(str) do
     str |> Atom.to_string |> camelize
   end

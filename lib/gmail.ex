@@ -13,7 +13,7 @@ defmodule Gmail do
 
   ```elixir
   def deps do
-    [{:gmail, "~> 0.0.17"}]
+  [{:gmail, "~> 0.1"}]
   end
   ```
 
@@ -23,30 +23,41 @@ defmodule Gmail do
 
   ```elixir
   def application do
-    [applications: [:logger, :gmail]]
+  [applications: [:logger, :gmail]]
   end
   ```
 
-  ## Notes
+  Before you can work with mail for a user you'll need to start a process for them.
 
-  #### Auth
+  ```elixir
+  {:ok, pid} = Gmail.User.start("user@example.com", "user-refresh-token")
+  ```
 
-  As of now the library doesn't do the initial auth generation for you; you'll
-  need to create an app on the [Google Developer
-  Console](https://console.developers.google.com/) to get a client ID and secret
-  and authorize a user to get an authorization code, which you can trade for an
-  access token.
+  When a user process starts it will automatically fetch a new access token for that user. Then
+  you can start playing with mail:
 
-  The library will however, when you supply a refresh token, use that to refresh
-  an expired access token for you. Take a look in the `dev.exs.sample` config
-  file to see what your config should look like.
+  ```elixir
+  # fetch a list of threads
+  {:ok, threads, next_page_token} = Gmail.User.threads("user@example.com")
+
+  # fetch the next page of threads using a page token
+  {:ok, _, _} = Gmail.User.threads("user@example.com", %{page_token: next_page_token})
+
+  # fetch a thread by ID
+  {:ok, thread} = Gmail.User.thread("user@example.com", "1233454566")
+
+  # fetch a list of labels
+  {:ok, labels} = Gmail.User.labels("user@example.com")
+  ```
+
+  Check the docs for a more complete list of functionality.
   """
 
   use Application
-  alias Gmail.Thread
+  # alias Gmail.Thread
 
-  @spec search(String.t) :: {atom, [Thread.t]}
-  defdelegate search(query), to: Thread
+  # @spec search(String.t) :: {atom, [Thread.t]}
+  # defdelegate search(query), to: Thread
 
   def start(_type, _args) do
     {:ok, _pid} = Gmail.Supervisor.start_link

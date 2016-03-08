@@ -27,7 +27,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/create
   """
-  @spec create(String.t, String.t) :: {atom, Label.t}
+  @spec create(String.t, String.t) :: {atom, String.t, String.t, map}
   def create(user_id, label_name) do
     {:post, base_url, "users/#{user_id}/labels", %{"name" => label_name}}
   end
@@ -37,7 +37,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/update
   """
-  @spec update(Label.t, String.t) :: {atom, Label.t}
+  @spec update(String.t, Label.t) :: {atom, String.t, String.t, map}
   def update(user_id, %Label{id: id} = label) do
     {:put, base_url, "users/#{user_id}/labels/#{id}", convert_for_update(label)}
   end
@@ -47,7 +47,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/patch
   """
-  @spec patch(Label.t, String.t) :: {atom, Label.t}
+  @spec patch(String.t, Label.t) :: {atom, String.t, String.t, map}
   def patch(user_id, %Label{id: id} = label) do
     {:patch, base_url, "users/#{user_id}/labels/#{id}", convert_for_patch(label)}
   end
@@ -57,7 +57,7 @@ defmodule Gmail.Label do
 
   Google API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/delete
   """
-  @spec delete(String.t, String.t) :: atom | {atom, String.t}
+  @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, label_id) do
     {:delete, base_url, "users/#{user_id}/labels/#{label_id}"}
   end
@@ -67,7 +67,7 @@ defmodule Gmail.Label do
 
   > Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/get
   """
-  @spec get(String.t | String.t, String.t) :: {atom, atom} | {atom, map} | {atom, Label.t}
+  @spec get(String.t, String.t) :: {atom, String.t, String.t}
   def get(user_id, label_id) do
     {:get, base_url, "users/#{user_id}/labels/#{label_id}"}
   end
@@ -77,11 +77,14 @@ defmodule Gmail.Label do
 
   > Gmail API Documentation: https://developers.google.com/gmail/api/v1/reference/users/labels/list
   """
-  @spec list(String.t) :: {atom, [Label.t]} | {atom, map}
+  @spec list(String.t) :: {atom, String.t, String.t}
   def list(user_id) do
     {:get, base_url, "users/#{user_id}/labels"}
   end
 
+  @doc """
+  Converts a Gmail API label resource into a local struct.
+  """
   @spec convert(map) :: Label.t
   def convert(result) do
     Enum.reduce(result, %Label{}, fn({key, value}, label) ->
