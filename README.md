@@ -73,7 +73,7 @@ Check the docs for a more complete list of functionality.
   * [x] `list`
   * [ ] `modify`
   * [ ] `send`
-  * [ ] `trash`
+  * [x] `trash`
   * [ ] `untrash`
   * [ ] `import`
   * [ ] `batchDelete`
