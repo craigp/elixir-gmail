@@ -1,5 +1,7 @@
 elixir-gmail 
 ============
+
+[![Join the chat at https://gitter.im/craigp/elixir-gmail](https://badges.gitter.im/craigp/elixir-gmail.svg)](https://gitter.im/craigp/elixir-gmail?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://secure.travis-ci.org/craigp/elixir-gmail.png?branch=master "Build Status")](http://travis-ci.org/craigp/elixir-gmail) 
 [![Coverage Status](https://coveralls.io/repos/craigp/elixir-gmail/badge.svg?branch=master&service=github)](https://coveralls.io/github/craigp/elixir-gmail?branch=master) 
 [![hex.pm version](https://img.shields.io/hexpm/v/gmail.svg)](https://hex.pm/packages/gmail) 
