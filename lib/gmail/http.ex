@@ -57,7 +57,7 @@ defmodule Gmail.HTTP do
   end
 
   defp do_parse_response({:ok, _response}) do
-    nil
+    :ok
   end
 
   @spec get_headers(String.t) :: [{String.t, String.t}]

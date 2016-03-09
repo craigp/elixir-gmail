@@ -56,7 +56,7 @@ defmodule Gmail.Message do
   end
 
   @doc """
-  Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer `trash` instead
+  Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer `trash` instead.
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/delete
   """

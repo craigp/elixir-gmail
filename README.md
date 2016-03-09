@@ -63,8 +63,8 @@ Check the docs for a more complete list of functionality.
   * [x] `get`
   * [x] `list`
   * [ ] `modify`
-  * [ ] `delete`
-  * [ ] `trash`
+  * [x] `delete`
+  * [x] `trash`
   * [ ] `untrash`
 * [ ] Messages
   * [x] `delete`

@@ -88,4 +88,24 @@ defmodule Gmail.Thread do
     {:get, base_url, path}
   end
 
+  @doc """
+  Immediately and permanently deletes the specified thread. This operation cannot be undone. Prefer `trash` instead.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/delete
+  """
+  @spec delete(String.t, String.t) :: {atom, String.t, String.t}
+  def delete(user_id, thread_id) do
+    {:delete, base_url, "users/#{user_id}/threads/#{thread_id}"}
+  end
+
+  @doc """
+  Moves the specified thread to the trash.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/trash
+  """
+  @spec trash(String.t, String.t) :: {atom, String.t, String.t}
+  def trash(user_id, thread_id) do
+    {:post, base_url, "users/#{user_id}/threads/#{thread_id}/trash"}
+  end
+
 end

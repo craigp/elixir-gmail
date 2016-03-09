@@ -210,6 +210,42 @@ defmodule Gmail.ThreadTest do
     {:error, "Error #1"} = Gmail.User.thread(user_id, thread_id)
   end
 
+  test "deletes a thread", %{
+    thread_id: thread_id,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "DELETE" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      Plug.Conn.resp(conn, 200, "")
+    end
+    assert :ok == Gmail.User.thread(:delete, user_id, thread_id)
+  end
+
+  test "trashes a thread", %{
+    thread_id: thread_id,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id,
+    thread: thread,
+    expected_result: expected_result,
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}/trash" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "POST" == conn.method
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, result} = Gmail.User.thread(:trash, user_id, thread_id)
+    assert result == expected_result
+  end
+
   test "performs a thread search", %{
     bypass: bypass,
     search_results: search_results,
@@ -285,7 +321,6 @@ defmodule Gmail.ThreadTest do
   test "gets a list of threads with a user and params without page token (ignoring invalid param)", %{
     bypass: bypass,
     expected_search_results: expected_search_results,
-    access_token_rec: access_token_rec,
     list_results: list_results,
     user_id: user_id
   } do
