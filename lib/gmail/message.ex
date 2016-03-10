@@ -76,6 +76,16 @@ defmodule Gmail.Message do
   end
 
   @doc """
+  Removes the specified message from the trash.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/untrash
+  """
+  @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
+  def untrash(user_id, message_id) do
+    {:post, base_url, "users/#{user_id}/messages/#{message_id}/untrash"}
+  end
+
+  @doc """
   Searches for messages in the user's mailbox.
 
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list

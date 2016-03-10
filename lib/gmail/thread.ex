@@ -108,4 +108,14 @@ defmodule Gmail.Thread do
     {:post, base_url, "users/#{user_id}/threads/#{thread_id}/trash"}
   end
 
+  @doc """
+  Removes the specified thread from the trash.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads/untrash
+  """
+  @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
+  def untrash(user_id, thread_id) do
+    {:post, base_url, "users/#{user_id}/threads/#{thread_id}/untrash"}
+  end
+
 end

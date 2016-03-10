@@ -114,6 +114,28 @@ defmodule Gmail.User do
   end
 
   @doc false
+  def handle_call({:thread, {:untrash, thread_id}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> Thread.untrash(thread_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          [%{"thread" => error_thread}|_rest] = errors
+          {:error, error_thread}
+        {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
+          {:ok, %Thread{
+              id: id,
+              history_id: history_id,
+              messages: Enum.map(messages, &Message.convert/1)
+            }}
+      end
+    {:reply, result, state}
+  end
+
+  @doc false
   def handle_call({:search, :thread, query, params}, _from, %{user_id: user_id} = state) do
     result =
       user_id
@@ -198,6 +220,24 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.trash(message_id)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          [%{"message" => error_message}|_rest] = errors
+          {:error, error_message}
+        {:ok, raw_message} ->
+          {:ok, Message.convert(raw_message)}
+      end
+    {:reply, result, state}
+  end
+
+  @doc false
+  def handle_call({:message, {:untrash, message_id}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> Message.untrash(message_id)
       |> HTTP.execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
@@ -466,6 +506,13 @@ defmodule Gmail.User do
     GenServer.call(String.to_atom(user_id), {:thread, {:trash, thread_id}}, :infinity)
   end
 
+  @doc """
+  Removes the specified thread from the trash in the user's mailbox.
+  """
+  def thread(:untrash, user_id, thread_id) do
+    GenServer.call(String.to_atom(user_id), {:thread, {:untrash, thread_id}}, :infinity)
+  end
+
   #  }}} Threads #
 
   #  Messages {{{ #
@@ -503,6 +550,13 @@ defmodule Gmail.User do
   """
   def message(:trash, user_id, message_id) do
     GenServer.call(String.to_atom(user_id), {:message, {:trash, message_id}}, :infinity)
+  end
+
+  @doc """
+  Removes the specified message from the trash in the user's mailbox.
+  """
+  def message(:untrash, user_id, message_id) do
+    GenServer.call(String.to_atom(user_id), {:message, {:untrash, message_id}}, :infinity)
   end
 
   @doc """

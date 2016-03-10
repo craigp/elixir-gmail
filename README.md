@@ -65,7 +65,7 @@ Check the docs for a more complete list of functionality.
   * [ ] `modify`
   * [x] `delete`
   * [x] `trash`
-  * [ ] `untrash`
+  * [x] `untrash`
 * [ ] Messages
   * [x] `delete`
   * [x] `get`
@@ -74,7 +74,7 @@ Check the docs for a more complete list of functionality.
   * [ ] `modify`
   * [ ] `send`
   * [x] `trash`
-  * [ ] `untrash`
+  * [x] `untrash`
   * [ ] `import`
   * [ ] `batchDelete`
 * [x] Labels

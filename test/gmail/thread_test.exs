@@ -246,6 +246,26 @@ defmodule Gmail.ThreadTest do
     assert result == expected_result
   end
 
+  test "untrashes a thread", %{
+    thread_id: thread_id,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id,
+    thread: thread,
+    expected_result: expected_result,
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}/untrash" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "POST" == conn.method
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, result} = Gmail.User.thread(:untrash, user_id, thread_id)
+    assert result == expected_result
+  end
+
   test "performs a thread search", %{
     bypass: bypass,
     search_results: search_results,
