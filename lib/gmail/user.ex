@@ -5,7 +5,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft, OAuth2}
+  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft, OAuth2, History}
 
   #  Server API {{{ #
 
@@ -438,6 +438,20 @@ defmodule Gmail.User do
 
   #  }}} Drafts #
 
+  #  History {{{ #
+
+  @doc false
+  def handle_call({:history, {:list, params}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> History.list(params)
+      |> HTTP.execute(state)
+    # TODO parse/validate results
+    {:reply, result, state}
+  end
+
+  #  }}} History #
+
   #  }}} Server API #
 
   #  Client API {{{ #
@@ -646,6 +660,17 @@ defmodule Gmail.User do
   end
 
   #  }}} Drafts #
+
+  #  History {{{ #
+
+  @doc """
+  Lists the hsitory for the specified user's mailbox.
+  """
+  def history(user_id, params \\ %{}) do
+    GenServer.call(String.to_atom(user_id), {:history, {:list, params}}, :infinity)
+  end
+
+  #  }}} History #
 
   #  }}} Client API #
 
