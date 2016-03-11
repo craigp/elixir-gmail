@@ -24,29 +24,8 @@ defmodule Gmail.Thread do
   """
   @spec get(String.t, String.t, map) :: {atom, String.t, String.t}
   def get(user_id, thread_id, params) do
-    path = if Enum.empty?(params) do
-      "users/#{user_id}/threads/#{thread_id}"
-    else
-      available_options = [:format, :metadata_headers]
-      query =
-        params
-        |> Map.keys
-        |> Enum.filter(fn key -> key in available_options end)
-        |> Enum.reduce(Map.new, fn key, query ->
-          string_key = Helper.camelize(key)
-          val = if is_list(params[key]) do
-            Enum.join(params[key], ",")
-          else
-            params[key]
-          end
-          Map.put(query, string_key, val)
-        end)
-      if Enum.empty?(query) do
-        "users/#{user_id}/threads/#{thread_id}"
-      else
-        "users/#{user_id}/threads/#{thread_id}?#{URI.encode_query(query)}"
-      end
-    end
+    available_options = [:format, :metadata_headers]
+    path = querify_params("users/#{user_id}/threads/#{thread_id}", available_options, params)
     {:get, base_url, path}
   end
 
@@ -67,24 +46,8 @@ defmodule Gmail.Thread do
   """
   @spec list(String.t, map) :: {atom, String.t, String.t}
   def list(user_id, params) when is_binary(user_id) do
-    path = if Enum.empty?(params) do
-      "users/#{user_id}/threads"
-    else
-      available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
-      query =
-        params
-        |> Map.keys
-        |> Enum.filter(fn key -> key in available_options end)
-        |> Enum.reduce(Map.new, fn key, query ->
-          string_key = Helper.camelize(key)
-          Map.put(query, string_key, params[key])
-        end)
-      if Enum.empty?(query) do
-        "users/#{user_id}/threads"
-      else
-        "users/#{user_id}/threads?#{URI.encode_query(query)}"
-      end
-    end
+    available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
+    path = querify_params("users/#{user_id}/threads", available_options, params)
     {:get, base_url, path}
   end
 

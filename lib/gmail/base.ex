@@ -4,7 +4,7 @@ defmodule Gmail.Base do
   Base class for common functionality.
   """
 
-  alias Gmail.{HTTP}
+  alias Gmail.{HTTP, Helper}
 
   @default_base_url "https://www.googleapis.com/gmail/v1/"
 
@@ -25,4 +25,29 @@ defmodule Gmail.Base do
     end
   end
 
+  @spec querify_params(String.t, list, map) :: String.t
+  def querify_params(path, available_options, params) do
+    if Enum.empty?(params) do
+      path
+    else
+      query =
+        params
+        |> Map.keys
+        |> Enum.filter(fn key -> key in available_options end)
+        |> Enum.reduce(Map.new, fn key, query ->
+          string_key = Helper.camelize(key)
+          val = if is_list(params[key]) do
+            Enum.join(params[key], ",")
+          else
+            params[key]
+          end
+          Map.put(query, string_key, val)
+        end)
+      if Enum.empty?(query) do
+        path
+      else
+        path <> "?" <> URI.encode_query(query)
+      end
+    end
+  end
 end
