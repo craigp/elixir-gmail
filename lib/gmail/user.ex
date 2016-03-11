@@ -446,7 +446,14 @@ defmodule Gmail.User do
       user_id
       |> History.list(params)
       |> HTTP.execute(state)
-    # TODO parse/validate results
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          {:error, errors}
+        {:ok, %{"history" => history}} ->
+          history
+      end
     {:reply, result, state}
   end
 
