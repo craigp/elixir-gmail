@@ -452,7 +452,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
           {:error, errors}
         {:ok, %{"history" => history}} ->
-          Helper.atomise_keys(history)
+          {:ok, Helper.atomise_keys(history)}
       end
     {:reply, result, state}
   end
