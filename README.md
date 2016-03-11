@@ -93,7 +93,8 @@ Check the docs for a more complete list of functionality.
   * [ ] `create`
   * [x] `send`
   * [ ] `send` (with upload)
-* [ ] History
+* [x] History
+  * [x] `list`
 * [ ] Attachments
 
 ## Auth

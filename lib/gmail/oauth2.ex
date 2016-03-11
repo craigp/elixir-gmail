@@ -83,11 +83,12 @@ defmodule Gmail.OAuth2 do
       {:ok, %HTTPoison.Response{body: body}} ->
         case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
-            # {:ok, %{opts | access_token: access_token, expires_at: (Date.to_secs(Date.now) + expires_in)}}
             {:ok, access_token, (Date.to_secs(Date.now) + expires_in)}
-          fml -> {:error, fml}
+          fml ->
+            {:error, fml}
         end
-      not_ok -> {:error, not_ok}
+      not_ok ->
+        {:error, not_ok}
     end
   end
 

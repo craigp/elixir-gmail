@@ -21,7 +21,6 @@ defmodule Gmail.Payload do
   """
   @spec convert(map) :: Payload.t
   def convert(result) do
-    payload = Helper.atomise_keys(result)
     {body, payload} =
       result
       |> Helper.atomise_keys

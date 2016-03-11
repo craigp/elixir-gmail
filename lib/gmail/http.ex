@@ -12,7 +12,7 @@ defmodule Gmail.HTTP do
   @doc """
   Executes an HTTP action based on the command provided.
   """
-  @spec execute(tuple, map) :: nil | {atom, map}
+  @spec execute(tuple, map) :: atom | {atom, map}
 
   def execute({:get, url, path}, %{access_token: access_token}) do
     HTTPoison.get(url <> path, get_headers(access_token))
@@ -51,7 +51,7 @@ defmodule Gmail.HTTP do
 
   #  Private functions {{{ #
 
-  @spec do_parse_response({atom, Response.t}) :: {atom, map}
+  @spec do_parse_response({atom, Response.t}) :: atom | {atom, map}
   defp do_parse_response({:ok, %Response{body: body}}) when byte_size(body) > 0 do
     decode(body)
   end
