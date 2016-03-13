@@ -87,6 +87,18 @@ defmodule Gmail.Message do
   end
 
   @doc """
+  Modifies the labels on the specified message.
+
+  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/modify#http-request
+  """
+  def modify(user_id, message_id, labels_to_add, labels_to_remove) do
+    {:post, base_url, "users/#{user_id}/messages/#{message_id}/modify", %{
+        "addLabelIds" => labels_to_add,
+        "removeLabelIds" => labels_to_remove
+      }}
+  end
+
+  @doc """
   Converts a Gmail API message resource into a local struct.
   """
   @spec convert(map) :: Message.t

@@ -71,7 +71,7 @@ Check the docs for a more complete list of functionality.
   * [x] `get`
   * [ ] `insert`
   * [x] `list`
-  * [ ] `modify`
+  * [x] `modify`
   * [ ] `send`
   * [x] `trash`
   * [x] `untrash`

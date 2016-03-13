@@ -264,6 +264,23 @@ defmodule Gmail.User do
     {:reply, result, state}
   end
 
+  @doc false
+  def handle_call({:message, {:modify, message_id, labels_to_add, labels_to_remove}}, _from, %{user_id: user_id} = state) do
+    result =
+      user_id
+      |> Message.modify(message_id, labels_to_add, labels_to_remove)
+      |> HTTP.execute(state)
+      |> case do
+        {:ok, %{"error" => %{"code" => 404}} } ->
+          :not_found
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+          {:error, errors}
+        {:ok, raw_message} ->
+          {:ok, Message.convert(raw_message)}
+      end
+    {:reply, result, state}
+  end
+
   #  }}} Messages #
 
   #  Labels {{{ #
@@ -588,6 +605,13 @@ defmodule Gmail.User do
     GenServer.call(String.to_atom(user_id), {:search, thread_or_message, query, params}, :infinity)
   end
 
+  @doc """
+  Modifies the labels on a message in the specified user's mailbox.
+  """
+  def message(:modify, user_id, message_id, labels_to_add, labels_to_remove) do
+    call(user_id, {:message, {:modify, message_id, labels_to_add, labels_to_remove}})
+  end
+
   #  }}} Messages #
 
   #  Labels {{{ #
@@ -680,5 +704,13 @@ defmodule Gmail.User do
   #  }}} History #
 
   #  }}} Client API #
+
+  defp call(user_id, action) when is_binary(user_id) do
+    user_id |> String.to_atom |> call(action)
+  end
+
+  defp call(user_id, action) do
+    GenServer.call(user_id, action, :infinity)
+  end
 
 end

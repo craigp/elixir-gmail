@@ -222,5 +222,33 @@ defmodule Gmail.MessageTest do
     assert results == expected_search_result
   end
 
+  test "modifies the labels on a message", %{
+    message_id: message_id,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id,
+    message: message,
+    expected_result: expected_result
+  } do
+    labels_to_add = ["LABEL1", "LABEL2"]
+    labels_to_remove = ["LABEL3", "LABEL4"]
+    Bypass.expect bypass, fn conn ->
+      {:ok, body, _} = Plug.Conn.read_body(conn)
+      {:ok, body_params} = body |> Poison.decode
+      assert body_params == %{
+        "addLabelIds" => labels_to_add,
+        "removeLabelIds" => labels_to_remove
+      }
+      assert "/gmail/v1/users/#{user_id}/messages/#{message_id}/modify" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "POST" == conn.method
+      {:ok, json} = Poison.encode(message)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, result} = Gmail.User.message(:modify, user_id, message_id, labels_to_add, labels_to_remove)
+    assert result == expected_result
+  end
+
 end
 

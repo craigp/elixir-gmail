@@ -19,7 +19,7 @@ defmodule Gmail.HTTP do
     |> do_parse_response
   end
 
-  def execute({:post, url, path, data}, %{access_token: access_token}) do
+  def execute({:post, url, path, data} = action, %{access_token: access_token}) do
     {:ok, json} = encode(data)
     HTTPoison.post(url <> path, json, get_headers(access_token))
     |> do_parse_response
