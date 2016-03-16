@@ -144,6 +144,33 @@ defmodule Gmail.ThreadTest do
     assert expected_result == thread
   end
 
+  test "refreshes an expired access token when getting a thread", %{
+    thread: thread,
+    thread_id: thread_id,
+    access_token: access_token,
+    expected_result: expected_result,
+    bypass: bypass,
+    user_id: user_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    with_mock Gmail.OAuth2, [
+      refresh_access_token: fn(_) -> {access_token, 100000000000000} end,
+      # access_token_expired?: fn(wat) -> IO.puts wat; true end
+      access_token_expired?: fn(_) -> true end
+    ] do
+      {:ok, thread} = Gmail.User.thread(user_id, thread_id)
+      assert expected_result == thread
+      assert called Gmail.OAuth2.refresh_access_token("dummy-refresh-token")
+    end
+  end
+
   test "gets a thread, specifying the full format", %{
     thread: thread,
     thread_id: thread_id,

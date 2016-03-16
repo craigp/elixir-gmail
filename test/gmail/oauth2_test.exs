@@ -21,7 +21,7 @@ defmodule Gmail.OAuth2Test do
     response = %HTTPoison.Response{body: body}
     with_mock URI, [ encode_query: fn _query -> fake_query end ] do
       with_mock HTTPoison, [ post: fn _url, _payload, _headers -> {:ok, response} end ] do
-        {access_token, expires_at} = Gmail.OAuth2.refresh_access_token(opts)
+        {_access_token, _expires_at} = Gmail.OAuth2.refresh_access_token(opts)
       end
     end
   end

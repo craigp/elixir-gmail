@@ -96,6 +96,7 @@ Check the docs for a more complete list of functionality.
 * [x] History
   * [x] `list`
 * [ ] Attachments
+  * [ ] `get`
 
 ## Auth
 

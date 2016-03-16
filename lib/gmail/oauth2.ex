@@ -4,32 +4,8 @@ defmodule Gmail.OAuth2 do
   OAuth2 access token handling.
   """
 
-  use GenServer
   import Poison, only: [decode: 1]
   use Timex
-
-  #  Server API {{{ #
-
-  @doc false
-  def start_link, do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
-
-  @doc false
-  def init(:ok) do
-    {:ok, %{config: from_config_file}}
-  end
-
-  @doc false
-  def handle_call(:config, _from, %{config: config} = state) do
-    {:reply, config, state}
-  end
-
-  @doc false
-  def handle_call({:refresh_access_token, refresh_token}, _from, %{config: config} = state) do
-    {:ok, access_token, expires_at} = do_refresh_access_token(config, refresh_token)
-    {:reply, {access_token, expires_at}, state}
-  end
-
-  #  }}} Server API #
 
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
@@ -56,23 +32,20 @@ defmodule Gmail.OAuth2 do
 
   @spec refresh_access_token(String.t) :: {String.t, number}
   def refresh_access_token(refresh_token) do
-    GenServer.call(__MODULE__, {:refresh_access_token, refresh_token})
-  end
-
-  @doc """
-  Gets the config for a Gmail API connection, including a refreshed access token.
-  """
-  @spec get_config() :: map
-  def get_config do
-    GenServer.call(__MODULE__, :config)
+    {:ok, access_token, expires_at} = do_refresh_access_token(refresh_token)
+    {access_token, expires_at}
   end
 
   #  }}} Client API #
 
   #  Private functions {{{ #
 
-  @spec do_refresh_access_token(map, String.t) :: {atom, map}
-  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) do
+  @spec do_refresh_access_token(String.t | map, String.t) :: {atom, map}
+  defp do_refresh_access_token(refresh_token) do
+    from_config_file |> do_refresh_access_token(refresh_token)
+  end
+
+  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret} = config, refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
@@ -84,8 +57,8 @@ defmodule Gmail.OAuth2 do
         case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
             {:ok, access_token, (Date.to_secs(Date.now) + expires_in)}
-          fml ->
-            {:error, fml}
+          other ->
+            {:error, other}
         end
       not_ok ->
         {:error, not_ok}

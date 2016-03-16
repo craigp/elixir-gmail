@@ -1,4 +1,5 @@
 defmodule Gmail.User do
+  require Logger
 
   @moduledoc """
   Represents a user's mailbox, holding it's config and tokens.
@@ -22,6 +23,10 @@ defmodule Gmail.User do
     {:ok, state}
   end
 
+  def handle_cast({:update_access_token, access_token, expires_at}, state) do
+    {:noreply, %{state | access_token: access_token, expires_at: expires_at}}
+  end
+
   #  Threads {{{ #
 
   @doc false
@@ -29,7 +34,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Thread.list(params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
           threads =
@@ -54,7 +59,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Thread.get(thread_id, params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -78,7 +83,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Thread.delete(thread_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -96,7 +101,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Thread.trash(thread_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -118,7 +123,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Thread.untrash(thread_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -140,7 +145,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Thread.search(query, params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
           threads =
@@ -169,7 +174,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Message.list(params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"messages" => msgs}} ->
           {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
@@ -182,7 +187,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.get(message_id, params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -202,7 +207,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.delete(message_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -220,7 +225,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.trash(message_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -238,7 +243,7 @@ defmodule Gmail.User do
     result  =
       user_id
       |> Message.untrash(message_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -256,7 +261,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Message.search(query, params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"messages" => msgs}} ->
           {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
@@ -269,7 +274,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Message.modify(message_id, labels_to_add, labels_to_remove)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -290,7 +295,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.list
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -304,7 +309,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.get(label_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -323,7 +328,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.create(label_name)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"errors" => errors}} } ->
           [%{"message" => error_message}|_rest] = errors
@@ -340,7 +345,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.delete(label_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -357,7 +362,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.update(label)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -371,7 +376,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Label.patch(label)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -389,7 +394,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Draft.list
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -405,7 +410,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Draft.get(draft_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -424,7 +429,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Draft.delete(draft_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -441,7 +446,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> Draft.send(draft_id)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           {:error, :not_found}
@@ -462,7 +467,7 @@ defmodule Gmail.User do
     result =
       user_id
       |> History.list(params)
-      |> HTTP.execute(state)
+      |> http_execute(state)
       |> case do
         {:ok, %{"error" => %{"code" => 404}} } ->
           :not_found
@@ -705,6 +710,8 @@ defmodule Gmail.User do
 
   #  }}} Client API #
 
+  #  Private functions {{{ #
+
   defp call(user_id, action) when is_binary(user_id) do
     user_id |> String.to_atom |> call(action)
   end
@@ -712,5 +719,17 @@ defmodule Gmail.User do
   defp call(user_id, action) do
     GenServer.call(user_id, action, :infinity)
   end
+
+  defp http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
+    if OAuth2.access_token_expired?(state) do
+      Logger.debug "Refreshing access token for #{user_id}"
+      {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
+      GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
+      state = %{state | access_token: access_token}
+    end
+    HTTP.execute(action, state)
+  end
+
+  #  }}} Private functions #
 
 end

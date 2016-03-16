@@ -4,7 +4,7 @@ defmodule Gmail.Base do
   Base class for common functionality.
   """
 
-  alias Gmail.{HTTP, Helper}
+  alias Gmail.{Helper}
 
   @default_base_url "https://www.googleapis.com/gmail/v1/"
 
