@@ -4,8 +4,9 @@ defmodule Gmail.Thread do
   A collection of messages representing a conversation.
   """
 
+  alias __MODULE__
   import Gmail.Base
-  alias Gmail.{Helper}
+  alias Gmail.{Helper, Message}
 
   @doc """
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads#resource
@@ -79,6 +80,86 @@ defmodule Gmail.Thread do
   @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
   def untrash(user_id, thread_id) do
     {:post, base_url, "users/#{user_id}/threads/#{thread_id}/untrash"}
+  end
+
+  @doc """
+  Handles a thread resource response from the Gmail API.
+  """
+  def handle_thread_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
+        {:ok, %Thread{
+            id: id,
+            history_id: history_id,
+            messages: Enum.map(messages, &Message.convert/1)
+          }}
+    end
+  end
+
+  @doc """
+  Handles a thread list response from the Gmail API.
+  """
+  def handle_thread_list_response(response) do
+    case response do
+      {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            struct(Thread, Helper.atomise_keys(thread))
+          end)
+        {:ok, threads, next_page_token}
+      {:ok, %{"threads" => raw_threads}} ->
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            struct(Thread, Helper.atomise_keys(thread))
+          end)
+        {:ok, threads}
+    end
+  end
+
+  @doc """
+  Handles a thread search response from the Gmail API.
+  """
+  def handle_thread_search_response(response) do
+    case response do
+      {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            struct(Thread, Helper.atomise_keys(thread))
+          end)
+        {:ok, threads, next_page_token}
+      {:ok, %{"threads" => raw_threads}} ->
+        threads =
+          raw_threads
+          |> Enum.map(fn thread ->
+            struct(Thread, Helper.atomise_keys(thread))
+          end)
+        {:ok, threads}
+    end
+  end
+
+  @doc """
+  Handles a thread delete response from the Gmail API.
+  """
+  def handle_thread_delete_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"thread" => error_thread}|_rest] = errors
+        {:error, error_thread}
+      :ok ->
+        :ok
+    end
   end
 
 end

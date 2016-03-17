@@ -92,6 +92,50 @@ defmodule Gmail.Label do
     end)
   end
 
+  @doc """
+  Handles a label resource response from the Gmail API.
+  """
+  def handle_label_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_label} ->
+        {:ok, convert(raw_label)}
+    end
+  end
+
+  @doc """
+  Handles a label list response from the Gmail API.
+  """
+  def handle_labels_response(response) do
+    case response do
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, %{"labels" => raw_labels}} ->
+        {:ok, Enum.map(raw_labels, &convert/1)}
+    end
+  end
+
+  @doc """
+  Handles a label delete response from the Gmail API.
+  """
+  def handle_label_delete_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, _} ->
+        :ok
+    end
+  end
+
   @spec convert_for_patch(Label.t) :: map
   defp convert_for_patch(label) do
     label |> Map.from_struct |> Enum.reduce(%{}, fn({key, value}, map) ->

@@ -35,8 +35,9 @@ defmodule Gmail.LabelTest do
 
     expected_results = [expected_result]
 
+    error_message_1 = "Error #1"
     errors = [
-      %{"message" => "Error #1"},
+      %{"message" => error_message_1},
       %{"message" => "Error #2"}
     ]
 
@@ -45,6 +46,7 @@ defmodule Gmail.LabelTest do
     bypass = Bypass.open
     Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
 
+    Gmail.User.stop_mail(user_id)
     with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {access_token, 100000000000000} end] do
       {:ok, _server_pid} = Gmail.User.start_mail(user_id, "dummy-refresh-token")
     end
@@ -62,7 +64,8 @@ defmodule Gmail.LabelTest do
         four_hundred_error: %{"error" => error_content},
         four_hundred_error_content: error_content,
         bypass: bypass,
-        user_id: user_id
+        user_id: user_id,
+        error_message_1: error_message_1
       }}
   end
 
@@ -181,7 +184,8 @@ defmodule Gmail.LabelTest do
     label_id: label_id,
     four_hundred_error: four_hundred_error,
     four_hundred_error_content: four_hundred_error_content,
-    user_id: user_id
+    user_id: user_id,
+    error_message_1: error_message_1
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{user_id}/labels/#{label_id}" == conn.request_path
@@ -190,7 +194,7 @@ defmodule Gmail.LabelTest do
       Plug.Conn.resp(conn, 200, json)
     end
     {:error, error_detail} = Gmail.User.label(:update, user_id, expected_result)
-    assert four_hundred_error_content == error_detail
+    assert error_message_1 == error_detail
   end
 
   test "gets a label", %{
@@ -277,7 +281,8 @@ defmodule Gmail.LabelTest do
     four_hundred_error: four_hundred_error,
     four_hundred_error_content: four_hundred_error_content,
     label_id: label_id,
-    user_id: user_id
+    user_id: user_id,
+    error_message_1: error_message_1
   } do
     new_label_name = "Something Else"
     patch_label = %Gmail.Label{id: label_id, name: new_label_name}
@@ -288,7 +293,7 @@ defmodule Gmail.LabelTest do
       Plug.Conn.resp(conn, 200, json)
     end
     {:error, error_detail} = Gmail.User.label(:patch, user_id, patch_label)
-    assert four_hundred_error_content == error_detail
+    assert error_message_1 == error_detail
   end
 
 end

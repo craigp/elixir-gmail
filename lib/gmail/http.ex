@@ -15,35 +15,41 @@ defmodule Gmail.HTTP do
   @spec execute(tuple, map) :: atom | {atom, map}
 
   def execute({:get, url, path}, %{access_token: access_token}) do
-    HTTPoison.get(url <> path, get_headers(access_token))
+    url <> path
+    |> HTTPoison.get(get_headers(access_token))
     |> do_parse_response
   end
 
   def execute({:post, url, path, data}, %{access_token: access_token}) do
     {:ok, json} = encode(data)
-    HTTPoison.post(url <> path, json, get_headers(access_token))
+    url <> path
+    |> HTTPoison.post(json, get_headers(access_token))
     |> do_parse_response
   end
 
   def execute({:post, url, path}, %{access_token: access_token}) do
-    HTTPoison.post(url <> path, "", get_headers(access_token))
+    url <> path
+    |> HTTPoison.post("", get_headers(access_token))
     |> do_parse_response
   end
 
   def execute({:delete, url, path}, %{access_token: access_token}) do
-    HTTPoison.delete(url <> path, get_headers(access_token))
+    url <> path
+    |> HTTPoison.delete(get_headers(access_token))
     |> do_parse_response
   end
 
   def execute({:put, url, path, data}, %{access_token: access_token}) do
     {:ok, json} = encode(data)
-    HTTPoison.put(url <> path, json, get_headers(access_token))
+    url <> path
+    |> HTTPoison.put(json, get_headers(access_token))
     |> do_parse_response
   end
 
   def execute({:patch, url, path, data}, %{access_token: access_token}) do
     {:ok, json} = encode(data)
-    HTTPoison.patch(url <> path, json, get_headers(access_token))
+    url <> path
+    |> HTTPoison.patch(json, get_headers(access_token))
     |> do_parse_response
   end
 

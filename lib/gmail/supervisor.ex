@@ -14,7 +14,8 @@ defmodule Gmail.Supervisor do
   @doc false
   def init(:ok) do
     children = [
-      worker(Gmail.UserManager, [])
+      supervisor(Gmail.UserManager, []),
+      supervisor(Gmail.Thread.Supervisor, [])
     ]
     supervise(children, strategy: :one_for_one)
   end
