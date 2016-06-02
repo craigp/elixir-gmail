@@ -116,7 +116,7 @@ defmodule Gmail.LabelTest do
       {:ok, json} = Poison.encode(label_not_found)
       Plug.Conn.resp(conn, 200, json)
     end
-    :not_found = Gmail.User.label(:delete, user_id, label_id)
+    {:error, :not_found} = Gmail.User.label(:delete, user_id, label_id)
   end
 
   test "handles a 400 error when deleting a label", %{

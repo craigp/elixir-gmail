@@ -6,7 +6,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, Helper, HTTP, Label, Draft, OAuth2, History}
+  alias Gmail.{Thread, Message, HTTP, Label, Draft, OAuth2, History}
 
   #  Server API {{{ #
 

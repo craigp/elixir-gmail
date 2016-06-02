@@ -86,20 +86,19 @@ defmodule Gmail.Thread do
   Handles a thread resource response from the Gmail API.
   """
   def handle_thread_response(response) do
-    case response do
-      {:ok, %{"error" => %{"code" => 404}} } ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       {:ok, %{"error" => details}} ->
         {:error, details}
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
         {:ok, %Thread{
-            id: id,
-            history_id: history_id,
-            messages: Enum.map(messages, &Message.convert/1)
-          }}
+          id: id,
+          history_id: history_id,
+          messages: Enum.map(messages, &Message.convert/1)
+        }}
     end
   end
 
@@ -107,7 +106,11 @@ defmodule Gmail.Thread do
   Handles a thread list response from the Gmail API.
   """
   def handle_thread_list_response(response) do
-    case response do
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
         threads =
           raw_threads
@@ -129,12 +132,11 @@ defmodule Gmail.Thread do
   Handles a thread delete response from the Gmail API.
   """
   def handle_thread_delete_response(response) do
-    case response do
-      {:ok, %{"error" => %{"code" => 404}} } ->
-        :not_found
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-        [%{"thread" => error_thread}|_rest] = errors
-        {:error, error_thread}
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       :ok ->
         :ok
     end

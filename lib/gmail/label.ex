@@ -96,12 +96,11 @@ defmodule Gmail.Label do
   Handles a label resource response from the Gmail API.
   """
   def handle_label_response(response) do
-    case response do
-      {:ok, %{"error" => %{"code" => 404}} } ->
-        {:error, :not_found}
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       {:ok, %{"error" => details}} ->
         {:error, details}
       {:ok, raw_label} ->
@@ -113,9 +112,11 @@ defmodule Gmail.Label do
   Handles a label list response from the Gmail API.
   """
   def handle_labels_response(response) do
-    case response do
-      {:ok, %{"error" => details}} ->
-        {:error, details}
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       {:ok, %{"labels" => raw_labels}} ->
         {:ok, Enum.map(raw_labels, &convert/1)}
     end
@@ -124,13 +125,13 @@ defmodule Gmail.Label do
   @doc """
   Handles a label delete response from the Gmail API.
   """
+  @spec handle_label_delete_response(map) :: {atom} | {atom, String.t} | {atom, atom}
   def handle_label_delete_response(response) do
-    case response do
-      {:ok, %{"error" => %{"code" => 404}} } ->
-        :not_found
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-        [%{"message" => error_message}|_rest] = errors
-        {:error, error_message}
+    response
+    |> handle_error
+    |> case do
+      {:error, message} ->
+        {:error, message}
       {:ok, _} ->
         :ok
     end
