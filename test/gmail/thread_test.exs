@@ -145,6 +145,29 @@ defmodule Gmail.ThreadTest do
     assert expected_result == thread
   end
 
+  test "handles failure when the API is unreachable when getting a thread", %{
+    thread: thread,
+    thread_id: thread_id,
+    access_token: access_token,
+    expected_result: expected_result,
+    bypass: bypass,
+    user_id: user_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    Bypass.down(bypass)
+    {:error, :econnrefused} = Gmail.User.thread(user_id, thread_id)
+    Bypass.up(bypass)
+    {:ok, thread} = Gmail.User.thread(user_id, thread_id)
+    assert expected_result == thread
+  end
+
   test "refreshes an expired access token when getting a thread", %{
     thread: thread,
     thread_id: thread_id,

@@ -66,6 +66,10 @@ defmodule Gmail.HTTP do
     :ok
   end
 
+  defp do_parse_response({:error, %HTTPoison.Error{id: id, reason: reason}}) do
+		{:error, reason}
+  end
+
   @spec get_headers(String.t) :: [{String.t, String.t}]
   defp get_headers(token) do
     [

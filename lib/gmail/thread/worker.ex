@@ -120,7 +120,9 @@ defmodule Gmail.Thread.Worker do
 
   @spec ensure_server_started(String.t, map) :: pid
   defp ensure_server_started(thread_id, %{user_id: user_id} = state) do
-    pid = Process.whereis(build_tag(user_id, thread_id))
+    pid = user_id
+    |> build_tag(thread_id)
+    |> Process.whereis
     if pid do
       Logger.debug "Thread process found for #{thread_id}"
       pid
