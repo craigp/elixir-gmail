@@ -135,6 +135,8 @@ defmodule Gmail.User do
       |> case do
         {:ok, %{"messages" => msgs}} ->
           {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+        {:ok, %{"resultSizeEstimate" => 0}} ->
+          {:ok, []}
       end
     {:reply, result, state}
   end
