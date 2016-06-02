@@ -206,7 +206,7 @@ defmodule Gmail.User do
       user_id
       |> Label.list
       |> http_execute(state)
-      |> Label.handle_labels_response
+      |> Label.handle_label_list_response
     {:reply, result, state}
   end
 
@@ -634,7 +634,7 @@ defmodule Gmail.User do
   @doc """
   Executes an HTTP action.
   """
-  @spec http_execute(tuple, map) :: {atom, map}
+  @spec http_execute({atom, String.t, String.t} | {atom, String.t, String.t, map}, map) :: atom | {atom, map | String.t}
   def http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
     if OAuth2.access_token_expired?(state) do
       Logger.debug "Refreshing access token for #{user_id}"

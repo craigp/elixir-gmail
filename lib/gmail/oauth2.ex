@@ -40,7 +40,8 @@ defmodule Gmail.OAuth2 do
 
   #  Private functions {{{ #
 
-  @spec do_refresh_access_token(String.t | map, String.t) :: {atom, map}
+  @spec do_refresh_access_token(String.t | map, String.t) :: {atom, map} | {atom, String.t, number}
+
   defp do_refresh_access_token(refresh_token) do
     from_config_file |> do_refresh_access_token(refresh_token)
   end

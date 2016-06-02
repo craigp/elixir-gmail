@@ -95,6 +95,7 @@ defmodule Gmail.Label do
   @doc """
   Handles a label resource response from the Gmail API.
   """
+  @spec handle_label_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
   def handle_label_response(response) do
     response
     |> handle_error
@@ -111,7 +112,8 @@ defmodule Gmail.Label do
   @doc """
   Handles a label list response from the Gmail API.
   """
-  def handle_labels_response(response) do
+  @spec handle_label_list_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
+  def handle_label_list_response(response) do
     response
     |> handle_error
     |> case do
@@ -125,7 +127,7 @@ defmodule Gmail.Label do
   @doc """
   Handles a label delete response from the Gmail API.
   """
-  @spec handle_label_delete_response(map) :: {atom} | {atom, String.t} | {atom, atom}
+  @spec handle_label_delete_response(atom | {atom, map | String.t}) :: {atom, String.t} | {atom, map} | atom
   def handle_label_delete_response(response) do
     response
     |> handle_error

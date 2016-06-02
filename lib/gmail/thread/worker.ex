@@ -79,7 +79,7 @@ defmodule Gmail.Thread.Worker do
         Logger.debug "Caching result for thread #{thread_id}"
         state = Map.merge(state, %{thread: thread, last_params: params})
       _otherwise ->
-        :noop
+        :noop # TODO fix this, it's awful
     end
     state = update_ttl(state)
     {:reply, result, state}
@@ -88,7 +88,7 @@ defmodule Gmail.Thread.Worker do
   @doc """
   Gets a thread.
   """
-  @spec get(String.t, map, map) :: {atom, Thread.t}
+  @spec get(String.t, map, map) :: {atom, map} | {atom, String.t}
   def get(thread_id, params, state) do
     thread_id
     |> ensure_server_started(state)

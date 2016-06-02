@@ -85,14 +85,13 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread resource response from the Gmail API.
   """
+	@spec handle_thread_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
   def handle_thread_response(response) do
     response
     |> handle_error
     |> case do
-      {:error, message} ->
-        {:error, message}
-      {:ok, %{"error" => details}} ->
-        {:error, details}
+      {:error, detail} ->
+        {:error, detail}
       {:ok, %{"id" => id, "historyId" => history_id, "messages" => messages}} ->
         {:ok, %Thread{
           id: id,
@@ -105,12 +104,13 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread list response from the Gmail API.
   """
+	@spec handle_thread_list_response(atom | {atom, map | String.t}) :: {atom, String.t | map} | {atom, map, String.t}
   def handle_thread_list_response(response) do
     response
     |> handle_error
     |> case do
-      {:error, message} ->
-        {:error, message}
+      {:error, detail} ->
+        {:error, detail}
       {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
         threads =
           raw_threads
@@ -131,12 +131,13 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread delete response from the Gmail API.
   """
+  @spec handle_thread_delete_response(atom | {atom, map | String.t}) :: {atom, String.t | map} | {atom, map, String.t} | atom
   def handle_thread_delete_response(response) do
     response
     |> handle_error
     |> case do
-      {:error, message} ->
-        {:error, message}
+      {:error, detail} ->
+        {:error, detail}
       :ok ->
         :ok
     end
