@@ -65,6 +65,43 @@ defmodule Gmail.MessageTest do
     }
   end
 
+  test "gets messages", %{
+    search_result: search_result,
+    bypass: bypass,
+    access_token: access_token,
+    user_id: user_id,
+    expected_search_result: expected_search_result
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/messages" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(search_result)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, result} = Gmail.User.messages(user_id)
+    assert result == expected_search_result
+  end
+
+  test "handles no messages being returned", %{
+    bypass: bypass,
+    access_token: access_token,
+    user_id: user_id,
+    expected_search_result: expected_search_result
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/messages" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(%{"resultSizeEstimate" => 0})
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, result} = Gmail.User.messages(user_id)
+    assert result == []
+  end
+
   test "gets a message", %{
     message: message,
     message_id: message_id,

@@ -112,4 +112,48 @@ defmodule Gmail.Message do
     message
   end
 
+  @doc """
+  Handles a message resource response from the Gmail API.
+  """
+  def handle_message_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        {:error, :not_found}
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      {:ok, %{"error" => details}} ->
+        {:error, details}
+      {:ok, raw_message} ->
+        {:ok, Message.convert(raw_message)}
+    end
+  end
+
+  @doc """
+  Handles a message list response from the Gmail API.
+  """
+  def handle_message_list_response(response) do
+    case response do
+      {:ok, %{"messages" => msgs}} ->
+        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+      {:ok, %{"resultSizeEstimate" => 0}} ->
+        {:ok, []}
+    end
+  end
+
+  @doc """
+  Handles a message delete response from the Gmail API.
+  """
+  def handle_message_delete_response(response) do
+    case response do
+      {:ok, %{"error" => %{"code" => 404}} } ->
+        :not_found
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        [%{"message" => error_message}|_rest] = errors
+        {:error, error_message}
+      :ok ->
+        :ok
+    end
+  end
+
 end

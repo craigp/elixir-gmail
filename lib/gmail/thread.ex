@@ -126,28 +126,6 @@ defmodule Gmail.Thread do
   end
 
   @doc """
-  Handles a thread search response from the Gmail API.
-  """
-  def handle_thread_search_response(response) do
-    case response do
-      {:ok, %{"threads" => raw_threads, "nextPageToken" => next_page_token}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
-          end)
-        {:ok, threads, next_page_token}
-      {:ok, %{"threads" => raw_threads}} ->
-        threads =
-          raw_threads
-          |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
-          end)
-        {:ok, threads}
-    end
-  end
-
-  @doc """
   Handles a thread delete response from the Gmail API.
   """
   def handle_thread_delete_response(response) do

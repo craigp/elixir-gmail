@@ -118,7 +118,7 @@ defmodule Gmail.User do
       user_id
       |> Thread.search(query, params)
       |> http_execute(state)
-      |> Thread.handle_thread_search_response
+      |> Thread.handle_thread_list_response
     {:reply, result, state}
   end
 
@@ -132,12 +132,7 @@ defmodule Gmail.User do
       user_id
       |> Message.list(params)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"messages" => msgs}} ->
-          {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
-        {:ok, %{"resultSizeEstimate" => 0}} ->
-          {:ok, []}
-      end
+      |> Message.handle_message_list_response
     {:reply, result, state}
   end
 
@@ -147,17 +142,7 @@ defmodule Gmail.User do
       user_id
       |> Message.get(message_id, params)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          [%{"message" => error_message}|_rest] = errors
-          {:error, error_message}
-        {:ok, %{"error" => details}} ->
-          {:error, details}
-        {:ok, raw_message} ->
-          {:ok, Message.convert(raw_message)}
-      end
+      |> Message.handle_message_response
     {:reply, result, state}
   end
 
@@ -167,15 +152,7 @@ defmodule Gmail.User do
       user_id
       |> Message.delete(message_id)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          [%{"message" => error_message}|_rest] = errors
-          {:error, error_message}
-        :ok ->
-          :ok
-      end
+      |> Message.handle_message_delete_response
     {:reply, result, state}
   end
 
@@ -185,15 +162,7 @@ defmodule Gmail.User do
       user_id
       |> Message.trash(message_id)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          [%{"message" => error_message}|_rest] = errors
-          {:error, error_message}
-        {:ok, raw_message} ->
-          {:ok, Message.convert(raw_message)}
-      end
+      |> Message.handle_message_response
     {:reply, result, state}
   end
 
@@ -203,15 +172,7 @@ defmodule Gmail.User do
       user_id
       |> Message.untrash(message_id)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          [%{"message" => error_message}|_rest] = errors
-          {:error, error_message}
-        {:ok, raw_message} ->
-          {:ok, Message.convert(raw_message)}
-      end
+      |> Message.handle_message_response
     {:reply, result, state}
   end
 
@@ -221,10 +182,7 @@ defmodule Gmail.User do
       user_id
       |> Message.search(query, params)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"messages" => msgs}} ->
-          {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
-      end
+      |> Message.handle_message_list_response
     {:reply, result, state}
   end
 
@@ -234,14 +192,7 @@ defmodule Gmail.User do
       user_id
       |> Message.modify(message_id, labels_to_add, labels_to_remove)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          {:error, errors}
-        {:ok, raw_message} ->
-          {:ok, Message.convert(raw_message)}
-      end
+      |> Message.handle_message_response
     {:reply, result, state}
   end
 
@@ -386,14 +337,7 @@ defmodule Gmail.User do
       user_id
       |> History.list(params)
       |> http_execute(state)
-      |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
-          :not_found
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
-          {:error, errors}
-        {:ok, %{"history" => history}} ->
-          {:ok, Helper.atomise_keys(history)}
-      end
+      |> History.handle_history_response
     {:reply, result, state}
   end
 
