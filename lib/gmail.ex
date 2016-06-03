@@ -60,8 +60,7 @@ defmodule Gmail do
   # defdelegate search(query), to: Thread
 
   def start(_type, _args) do
-    {:ok, _pid} = Gmail.Supervisor.start_link
-    {:ok, self}
+    Gmail.Supervisor.start_link
   end
 
   def stop(_args) do
