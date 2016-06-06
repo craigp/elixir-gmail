@@ -95,8 +95,8 @@ Check the docs for a more complete list of functionality.
   * [ ] `send` (with upload)
 * [x] History
   * [x] `list`
-* [ ] Attachments
-  * [ ] `get`
+* [x] Attachments 
+  * [x] `get` (thanks to @killtheliterate)
 
 ## Auth
 

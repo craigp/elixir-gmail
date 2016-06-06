@@ -51,7 +51,6 @@ defmodule Gmail.MessageAttachment do
         {:error, message}
       {:ok, raw_message} ->
         {:ok, MessageAttachment.convert(raw_message)}
-      # :ok -> :ok # uh... i'm not sure why i should handle this case.
     end
   end
 
