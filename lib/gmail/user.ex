@@ -6,7 +6,7 @@ defmodule Gmail.User do
   """
 
   use GenServer
-  alias Gmail.{Thread, Message, HTTP, Label, Draft, OAuth2, History}
+  alias Gmail.{Thread, Message, MessageAttachment, HTTP, Label, Draft, OAuth2, History}
 
   #  Server API {{{ #
 
@@ -197,6 +197,20 @@ defmodule Gmail.User do
   end
 
   #  }}} Messages #
+
+  #  Attachments {{{ #
+
+  @doc false
+  def handle_call({:attachment, {:get, message_id, id}}, _from, %{user_id: user_id} = state) do
+    result  =
+      user_id
+      |> MessageAttachment.get(message_id, id)
+      |> http_execute(state)
+      |> MessageAttachment.handle_attachment_response
+    {:reply, result, state}
+  end
+
+  #  }}} Attachments #
 
   #  Labels {{{ #
 
@@ -530,6 +544,19 @@ defmodule Gmail.User do
   end
 
   #  }}} Messages #
+
+  #  Attachments {{{ #
+
+  @spec message(atom | String.t, String.t, map) :: atom
+
+  @doc """
+  Gets an attachment from the specified user's mailbox.
+  """
+  def attachment(user_id, message_id, id) do
+    call(user_id, {:attachment, {:get, message_id, id}})
+  end
+
+  #  }}} Attachments #
 
   #  Labels {{{ #
 
