@@ -4,7 +4,6 @@ defmodule Gmail.Mixfile do
   def project do
     [app: :gmail,
      version: "0.1.11",
-     elixir: "~> 1.2",
      deps: deps,
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test],

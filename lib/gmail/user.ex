@@ -36,9 +36,12 @@ defmodule Gmail.User do
   @doc false
   def handle_cast({:subscribe, pid}, %{pids: pids} = state) do
     Logger.debug "Subscribe from pid #{:erlang.pid_to_list(pid)}"
-    unless pid in pids do
-      Process.monitor(pid)
-      state = Map.put(state, :pids, [pid|pids])
+    state = cond do
+      pid in pids ->
+        state
+      true ->
+        Process.monitor(pid)
+        Map.put(state, :pids, [pid|pids])
     end
     {:noreply, state}
   end
@@ -137,12 +140,15 @@ defmodule Gmail.User do
   end
 
   @doc false
-  def handle_call({:message, {:get, message_id, params}}, _from, %{user_id: user_id} = state) do
-    result  =
-      user_id
-      |> Message.get(message_id, params)
-      |> http_execute(state)
-      |> Message.handle_message_response
+  def handle_call({:message, {:get, message_ids, params}}, from, state) when is_list(message_ids) do
+    Gmail.Message.Worker.fetch(from, message_ids, params, state)
+    {:noreply, state}
+  end
+
+  # TODO check this to use worker
+  @doc false
+  def handle_call({:message, {:get, message_id, params}}, _from, state) do
+    result = Gmail.Message.Worker.get(message_id, params, state);
     {:reply, result, state}
   end
 
@@ -663,11 +669,14 @@ defmodule Gmail.User do
   """
   @spec http_execute({atom, String.t, String.t} | {atom, String.t, String.t, map}, map) :: atom | {atom, map | String.t}
   def http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
-    if OAuth2.access_token_expired?(state) do
-      Logger.debug "Refreshing access token for #{user_id}"
-      {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
-      GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
-      state = %{state | access_token: access_token}
+    state = cond do
+      OAuth2.access_token_expired?(state) ->
+        Logger.debug "Refreshing access token for #{user_id}"
+        {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
+        GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
+        %{state | access_token: access_token}
+      true ->
+        state
     end
     HTTP.execute(action, state)
   end
