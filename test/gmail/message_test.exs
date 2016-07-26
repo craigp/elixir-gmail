@@ -122,6 +122,26 @@ defmodule Gmail.MessageTest do
     assert message == expected_result
   end
 
+  test "gets multiple messages", %{
+    message: message,
+    message_id: message_id,
+    expected_result: expected_result,
+    bypass: bypass,
+    access_token: access_token,
+    user_id: user_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/messages/#{message_id}" == conn.request_path
+      assert "" == conn.query_string
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      assert "GET" == conn.method
+      {:ok, json} = Poison.encode(message)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, message} = Gmail.User.messages(user_id, [message_id])
+    assert message == [expected_result]
+  end
+
   test "gets a message (body not base64 encoded, just for test coverage)", %{
     message: message,
     message_id: message_id,

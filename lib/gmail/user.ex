@@ -145,7 +145,6 @@ defmodule Gmail.User do
     {:noreply, state}
   end
 
-  # TODO check this to use worker
   @doc false
   def handle_call({:message, {:get, message_id, params}}, _from, state) do
     result = Gmail.Message.Worker.get(message_id, params, state);
@@ -453,7 +452,7 @@ defmodule Gmail.User do
   """
   def threads(user_id, thread_ids) when is_list(thread_ids), do: threads(user_id, thread_ids, %{})
 
-  def threads(user_id, thread_ids, params) do
+  def threads(user_id, thread_ids, params) when is_list(thread_ids) do
     call(user_id, {:thread, {:get, thread_ids, params}}, :infinity)
   end
 
@@ -498,8 +497,19 @@ defmodule Gmail.User do
   @doc """
   Lists the messages in the specified user's mailbox.
   """
-  def messages(user_id, params \\ %{}) do
+  def messages(user_id), do: messages(user_id, %{})
+
+  def messages(user_id, params) when is_map(params) do
     call(user_id, {:message, {:list, params}}, :infinity)
+  end
+
+  @doc """
+  Gets all the requested messages from the specified user's mailbox.
+  """
+  def messages(user_id, message_ids) when is_list(message_ids), do: messages(user_id, message_ids, %{})
+
+  def messages(user_id, message_ids, params) when is_list(message_ids) do
+    call(user_id, {:message, {:get, message_ids, params}}, :infinity)
   end
 
   @doc """

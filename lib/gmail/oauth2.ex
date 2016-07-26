@@ -5,7 +5,6 @@ defmodule Gmail.OAuth2 do
   """
 
   import Poison, only: [decode: 1]
-  use Timex
 
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
@@ -21,13 +20,13 @@ defmodule Gmail.OAuth2 do
       iex> Gmail.OAuth2.access_token_expired?(%{expires_at: 1})
       true
 
-      iex> Gmail.OAuth2.access_token_expired?(%{expires_at: (Timex.Date.to_secs(Timex.Date.now) + 10)})
+      iex> Gmail.OAuth2.access_token_expired?(%{expires_at: (DateTime.to_unix(DateTime.utc_now) + 10)})
       false
 
   """
   @spec access_token_expired?(map) :: boolean
   def access_token_expired?(%{expires_at: expires_at}) do
-    Date.to_secs(Date.now) >= expires_at
+    :os.system_time(:seconds) >= expires_at
   end
 
   @spec refresh_access_token(String.t) :: {String.t, number}
@@ -57,7 +56,7 @@ defmodule Gmail.OAuth2 do
       {:ok, %HTTPoison.Response{body: body}} ->
         case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
-            {:ok, access_token, (Date.to_secs(Date.now) + expires_in)}
+            {:ok, access_token, (:os.system_time(:seconds) + expires_in)}
           other ->
             {:error, other}
         end

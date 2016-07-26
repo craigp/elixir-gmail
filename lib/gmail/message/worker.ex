@@ -5,11 +5,10 @@ defmodule Gmail.Message.Worker do
   """
 
   use GenServer
-  use Timex
   require Logger
 
-  @ttl 10
-  @tick_interval 1000
+  @ttl 10 # seconds
+  @tick_interval 1000 # milliseconds
 
   alias Gmail.{Message, User}
 
@@ -23,7 +22,7 @@ defmodule Gmail.Message.Worker do
   Initialises the process with a supplied TTL rather than the default TTL.
   """
   def init(%{ttl: ttl, user_id: user_id} = state) do
-    state = Map.put(state, :ttl, Time.to_seconds(Time.now) + ttl)
+    state = Map.put(state, :ttl, :os.system_time(:seconds) + ttl)
     Process.send_after(self, :tick, @tick_interval)
     Logger.debug "Subscribing to parent"
     Gmail.User.subscribe(user_id, self)
@@ -34,7 +33,7 @@ defmodule Gmail.Message.Worker do
   Initialises the process with the default TTL.
   """
   def init(%{user_id: user_id} = state) do
-    state = Map.put(state, :ttl, Time.to_seconds(Time.now) + @ttl)
+    state = Map.put(state, :ttl, :os.system_time(:seconds) + @ttl)
     Process.send_after(self, :tick, @tick_interval)
     Logger.debug "Subscribing to parent"
     Gmail.User.subscribe(user_id, self)
@@ -43,7 +42,7 @@ defmodule Gmail.Message.Worker do
 
   @doc false
   def handle_info(:tick, %{ttl: ttl} = state) do
-    if Time.to_seconds(Time.now) - ttl > @ttl do
+    if :os.system_time(:seconds) - ttl > @ttl do
       GenServer.cast(self, :stop)
     else
       Process.send_after(self, :tick, @tick_interval)
@@ -115,7 +114,7 @@ defmodule Gmail.Message.Worker do
   @spec update_ttl(map) :: map
   defp update_ttl(%{message_id: message_id} = state) do
     Logger.debug("Updating ttl for message process #{message_id}")
-    Map.put(state, :ttl, Time.to_seconds(Time.now) + @ttl)
+    Map.put(state, :ttl, :os.system_time(:seconds) + @ttl)
   end
 
   @spec ensure_server_started(String.t, map) :: pid

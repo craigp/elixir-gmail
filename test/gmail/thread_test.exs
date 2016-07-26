@@ -6,6 +6,7 @@ defmodule Gmail.ThreadTest do
   import Mock
 
   setup do
+    other_thread_id = "6576897"
     thread_id = "34534345"
     history_id = "2435435"
     next_page_token = "23121233"
@@ -41,7 +42,7 @@ defmodule Gmail.ThreadTest do
     }
 
     other_thread = %{
-      "id"         => "6576897",
+      "id"         => other_thread_id,
       "historyId"  => "2435435",
       "messages"   => [],
       "snippet"    => "Thread #1"
@@ -109,8 +110,10 @@ defmodule Gmail.ThreadTest do
     {:ok,
       next_page_token: next_page_token,
       thread_id: thread_id,
+      other_thread_id: other_thread_id,
       threads: threads,
       thread: thread,
+      other_thread: other_thread,
       message: message,
       expected_result: expected_result,
       access_token: access_token,
@@ -245,6 +248,24 @@ defmodule Gmail.ThreadTest do
       Plug.Conn.resp(conn, 200, json)
     end
     {:error, :not_found} = Gmail.User.thread(user_id, thread_id)
+  end
+
+  test "gets multiple threads", %{
+    thread: %{"id" => thread_id} = thread,
+    access_token: access_token,
+    bypass: bypass,
+    user_id: user_id,
+    expected_result: expected_result
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}" == conn.request_path
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(thread)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, thread} = Gmail.User.threads(user_id, [thread_id])
+    assert [expected_result] == thread
   end
 
   test "handles a 400 error from the API", %{

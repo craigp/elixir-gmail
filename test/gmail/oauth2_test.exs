@@ -4,13 +4,12 @@ defmodule Gmail.OAuth2Test do
 
   use ExUnit.Case
   import Mock
-  use Timex
 
   doctest Gmail.OAuth2
 
   test "refreshes an expired access token" do
     expires_in = 10
-    expires_at = (Date.to_secs(Date.now) + expires_in)
+    expires_at = (:os.system_time(:seconds) + expires_in)
     access_token = "fake_access_token"
     fake_query = 'fake_query'
     opts = %{
