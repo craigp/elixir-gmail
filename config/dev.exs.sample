@@ -8,3 +8,6 @@ config :gmail, :oauth2, [
   token_type: "Bearer",
   expires_at: 1428085947
 ]
+
+config :gmail, :thread,
+  pool: 100

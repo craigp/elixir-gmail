@@ -74,14 +74,22 @@ defmodule Gmail.User do
   end
 
   @doc false
-  def handle_call({:thread, {:get, thread_ids, params}}, from, state) when is_list(thread_ids) do
-    Gmail.Thread.Worker.fetch(from, thread_ids, params, state)
-    {:noreply, state}
+  def handle_call({:thread, {:get, thread_ids, params}}, _from, %{user_id: user_id} = state) when is_list(thread_ids) do
+    threads =
+      thread_ids
+      |> Enum.map(fn id ->
+        Task.async(fn ->
+          {:ok, thread} = Gmail.Thread.Pool.get(user_id, id, params, state)
+          thread
+        end)
+      end)
+      |> Enum.map(fn task -> Task.await(task, :infinity) end)
+    {:reply, {:ok, threads}, state}
   end
 
   @doc false
-  def handle_call({:thread, {:get, thread_id, params}}, _from, state) do
-    result = Gmail.Thread.Worker.get(thread_id, params, state)
+  def handle_call({:thread, {:get, thread_id, params}}, _from, %{user_id: user_id} = state) do
+    result = Gmail.Thread.Pool.get(user_id, thread_id, params, state)
     {:reply, result, state}
   end
 
@@ -300,9 +308,9 @@ defmodule Gmail.User do
       |> Draft.get(draft_id)
       |> http_execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
+        {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
@@ -319,9 +327,9 @@ defmodule Gmail.User do
       |> Draft.delete(draft_id)
       |> http_execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
+        {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
-        {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+        {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         :ok ->
@@ -336,7 +344,7 @@ defmodule Gmail.User do
       |> Draft.send(draft_id)
       |> http_execute(state)
       |> case do
-        {:ok, %{"error" => %{"code" => 404}} } ->
+        {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
         {:ok, %{"error" => detail}} ->
           {:error, detail}

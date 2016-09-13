@@ -24,9 +24,9 @@ defmodule Gmail.History do
   """
   def handle_history_response(response) do
     case response do
-      {:ok, %{"error" => %{"code" => 404}} } ->
+      {:ok, %{"error" => %{"code" => 404}}} ->
         :not_found
-      {:ok, %{"error" => %{"code" => 400, "errors" => errors}} } ->
+      {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
         {:error, errors}
       {:ok, %{"history" => history}} ->
         {:ok, Helper.atomise_keys(history)}

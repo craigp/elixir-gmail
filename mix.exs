@@ -12,12 +12,13 @@ defmodule Gmail.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison],
+    [applications: [:logger, :httpoison, :poolboy],
       mod: {Gmail, []}]
   end
 
   defp deps do
     [
+      {:poolboy, "~> 1.5"},
       {:httpoison, "~> 0.8"},
       {:poison, "~> 2.1"},
       {:mock, "~> 0.1", only: :test},

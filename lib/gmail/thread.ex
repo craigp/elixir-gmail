@@ -85,7 +85,7 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread resource response from the Gmail API.
   """
-	@spec handle_thread_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
+  @spec handle_thread_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
   def handle_thread_response(response) do
     response
     |> handle_error
@@ -104,7 +104,7 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread list response from the Gmail API.
   """
-	@spec handle_thread_list_response(atom | {atom, map | String.t}) :: {atom, String.t | map} | {atom, map, String.t}
+  @spec handle_thread_list_response(atom | {atom, map | String.t}) :: {atom, String.t | map} | {atom, map, String.t}
   def handle_thread_list_response(response) do
     response
     |> handle_error
