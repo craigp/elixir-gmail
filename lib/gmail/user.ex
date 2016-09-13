@@ -19,7 +19,7 @@ defmodule Gmail.User do
   def init({user_id, refresh_token}) do
     {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
     state = Map.new(user_id: user_id, refresh_token: refresh_token,
-      access_token: access_token, expires_at: expires_at, pids: [])
+      access_token: access_token, expires_at: expires_at)
     {:ok, state}
   end
 
@@ -31,34 +31,6 @@ defmodule Gmail.User do
   @doc false
   def handle_cast(:stop, state) do
     {:stop, :normal, state}
-  end
-
-  @doc false
-  def handle_cast({:subscribe, pid}, %{pids: pids} = state) do
-    Logger.debug "Subscribe from pid #{:erlang.pid_to_list(pid)}"
-    state = cond do
-      pid in pids ->
-        state
-      true ->
-        Process.monitor(pid)
-        Map.put(state, :pids, [pid|pids])
-    end
-    {:noreply, state}
-  end
-
-  @doc false
-  def handle_cast(:killall, %{pids: pids} = state) do
-    Enum.each(pids, fn pid ->
-      GenServer.cast(pid, :stop)
-    end)
-    {:noreply, state}
-  end
-
-  @doc false
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, %{pids: pids} = state) do
-    Logger.debug "Process #{:erlang.pid_to_list(pid)} has gone down"
-    new_state = Map.put(state, :pids, Enum.filter(pids, &(&1 != pid)))
-    {:noreply, new_state}
   end
 
   #  Threads {{{ #
@@ -407,39 +379,10 @@ defmodule Gmail.User do
 
   def stop_mail(user_id) when is_atom(user_id) do
     if Process.whereis(user_id) do
-      stop_all_thread_processes(user_id)
       GenServer.cast(user_id, :stop)
     else
       :ok
     end
-  end
-
-  @doc """
-  Handles a subscribe request from a thread process and monitors it.
-  """
-  def subscribe(user_id, pid) when is_binary(user_id) do
-    user_id |> String.to_atom |> subscribe(pid)
-  end
-
-  @doc """
-  Handles a subscribe request from a thread process and monitors it.
-  """
-  def subscribe(user_id, pid) when is_atom(user_id) do
-    GenServer.cast(user_id, {:subscribe, pid})
-  end
-
-  @doc """
-  Stops all monitored thread processes.
-  """
-  def stop_all_thread_processes(user_id) when is_binary(user_id) do
-    user_id |> String.to_atom |> stop_all_thread_processes
-  end
-
-  @doc """
-  Stops all monitored thread processes.
-  """
-  def stop_all_thread_processes(user_id) when is_atom(user_id) do
-    GenServer.cast(user_id, :killall)
   end
 
   #  }}} Server control #
