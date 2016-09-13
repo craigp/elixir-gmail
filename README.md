@@ -1,8 +1,8 @@
-elixir-gmail 
+elixir-gmail
 ============
-[![Build Status](https://secure.travis-ci.org/craigp/elixir-gmail.png?branch=master "Build Status")](http://travis-ci.org/craigp/elixir-gmail) 
-[![Coverage Status](https://coveralls.io/repos/craigp/elixir-gmail/badge.svg?branch=master&service=github)](https://coveralls.io/github/craigp/elixir-gmail?branch=master) 
-[![hex.pm version](https://img.shields.io/hexpm/v/gmail.svg)](https://hex.pm/packages/gmail) 
+[![Build Status](https://secure.travis-ci.org/craigp/elixir-gmail.png?branch=master "Build Status")](http://travis-ci.org/craigp/elixir-gmail)
+[![Coverage Status](https://coveralls.io/repos/craigp/elixir-gmail/badge.svg?branch=master&service=github)](https://coveralls.io/github/craigp/elixir-gmail?branch=master)
+[![hex.pm version](https://img.shields.io/hexpm/v/gmail.svg)](https://hex.pm/packages/gmail)
 [![hex.pm downloads](https://img.shields.io/hexpm/dt/gmail.svg)](https://hex.pm/packages/gmail)
 [![Inline docs](http://inch-ci.org/github/craigp/elixir-gmail.svg?branch=master&style=flat)](http://inch-ci.org/github/craigp/elixir-gmail)
 
@@ -43,16 +43,16 @@ you can start playing with mail:
 
 ```elixir
 # fetch a list of threads
-{:ok, threads, next_page_token} = Gmail.User.threads("user@example.com") 
+{:ok, threads, next_page_token} = Gmail.User.threads("user@example.com")
 
 # fetch the next page of threads using a page token
-{:ok, _, _} = Gmail.User.threads("user@example.com", %{page_token: next_page_token}) 
+{:ok, _, _} = Gmail.User.threads("user@example.com", %{page_token: next_page_token})
 
 # fetch a thread by ID
-{:ok, thread} = Gmail.User.thread("user@example.com", "1233454566") 
+{:ok, thread} = Gmail.User.thread("user@example.com", "1233454566")
 
 # fetch a list of labels
-{:ok, labels} = Gmail.User.labels("user@example.com") 
+{:ok, labels} = Gmail.User.labels("user@example.com")
 ```
 
 Check the docs for a more complete list of functionality.
@@ -95,7 +95,7 @@ Check the docs for a more complete list of functionality.
   * [ ] `send` (with upload)
 * [x] History
   * [x] `list`
-* [x] Attachments 
+* [x] Attachments
   * [x] `get` (thanks to @killtheliterate)
 
 ## Auth
@@ -104,7 +104,7 @@ As of now the library doesn't do the initial auth generation for you; you'll
 need to create an app on the [Google Developer
 Console](https://console.developers.google.com/) to get a client ID and secret
 and authorize a user to get an authorization code, which you can trade for an
-access token. 
+access token.
 
 The library will however, when you supply a refresh token, use that to refresh
 an expired access token for you. Take a look in the `dev.exs.sample` config
@@ -117,4 +117,5 @@ file to see what your config should look like.
 * [x] .. and messages
 * [ ] .. and drafts
 * [ ] Batched requests
+* [ ] Document the config (specifically pool size)
 
