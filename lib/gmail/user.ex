@@ -148,14 +148,22 @@ defmodule Gmail.User do
   end
 
   @doc false
-  def handle_call({:message, {:get, message_ids, params}}, from, state) when is_list(message_ids) do
-    Gmail.Message.Worker.fetch(from, message_ids, params, state)
-    {:noreply, state}
+  def handle_call({:message, {:get, message_ids, params}}, _from, %{user_id: user_id} = state) when is_list(message_ids) do
+    messages =
+      message_ids
+      |> Enum.map(fn id ->
+        Task.async(fn ->
+          {:ok, message} = Gmail.Message.Pool.get(user_id, id, params, state)
+          message
+        end)
+      end)
+      |> Enum.map(fn task -> Task.await(task, :infinity) end)
+    {:reply, {:ok, messages}, state}
   end
 
   @doc false
-  def handle_call({:message, {:get, message_id, params}}, _from, state) do
-    result = Gmail.Message.Worker.get(message_id, params, state);
+  def handle_call({:message, {:get, message_id, params}}, _from, %{user_id: user_id} = state) do
+    result = Gmail.Message.Pool.get(user_id, message_id, params, state)
     {:reply, result, state}
   end
 
