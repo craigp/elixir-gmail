@@ -37,7 +37,7 @@ defmodule Gmail.MessageAttachment do
     attachment = message
     |> Helper.atomise_keys
 
-    attachment = struct(MessageAttachment, attachment)
+    struct(MessageAttachment, attachment)
   end
 
   @doc """

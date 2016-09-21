@@ -183,7 +183,6 @@ defmodule Gmail.LabelTest do
     bypass: bypass,
     label_id: label_id,
     four_hundred_error: four_hundred_error,
-    four_hundred_error_content: four_hundred_error_content,
     user_id: user_id,
     error_message_1: error_message_1
   } do
@@ -279,7 +278,6 @@ defmodule Gmail.LabelTest do
   test "handles an error when patching a label", %{
     bypass: bypass,
     four_hundred_error: four_hundred_error,
-    four_hundred_error_content: four_hundred_error_content,
     label_id: label_id,
     user_id: user_id,
     error_message_1: error_message_1

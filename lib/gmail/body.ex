@@ -16,7 +16,7 @@ defmodule Gmail.Body do
   @spec convert(Map.t) :: Body.t
   def convert(body) do
     {data, body} = body |> Helper.atomise_keys |> Map.pop(:data)
-    if data, do: body = Map.put(body, :data, decode_body(data))
+    body = if data, do: Map.put(body, :data, decode_body(data)), else: body
     struct(Body, body)
   end
 

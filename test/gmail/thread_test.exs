@@ -427,5 +427,3 @@ defmodule Gmail.ThreadTest do
   end
 
 end
-
-

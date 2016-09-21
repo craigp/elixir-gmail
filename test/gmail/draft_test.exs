@@ -207,4 +207,3 @@ defmodule Gmail.DraftTest do
   end
 
 end
-

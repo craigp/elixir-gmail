@@ -9,7 +9,6 @@ defmodule Gmail.OAuth2Test do
 
   test "refreshes an expired access token" do
     expires_in = 10
-    expires_at = (:os.system_time(:seconds) + expires_in)
     access_token = "fake_access_token"
     fake_query = 'fake_query'
     opts = %{
@@ -26,4 +25,3 @@ defmodule Gmail.OAuth2Test do
   end
 
 end
-
