@@ -15,7 +15,7 @@ defmodule Gmail.ThreadTest do
     expected_result = %Gmail.Thread{history_id: history_id, id: thread_id,
       messages: [%Gmail.Message{history_id: "12123", id: "23443513177",
           label_ids: ["INBOX", "CATEGORY_PERSONAL"],
-          payload: %Gmail.Payload{body: %Gmail.MessageAttachment{data: "dGhlIGFjdHVhbCBib2R5",
+          payload: %Gmail.Payload{body: %Gmail.Body{data: "the actual body",
               size: 234}, filename: "", headers: ["header-1", "header-2"],
             mime_type: "text/html", part_id: "", parts: []}, raw: "",
           size_estimate: 23433, snippet: "This is a message snippet",

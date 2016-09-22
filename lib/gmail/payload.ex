@@ -5,13 +5,13 @@ defmodule Gmail.Payload do
   """
 
   alias __MODULE__
-  alias Gmail.{MessageAttachment, Helper}
+  alias Gmail.{Body, Helper}
 
   defstruct part_id: "",
     mime_type: "",
     filename: "",
     headers: [],
-    body: %MessageAttachment{},
+    body: %Body{},
     parts: []
 
   @type t :: %__MODULE__{}
@@ -27,7 +27,7 @@ defmodule Gmail.Payload do
       |> Map.pop(:body)
     {parts, payload} = Map.pop(payload, :parts)
     payload = struct(Payload, payload)
-    payload = if body, do: Map.put(payload, :body, MessageAttachment.convert(body)), else: payload
+    payload = if body, do: Map.put(payload, :body, Body.convert(body)), else: payload
     payload = if parts do
       parts = Enum.map(parts, &convert/1)
       Map.put(payload, :parts, parts)
