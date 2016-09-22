@@ -108,8 +108,7 @@ defmodule Gmail.Message do
       |> Helper.atomise_keys
       |> Map.pop(:payload)
     message = struct(Message, message)
-    message = if payload, do: Map.put(message, :payload, Payload.convert(payload)), else: message
-    message
+    if payload, do: Map.put(message, :payload, Payload.convert(payload)), else: message
   end
 
   @doc """
