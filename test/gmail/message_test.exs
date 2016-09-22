@@ -28,7 +28,7 @@ defmodule Gmail.MessageTest do
 
     expected_result = %Gmail.Message{history_id: "12123", id: message_id,
       label_ids: ["INBOX", "CATEGORY_PERSONAL"],
-      payload: %Gmail.Payload{body: %Gmail.Body{data: "the actual body",
+      payload: %Gmail.Payload{body: %Gmail.MessageAttachment{data: "dGhlIGFjdHVhbCBib2R5",
           size: 234}, filename: "", headers: ["header-1", "header-2"],
         mime_type: "text/html", part_id: "", parts: []}, raw: "",
       size_estimate: 23433, snippet: "This is a message snippet",

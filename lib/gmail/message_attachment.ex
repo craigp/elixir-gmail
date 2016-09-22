@@ -12,7 +12,7 @@ defmodule Gmail.MessageAttachment do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/attachments
   """
   defstruct attachmentId: "",
-    size: "",
+    size: 0,
     data: ""
 
   @type t :: %__MODULE__{}
@@ -34,9 +34,7 @@ defmodule Gmail.MessageAttachment do
   """
   @spec convert(map) :: MessageAttachment.t
   def convert(message) do
-    attachment = message
-    |> Helper.atomise_keys
-
+    attachment = message |> Helper.atomise_keys
     struct(MessageAttachment, attachment)
   end
 
