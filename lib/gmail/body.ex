@@ -7,7 +7,7 @@ defmodule Gmail.Body do
   alias __MODULE__
   alias Gmail.Helper
 
-  defstruct size: 0, data: ""
+  defstruct size: 0, data: "", attachmentId: ""
   @type t :: %__MODULE__{}
 
   @doc """
