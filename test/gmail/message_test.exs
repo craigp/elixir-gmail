@@ -87,8 +87,7 @@ defmodule Gmail.MessageTest do
   test "handles no messages being returned", %{
     bypass: bypass,
     access_token: access_token,
-    user_id: user_id,
-    expected_search_result: expected_search_result
+    user_id: user_id
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{user_id}/messages" == conn.request_path
@@ -309,4 +308,3 @@ defmodule Gmail.MessageTest do
   end
 
 end
-

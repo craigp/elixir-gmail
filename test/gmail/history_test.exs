@@ -63,4 +63,3 @@ defmodule Gmail.HistoryTest do
   end
 
 end
-

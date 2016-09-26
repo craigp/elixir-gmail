@@ -36,4 +36,3 @@ defmodule Gmail.Message.PoolWorker do
   end
 
 end
-

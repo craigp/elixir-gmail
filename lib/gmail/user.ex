@@ -291,7 +291,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-          [%{"message" => error_message}|_rest] = errors
+          [%{"message" => error_message} | _rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -310,7 +310,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-          [%{"message" => error_message}|_rest] = errors
+          [%{"message" => error_message} | _rest] = errors
           {:error, error_message}
         :ok ->
           :ok
@@ -638,14 +638,13 @@ defmodule Gmail.User do
   """
   @spec http_execute({atom, String.t, String.t} | {atom, String.t, String.t, map}, map) :: atom | {atom, map | String.t}
   def http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
-    state = cond do
-      OAuth2.access_token_expired?(state) ->
-        Logger.debug "Refreshing access token for #{user_id}"
-        {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
-        GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
-        %{state | access_token: access_token}
-      true ->
-        state
+    state = if OAuth2.access_token_expired?(state) do
+      Logger.debug "Refreshing access token for #{user_id}"
+      {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
+      GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
+      %{state | access_token: access_token}
+    else
+      state
     end
     HTTP.execute(action, state)
   end

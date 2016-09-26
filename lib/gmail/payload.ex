@@ -27,12 +27,13 @@ defmodule Gmail.Payload do
       |> Map.pop(:body)
     {parts, payload} = Map.pop(payload, :parts)
     payload = struct(Payload, payload)
-    if body, do: payload = Map.put(payload, :body, Body.convert(body))
+    payload = if body, do: Map.put(payload, :body, Body.convert(body)), else: payload
     if parts do
       parts = Enum.map(parts, &convert/1)
-      payload = Map.put(payload, :parts, parts)
+      Map.put(payload, :parts, parts)
+    else
+      payload
     end
-    payload
   end
 
 end

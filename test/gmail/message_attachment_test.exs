@@ -16,7 +16,7 @@ defmodule Gmail.MessageAttachmentTest do
     end
 
     {
-      :ok, 
+      :ok,
       access_token: access_token,
       bypass: bypass,
       user_id: user_id,

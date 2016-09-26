@@ -45,7 +45,7 @@ defmodule Gmail.OAuth2 do
     from_config_file |> do_refresh_access_token(refresh_token)
   end
 
-  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret} = config, refresh_token) do
+  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
