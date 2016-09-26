@@ -40,8 +40,8 @@ defmodule Gmail.Helper do
   end
 
   def camelize(str) do
-    [first | rest] = str |> Macro.camelize |> String.codepoints
-    [String.downcase(first) | rest] |> Enum.join
+    [first|rest] = str |> Macro.camelize |> String.codepoints
+    [String.downcase(first)|rest] |> Enum.join
   end
 
 end

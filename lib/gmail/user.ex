@@ -291,7 +291,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-          [%{"message" => error_message} | _rest] = errors
+          [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         {:ok, %{"error" => details}} ->
           {:error, details}
@@ -310,7 +310,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 404}}} ->
           {:error, :not_found}
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
-          [%{"message" => error_message} | _rest] = errors
+          [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
         :ok ->
           :ok
