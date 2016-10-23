@@ -5,6 +5,8 @@ defmodule Gmail.Thread.Pool do
   """
 
   alias Gmail.Thread.PoolWorker
+  import Gmail.Helper, only: [extract_config: 3]
+  require Logger
 
   @default_pool_size 20
 
@@ -43,11 +45,12 @@ defmodule Gmail.Thread.Pool do
   end
 
   def pool_size do
-    case Application.get_env(:gmail, :thread) do
-      [pool: size] when is_integer(size) ->
-        size
-      _ ->
+    case extract_config(:gmail, :thread, :pool) do
+      nil ->
+        Logger.debug "Using default thread pool size of #{@default_pool_size}"
         @default_pool_size
+      size when is_integer(size) ->
+        size
     end
   end
 

@@ -5,20 +5,22 @@ defmodule Gmail.Message.Pool do
   """
 
   alias Gmail.Message.PoolWorker
+  import Gmail.Helper, only: [extract_config: 3]
+  require Logger
 
   @default_pool_size 20
 
   @doc false
   def start_link do
     poolboy_config = [
-      {:name, {:local, :message_pool}},
+      {:name, {:local, :__gmail_message_pool}},
       {:worker_module, PoolWorker},
       {:size, pool_size},
       {:max_overflow, 0}
     ]
 
     children = [
-      :poolboy.child_spec(:message_pool, poolboy_config, [])
+      :poolboy.child_spec(:__gmail_message_pool, poolboy_config, [])
     ]
 
     options = [
@@ -35,7 +37,7 @@ defmodule Gmail.Message.Pool do
   @spec get(String.t, String.t, map, map) :: {atom, map}
   def get(user_id, message_id, params, state) do
     :poolboy.transaction(
-      :message_pool,
+      :__gmail_message_pool,
       fn pid ->
         PoolWorker.get(pid, user_id, message_id, params, state)
       end,
@@ -43,11 +45,12 @@ defmodule Gmail.Message.Pool do
   end
 
   def pool_size do
-    case Application.get_env(:gmail, :message) do
-      [pool: size] when is_integer(size) ->
-        size
-      _ ->
+    case extract_config(:gmail, :message, :pool) do
+      nil ->
+        Logger.debug "Using default thread pool size of #{@default_pool_size}"
         @default_pool_size
+      size when is_integer(size) ->
+        size
     end
   end
 

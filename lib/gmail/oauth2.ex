@@ -4,6 +4,7 @@ defmodule Gmail.OAuth2 do
   OAuth2 access token handling.
   """
 
+  alias Gmail.Helper
   import Poison, only: [decode: 1]
 
   @token_url "https://accounts.google.com/o/oauth2/token"
@@ -42,7 +43,7 @@ defmodule Gmail.OAuth2 do
   @spec do_refresh_access_token(String.t | map, String.t) :: {atom, map} | {atom, String.t, number}
 
   defp do_refresh_access_token(refresh_token) do
-    from_config_file |> do_refresh_access_token(refresh_token)
+    Helper.extract_config(:gmail, :oauth2) |> do_refresh_access_token(refresh_token)
   end
 
   defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) do
@@ -62,16 +63,6 @@ defmodule Gmail.OAuth2 do
         end
       not_ok ->
         {:error, not_ok}
-    end
-  end
-
-  @spec from_config_file() :: map
-  defp from_config_file do
-    case Application.get_env(:gmail, :oauth2) do
-      nil ->
-        %{}
-      config ->
-        Enum.into(config, Map.new)
     end
   end
 
