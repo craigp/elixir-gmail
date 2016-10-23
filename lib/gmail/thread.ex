@@ -125,6 +125,8 @@ defmodule Gmail.Thread do
             struct(Thread, Helper.atomise_keys(thread))
           end)
         {:ok, threads}
+      {:ok, %{"resultSizeEstimate" => 0}} ->
+        {:ok, []}
     end
   end
 
