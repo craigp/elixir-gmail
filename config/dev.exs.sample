@@ -6,7 +6,7 @@ config :gmail, :oauth2, [
 ]
 
 config :gmail, :thread,
-  pool: 100
+  pool_size: 100
 
 config :gmail, :message,
-  pool: 100
+  pool_size: 100

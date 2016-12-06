@@ -1,11 +1,11 @@
 defmodule Gmail.Payload do
 
   @moduledoc """
-  Helper functions for dealing with email payloads.
+  Utils functions for dealing with email payloads.
   """
 
   alias __MODULE__
-  alias Gmail.{Body, Helper}
+  alias Gmail.{Body, Utils}
 
   defstruct part_id: "",
     mime_type: "",
@@ -23,7 +23,7 @@ defmodule Gmail.Payload do
   def convert(result) do
     {body, payload} =
       result
-      |> Helper.atomise_keys
+      |> Utils.atomise_keys
       |> Map.pop(:body)
     {parts, payload} = Map.pop(payload, :parts)
     payload = struct(Payload, payload)

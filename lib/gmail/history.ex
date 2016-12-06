@@ -1,6 +1,6 @@
 defmodule Gmail.History do
 
-  alias Gmail.{Helper}
+  alias Gmail.Utils
 
   @moduledoc """
   Lists the history of all changes to the given mailbox.
@@ -29,7 +29,7 @@ defmodule Gmail.History do
       {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
         {:error, errors}
       {:ok, %{"history" => history}} ->
-        {:ok, Helper.atomise_keys(history)}
+        {:ok, Utils.atomise_keys(history)}
     end
   end
 

@@ -5,7 +5,7 @@ defmodule Gmail.Message do
   """
 
   alias __MODULE__
-  alias Gmail.{Payload, Helper}
+  alias Gmail.{Payload, Utils}
   import Gmail.Base
 
   @doc """
@@ -105,7 +105,7 @@ defmodule Gmail.Message do
   def convert(message) do
     {payload, message} =
       message
-      |> Helper.atomise_keys
+      |> Utils.atomise_keys
       |> Map.pop(:payload)
     message = struct(Message, message)
     if payload, do: Map.put(message, :payload, Payload.convert(payload)), else: message

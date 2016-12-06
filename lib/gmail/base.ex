@@ -4,7 +4,7 @@ defmodule Gmail.Base do
   Base class for common functionality.
   """
 
-  alias Gmail.{Helper}
+  alias Gmail.Utils
 
   @default_base_url "https://www.googleapis.com/gmail/v1/"
 
@@ -35,7 +35,7 @@ defmodule Gmail.Base do
         |> Map.keys
         |> Enum.filter(fn key -> key in available_options end)
         |> Enum.reduce(Map.new, fn key, query ->
-          string_key = Helper.camelize(key)
+          string_key = Utils.camelize(key)
           val = if is_list(params[key]) do
             Enum.join(params[key], ",")
           else

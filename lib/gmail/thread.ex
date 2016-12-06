@@ -6,7 +6,7 @@ defmodule Gmail.Thread do
 
   alias __MODULE__
   import Gmail.Base
-  alias Gmail.{Helper, Message}
+  alias Gmail.{Utils, Message}
 
   @doc """
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/threads#resource
@@ -115,14 +115,14 @@ defmodule Gmail.Thread do
         threads =
           raw_threads
           |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
+            struct(Thread, Utils.atomise_keys(thread))
           end)
         {:ok, threads, next_page_token}
       {:ok, %{"threads" => raw_threads}} ->
         threads =
           raw_threads
           |> Enum.map(fn thread ->
-            struct(Thread, Helper.atomise_keys(thread))
+            struct(Thread, Utils.atomise_keys(thread))
           end)
         {:ok, threads}
       {:ok, %{"resultSizeEstimate" => 0}} ->

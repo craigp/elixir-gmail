@@ -3,7 +3,9 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.1.16",
+     version: "0.1.17",
+     build_embedded: Mix.env == :prod,
+     start_permanent: Mix.env == :prod,
      deps: deps,
      test_coverage: [tool: ExCoveralls],
      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test],

@@ -1,4 +1,4 @@
-defmodule Gmail.Helper do
+defmodule Gmail.Utils do
 
   @moduledoc """
   General helper functions.
@@ -42,6 +42,26 @@ defmodule Gmail.Helper do
   def camelize(str) do
     [first|rest] = str |> Macro.camelize |> String.codepoints
     [String.downcase(first)|rest] |> Enum.join
+  end
+
+  @doc """
+  Loads the config value for a specified subject and key.
+  """
+  @spec load_config(atom, atom, any) :: any
+  def load_config(subject, key, default) when is_atom(subject) and is_atom(key) do
+    subject
+    |> load_config
+    |> Keyword.get(key, default)
+  end
+
+  @spec load_config(atom, atom) :: any
+  def load_config(subject, key) when is_atom(subject) and is_atom(key) do
+    load_config(subject, key, nil)
+  end
+
+  @spec load_config(atom) :: list
+  def load_config(subject) do
+    Application.get_env(:gmail, subject)
   end
 
   def extract_config(subject, category) do

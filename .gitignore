@@ -11,3 +11,4 @@ config/dev.exs
 doc
 tags
 docs
+.tool-versions

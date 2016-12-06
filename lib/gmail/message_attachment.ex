@@ -5,7 +5,7 @@ defmodule Gmail.MessageAttachment do
   """
 
   alias __MODULE__
-  alias Gmail.{Helper}
+  alias Gmail.Utils
   import Gmail.Base
 
   @doc """
@@ -33,7 +33,7 @@ defmodule Gmail.MessageAttachment do
   """
   @spec convert(map) :: MessageAttachment.t
   def convert(message) do
-    attachment = message |> Helper.atomise_keys
+    attachment = message |> Utils.atomise_keys
     struct(MessageAttachment, attachment)
   end
 

@@ -4,7 +4,7 @@ defmodule Gmail.OAuth2 do
   OAuth2 access token handling.
   """
 
-  alias Gmail.Helper
+  alias Gmail.Utils
   import Poison, only: [decode: 1]
 
   @token_url "https://accounts.google.com/o/oauth2/token"
@@ -31,7 +31,7 @@ defmodule Gmail.OAuth2 do
   end
 
   @spec refresh_access_token(String.t) :: {String.t, number}
-  def refresh_access_token(refresh_token) do
+  def refresh_access_token(refresh_token) when is_binary(refresh_token) do
     {:ok, access_token, expires_at} = do_refresh_access_token(refresh_token)
     {access_token, expires_at}
   end
@@ -40,13 +40,17 @@ defmodule Gmail.OAuth2 do
 
   #  Private functions {{{ #
 
-  @spec do_refresh_access_token(String.t | map, String.t) :: {atom, map} | {atom, String.t, number}
+  @typep refresh_access_token_response :: {atom, map} | {atom, String.t, number}
+  @spec do_refresh_access_token(String.t) :: refresh_access_token_response
+  @spec do_refresh_access_token(list, String.t) :: refresh_access_token_response
 
-  defp do_refresh_access_token(refresh_token) do
-    Helper.extract_config(:gmail, :oauth2) |> do_refresh_access_token(refresh_token)
+  defp do_refresh_access_token(refresh_token) when is_binary(refresh_token) do
+    :oauth2
+    |> Utils.load_config
+    |> do_refresh_access_token(refresh_token)
   end
 
-  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) do
+  defp do_refresh_access_token([client_id: client_id, client_secret: client_secret], refresh_token) when is_binary(refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,

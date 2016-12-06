@@ -41,7 +41,7 @@ defmodule Gmail.HistoryTest do
       Plug.Conn.resp(conn, 200, json)
     end
     {:ok, user_history} = Gmail.User.history(user_id)
-    assert user_history == Gmail.Helper.atomise_keys(history_items)
+    assert user_history == Gmail.Utils.atomise_keys(history_items)
   end
 
   test "gets a list of history items with a max number of results", %{
@@ -59,7 +59,7 @@ defmodule Gmail.HistoryTest do
       Plug.Conn.resp(conn, 200, json)
     end
     {:ok, user_history} = Gmail.User.history(user_id, %{max_results: 20})
-    assert user_history == Gmail.Helper.atomise_keys(history_items)
+    assert user_history == Gmail.Utils.atomise_keys(history_items)
   end
 
 end
