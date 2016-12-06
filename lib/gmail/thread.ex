@@ -85,7 +85,8 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread resource response from the Gmail API.
   """
-  @spec handle_thread_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
+  @spec handle_thread_response({atom, String.t}) :: {atom, String.t} | {atom, map}
+  @spec handle_thread_response({atom, map}) :: {atom, String.t} | {atom, map}
   def handle_thread_response(response) do
     response
     |> handle_error
@@ -133,14 +134,15 @@ defmodule Gmail.Thread do
   @doc """
   Handles a thread delete response from the Gmail API.
   """
-  @spec handle_thread_delete_response(atom | {atom, map | String.t}) :: {atom, String.t | map} | {atom, map, String.t} | atom
+  @spec handle_thread_delete_response({atom, map}) :: {atom, String.t | map} | {atom, map, String.t} | atom
+  @spec handle_thread_delete_response({atom, String.t}) :: {atom, String.t | map} | {atom, map, String.t} | atom
   def handle_thread_delete_response(response) do
     response
     |> handle_error
     |> case do
       {:error, detail} ->
         {:error, detail}
-      :ok ->
+      {:ok, _} ->
         :ok
     end
   end

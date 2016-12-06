@@ -95,7 +95,8 @@ defmodule Gmail.Label do
   @doc """
   Handles a label resource response from the Gmail API.
   """
-  @spec handle_label_response(atom | {atom, map | String.t}) :: {atom, String.t | map}
+  @spec handle_label_response({atom, map}) :: {atom, String.t} | {atom, map}
+  @spec handle_label_response({atom, String.t}) :: {atom, String.t} | {atom, map}
   def handle_label_response(response) do
     response
     |> handle_error

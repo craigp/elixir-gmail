@@ -150,7 +150,7 @@ defmodule Gmail.Message do
     |> case do
       {:error, message} ->
         {:error, message}
-      :ok ->
+      {:ok, _} ->
         :ok
     end
   end

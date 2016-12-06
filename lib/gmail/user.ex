@@ -312,7 +312,7 @@ defmodule Gmail.User do
         {:ok, %{"error" => %{"code" => 400, "errors" => errors}}} ->
           [%{"message" => error_message}|_rest] = errors
           {:error, error_message}
-        :ok ->
+        {:ok, _} ->
           :ok
       end
     {:reply, result, state}
@@ -449,15 +449,12 @@ defmodule Gmail.User do
 
   #  Messages {{{ #
 
-  @spec messages(atom | String.t, map) :: atom
-  @spec message(atom | String.t, String.t, map) :: atom
-  @spec search(atom | String.t, atom, String.t, map) :: atom
-
   @doc """
   Lists the messages in the specified user's mailbox.
   """
-  def messages(user_id), do: messages(user_id, %{})
-
+  @spec messages(atom, map) :: atom
+  @spec messages(String.t, map) :: atom
+  def messages(user_id, params \\ %{})
   def messages(user_id, params) when is_map(params) do
     call(user_id, {:message, {:list, params}}, :infinity)
   end
@@ -465,7 +462,9 @@ defmodule Gmail.User do
   @doc """
   Gets all the requested messages from the specified user's mailbox.
   """
-  def messages(user_id, message_ids) when is_list(message_ids), do: messages(user_id, message_ids, %{})
+  def messages(user_id, message_ids) when is_list(message_ids) do
+    messages(user_id, message_ids, %{})
+  end
 
   def messages(user_id, message_ids, params) when is_list(message_ids) do
     call(user_id, {:message, {:get, message_ids, params}}, :infinity)
@@ -474,6 +473,8 @@ defmodule Gmail.User do
   @doc """
   Gets a message from the specified user's mailbox.
   """
+  @spec message(atom, String.t, map) :: atom
+  @spec message(String.t, String.t, map) :: atom
   def message(user_id, message_id) when is_binary(user_id), do: message(user_id, message_id, %{})
 
   @doc """
@@ -505,24 +506,24 @@ defmodule Gmail.User do
   end
 
   @doc """
-  Searches for messages or threads in the specified user's mailbox.
-  """
-  def search(user_id, thread_or_message, query, params \\ %{}) do
-    call(user_id, {:search, thread_or_message, query, params}, :infinity)
-  end
-
-  @doc """
   Modifies the labels on a message in the specified user's mailbox.
   """
   def message(:modify, user_id, message_id, labels_to_add, labels_to_remove) do
     call(user_id, {:message, {:modify, message_id, labels_to_add, labels_to_remove}})
   end
 
+  @doc """
+  Searches for messages or threads in the specified user's mailbox.
+  """
+  @spec search(atom, atom, String.t, map) :: atom
+  @spec search(String.t, atom, String.t, map) :: atom
+  def search(user_id, thread_or_message, query, params \\ %{}) do
+    call(user_id, {:search, thread_or_message, query, params}, :infinity)
+  end
+
   #  }}} Messages #
 
   #  Attachments {{{ #
-
-  @spec message(atom | String.t, String.t, map) :: atom
 
   @doc """
   Gets an attachment from the specified user's mailbox.
@@ -636,7 +637,8 @@ defmodule Gmail.User do
   @doc """
   Executes an HTTP action.
   """
-  @spec http_execute({atom, String.t, String.t} | {atom, String.t, String.t, map}, map) :: atom | {atom, map | String.t}
+  @spec http_execute({atom, String.t, String.t}, map) :: {atom, map} | {atom, String.t}
+  @spec http_execute({atom, String.t, String.t, map}, map) :: {atom, map} | {atom, String.t}
   def http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
     state = if OAuth2.access_token_expired?(state) do
       Logger.debug "Refreshing access token for #{user_id}"

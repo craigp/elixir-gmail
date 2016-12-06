@@ -51,7 +51,8 @@ defmodule Gmail.Base do
     end
   end
 
-  @spec handle_error(map) :: atom | {atom, String.t} | {atom, map} | map
+  @spec handle_error({atom, map}) :: {atom, String.t} | {atom, map}
+  @spec handle_error({atom, String.t}) :: {atom, String.t} | {atom, map}
   def handle_error(response) do
     case response do
       {:ok, %{"error" => %{"code" => 404}}} ->
@@ -61,8 +62,10 @@ defmodule Gmail.Base do
         {:error, error_message}
       {:ok, %{"error" => details}} ->
         {:error, details}
-      not_error ->
-        not_error
+      {:ok, other} ->
+        {:ok, other}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 end

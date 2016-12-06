@@ -64,17 +64,4 @@ defmodule Gmail.Utils do
     Application.get_env(:gmail, subject)
   end
 
-  def extract_config(subject, category) do
-    case Application.get_env(subject, category) do
-      nil ->
-        raise "No config for subject \"#{subject}\" in category \"#{category}\" #{Mix.env}"
-      config ->
-        Enum.into(config, %{})
-    end
-  end
-
-  def extract_config(subject, category, key) do
-    Keyword.get(Application.get_env(subject, category), key)
-  end
-
 end
