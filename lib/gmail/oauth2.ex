@@ -47,10 +47,11 @@ defmodule Gmail.OAuth2 do
   defp do_refresh_access_token(refresh_token) when is_binary(refresh_token) do
     :oauth2
     |> Utils.load_config
+    |> Enum.into(%{})
     |> do_refresh_access_token(refresh_token)
   end
 
-  defp do_refresh_access_token([client_id: client_id, client_secret: client_secret], refresh_token) when is_binary(refresh_token) do
+  defp do_refresh_access_token(%{client_id: client_id, client_secret: client_secret}, refresh_token) when is_binary(refresh_token) do
     payload = %{
       client_id: client_id,
       client_secret: client_secret,
