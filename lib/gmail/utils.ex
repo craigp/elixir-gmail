@@ -61,7 +61,7 @@ defmodule Gmail.Utils do
 
   @spec load_config(atom) :: list
   def load_config(subject) do
-    Application.get_env(:gmail, subject)
+    Application.get_env(:gmail, subject, [])
   end
 
 end
