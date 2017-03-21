@@ -15,7 +15,7 @@ defmodule Gmail.Thread.Pool do
     poolboy_config = [
       {:name, {:local, :thread_pool}},
       {:worker_module, PoolWorker},
-      {:size, pool_size},
+      {:size, pool_size()},
       {:max_overflow, 0}
     ]
 

@@ -25,7 +25,7 @@ defmodule Gmail.MessageAttachment do
   @spec get(String.t, String.t, String.t) :: {atom, String.t, String.t}
   def get(user_id, message_id, id) do
     path = querify_params("users/#{user_id}/messages/#{message_id}/attachments/#{id}", [], %{})
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """

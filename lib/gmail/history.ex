@@ -16,7 +16,7 @@ defmodule Gmail.History do
   def list(user_id, params) do
     available_options = [:label_id, :max_results, :page_token, :start_history_id]
     path = querify_params("users/#{user_id}/history", available_options, params)
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """

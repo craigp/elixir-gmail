@@ -31,7 +31,7 @@ defmodule Gmail.Message do
   def get(user_id, message_id, params) do
     available_options = [:format, :metadata_headers]
     path = querify_params("users/#{user_id}/messages/#{message_id}", available_options, params)
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """
@@ -41,7 +41,7 @@ defmodule Gmail.Message do
   """
   @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, message_id) do
-    {:delete, base_url, "users/#{user_id}/messages/#{message_id}"}
+    {:delete, base_url(), "users/#{user_id}/messages/#{message_id}"}
   end
 
   @doc """
@@ -51,7 +51,7 @@ defmodule Gmail.Message do
   """
   @spec trash(String.t, String.t) :: {atom, String.t, String.t}
   def trash(user_id, message_id) do
-    {:post, base_url, "users/#{user_id}/messages/#{message_id}/trash"}
+    {:post, base_url(), "users/#{user_id}/messages/#{message_id}/trash"}
   end
 
   @doc """
@@ -61,7 +61,7 @@ defmodule Gmail.Message do
   """
   @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
   def untrash(user_id, message_id) do
-    {:post, base_url, "users/#{user_id}/messages/#{message_id}/untrash"}
+    {:post, base_url(), "users/#{user_id}/messages/#{message_id}/untrash"}
   end
 
   @doc """
@@ -83,7 +83,7 @@ defmodule Gmail.Message do
   def list(user_id, params) do
     available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
     path = querify_params("users/#{user_id}/messages", available_options, params)
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """
@@ -92,7 +92,7 @@ defmodule Gmail.Message do
   Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/modify#http-request
   """
   def modify(user_id, message_id, labels_to_add, labels_to_remove) do
-    {:post, base_url, "users/#{user_id}/messages/#{message_id}/modify", %{
+    {:post, base_url(), "users/#{user_id}/messages/#{message_id}/modify", %{
         "addLabelIds" => labels_to_add,
         "removeLabelIds" => labels_to_remove
       }}

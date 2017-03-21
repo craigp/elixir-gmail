@@ -15,7 +15,7 @@ defmodule Gmail.Message.Pool do
     poolboy_config = [
       {:name, {:local, :__gmail_message_pool}},
       {:worker_module, PoolWorker},
-      {:size, pool_size},
+      {:size, pool_size()},
       {:max_overflow, 0}
     ]
 
