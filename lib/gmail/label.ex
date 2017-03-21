@@ -29,7 +29,7 @@ defmodule Gmail.Label do
   """
   @spec create(String.t, String.t) :: {atom, String.t, String.t, map}
   def create(user_id, label_name) do
-    {:post, base_url, "users/#{user_id}/labels", %{"name" => label_name}}
+    {:post, base_url(), "users/#{user_id}/labels", %{"name" => label_name}}
   end
 
   @doc """
@@ -39,7 +39,7 @@ defmodule Gmail.Label do
   """
   @spec update(String.t, Label.t) :: {atom, String.t, String.t, map}
   def update(user_id, %Label{id: id} = label) do
-    {:put, base_url, "users/#{user_id}/labels/#{id}", convert_for_update(label)}
+    {:put, base_url(), "users/#{user_id}/labels/#{id}", convert_for_update(label)}
   end
 
   @doc """
@@ -49,7 +49,7 @@ defmodule Gmail.Label do
   """
   @spec patch(String.t, Label.t) :: {atom, String.t, String.t, map}
   def patch(user_id, %Label{id: id} = label) do
-    {:patch, base_url, "users/#{user_id}/labels/#{id}", convert_for_patch(label)}
+    {:patch, base_url(), "users/#{user_id}/labels/#{id}", convert_for_patch(label)}
   end
 
   @doc """
@@ -59,7 +59,7 @@ defmodule Gmail.Label do
   """
   @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, label_id) do
-    {:delete, base_url, "users/#{user_id}/labels/#{label_id}"}
+    {:delete, base_url(), "users/#{user_id}/labels/#{label_id}"}
   end
 
   @doc """
@@ -69,7 +69,7 @@ defmodule Gmail.Label do
   """
   @spec get(String.t, String.t) :: {atom, String.t, String.t}
   def get(user_id, label_id) do
-    {:get, base_url, "users/#{user_id}/labels/#{label_id}"}
+    {:get, base_url(), "users/#{user_id}/labels/#{label_id}"}
   end
 
   @doc """
@@ -79,7 +79,7 @@ defmodule Gmail.Label do
   """
   @spec list(String.t) :: {atom, String.t, String.t}
   def list(user_id) do
-    {:get, base_url, "users/#{user_id}/labels"}
+    {:get, base_url(), "users/#{user_id}/labels"}
   end
 
   @doc """

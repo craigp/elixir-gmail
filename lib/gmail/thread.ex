@@ -27,7 +27,7 @@ defmodule Gmail.Thread do
   def get(user_id, thread_id, params) do
     available_options = [:format, :metadata_headers]
     path = querify_params("users/#{user_id}/threads/#{thread_id}", available_options, params)
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """
@@ -49,7 +49,7 @@ defmodule Gmail.Thread do
   def list(user_id, params) when is_binary(user_id) do
     available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
     path = querify_params("users/#{user_id}/threads", available_options, params)
-    {:get, base_url, path}
+    {:get, base_url(), path}
   end
 
   @doc """
@@ -59,7 +59,7 @@ defmodule Gmail.Thread do
   """
   @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, thread_id) do
-    {:delete, base_url, "users/#{user_id}/threads/#{thread_id}"}
+    {:delete, base_url(), "users/#{user_id}/threads/#{thread_id}"}
   end
 
   @doc """
@@ -69,7 +69,7 @@ defmodule Gmail.Thread do
   """
   @spec trash(String.t, String.t) :: {atom, String.t, String.t}
   def trash(user_id, thread_id) do
-    {:post, base_url, "users/#{user_id}/threads/#{thread_id}/trash"}
+    {:post, base_url(), "users/#{user_id}/threads/#{thread_id}/trash"}
   end
 
   @doc """
@@ -79,7 +79,7 @@ defmodule Gmail.Thread do
   """
   @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
   def untrash(user_id, thread_id) do
-    {:post, base_url, "users/#{user_id}/threads/#{thread_id}/untrash"}
+    {:post, base_url(), "users/#{user_id}/threads/#{thread_id}/untrash"}
   end
 
   @doc """

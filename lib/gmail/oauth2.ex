@@ -9,7 +9,6 @@ defmodule Gmail.OAuth2 do
 
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
-  @scope "https://mail.google.com/"
 
   #  Client API {{{ #
 

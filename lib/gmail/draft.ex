@@ -23,7 +23,7 @@ defmodule Gmail.Draft do
   """
   @spec get(String.t, String.t) :: {atom, String.t, String.t}
   def get(user_id, draft_id) do
-    {:get, base_url, "users/#{user_id}/drafts/#{draft_id}"}
+    {:get, base_url(), "users/#{user_id}/drafts/#{draft_id}"}
   end
 
   @doc """
@@ -33,7 +33,7 @@ defmodule Gmail.Draft do
   """
   @spec list(String.t) :: {atom, String.t, String.t}
   def list(user_id) do
-    {:get, base_url, "users/#{user_id}/drafts"}
+    {:get, base_url(), "users/#{user_id}/drafts"}
   end
 
   @doc """
@@ -43,7 +43,7 @@ defmodule Gmail.Draft do
   """
   @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, draft_id) do
-    {:delete, base_url, "users/#{user_id}/drafts/#{draft_id}"}
+    {:delete, base_url(), "users/#{user_id}/drafts/#{draft_id}"}
   end
 
   @doc """
@@ -53,7 +53,7 @@ defmodule Gmail.Draft do
   """
   @spec send(String.t, String.t) :: {atom, String.t, String.t, map}
   def send(user_id, draft_id) do
-    {:post, base_url, "users/#{user_id}/drafts/send", %{"id" => draft_id}}
+    {:post, base_url(), "users/#{user_id}/drafts/send", %{"id" => draft_id}}
   end
 
   @doc """

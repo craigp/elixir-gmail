@@ -18,10 +18,10 @@ defmodule Gmail.Base do
         url
       {:ok, api_config} ->
         Application.put_env(:gmail, :api, Map.put(api_config, :url, @default_base_url))
-        base_url
+        base_url()
       :error ->
         Application.put_env(:gmail, :api, %{url: @default_base_url})
-        base_url
+        base_url()
     end
   end
 
