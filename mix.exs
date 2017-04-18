@@ -14,7 +14,7 @@ defmodule Gmail.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison, :poolboy],
+    [extra_applications: [:logger],
       mod: {Gmail, []}]
   end
 
