@@ -3,7 +3,7 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.1.18",
+     version: "0.1.19",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
@@ -22,7 +22,7 @@ defmodule Gmail.Mixfile do
     [
       {:poolboy, "~> 1.5"},
       {:httpoison, "~> 0.8"},
-      {:poison, "~> 2.1"},
+      {:poison, "~> 2.1 or ~> 3.1"},
       {:mock, "~> 0.1", only: :test},
       {:excoveralls, "~> 0.5", only: :test},
       {:earmark, "~> 1.0", only: :dev},
