@@ -9,7 +9,8 @@ defmodule Gmail.Message do
   import Gmail.Base
 
   @doc """
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages#resource
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages#resource
   """
   defstruct id: "",
     thread_id: "",
@@ -25,19 +26,24 @@ defmodule Gmail.Message do
   @doc """
   Gets the specified message.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/get
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/get
   """
   @spec get(String.t, String.t, map) :: {atom, String.t, String.t}
   def get(user_id, message_id, params) do
     available_options = [:format, :metadata_headers]
-    path = querify_params("users/#{user_id}/messages/#{message_id}", available_options, params)
+    path =
+      querify_params("users/#{user_id}/messages/#{message_id}",
+        available_options, params)
     {:get, base_url(), path}
   end
 
   @doc """
-  Immediately and permanently deletes the specified message. This operation cannot be undone. Prefer `trash` instead.
+  Immediately and permanently deletes the specified message. This operation
+  cannot be undone. Prefer `trash` instead.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/delete
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/delete
   """
   @spec delete(String.t, String.t) :: {atom, String.t, String.t}
   def delete(user_id, message_id) do
@@ -47,7 +53,8 @@ defmodule Gmail.Message do
   @doc """
   Moves the specified message to the trash.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/trash
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/trash
   """
   @spec trash(String.t, String.t) :: {atom, String.t, String.t}
   def trash(user_id, message_id) do
@@ -57,7 +64,8 @@ defmodule Gmail.Message do
   @doc """
   Removes the specified message from the trash.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/untrash
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/untrash
   """
   @spec untrash(String.t, String.t) :: {atom, String.t, String.t}
   def untrash(user_id, message_id) do
@@ -67,7 +75,8 @@ defmodule Gmail.Message do
   @doc """
   Searches for messages in the user's mailbox.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
   @spec search(String.t, String.t, map) :: {atom, String.t, String.t}
   def search(user_id, query, params) when is_binary(query) do
@@ -77,19 +86,23 @@ defmodule Gmail.Message do
   @doc """
   Lists the messages in the user's mailbox.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/list
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/list
   """
   @spec list(String.t, map) :: {atom, String.t, String.t}
   def list(user_id, params) do
-    available_options = [:max_results, :include_spam_trash, :label_ids, :page_token, :q]
-    path = querify_params("users/#{user_id}/messages", available_options, params)
+    available_options = [
+      :max_results, :include_spam_trash, :label_ids, :page_token, :q]
+    path =
+      querify_params("users/#{user_id}/messages", available_options, params)
     {:get, base_url(), path}
   end
 
   @doc """
   Modifies the labels on the specified message.
 
-  Gmail API documentation: https://developers.google.com/gmail/api/v1/reference/users/messages/modify#http-request
+  Gmail API documentation:
+  https://developers.google.com/gmail/api/v1/reference/users/messages/modify#http-request
   """
   def modify(user_id, message_id, labels_to_add, labels_to_remove) do
     {:post, base_url(), "users/#{user_id}/messages/#{message_id}/modify", %{
@@ -108,7 +121,11 @@ defmodule Gmail.Message do
       |> Utils.atomise_keys
       |> Map.pop(:payload)
     message = struct(Message, message)
-    if payload, do: Map.put(message, :payload, Payload.convert(payload)), else: message
+    if payload do
+      Map.put(message, :payload, Payload.convert(payload))
+    else
+      message
+    end
   end
 
   @doc """
@@ -135,7 +152,10 @@ defmodule Gmail.Message do
       {:error, message} ->
         {:error, message}
       {:ok, %{"messages" => msgs}} ->
-        {:ok, Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) -> %Message{id: id, thread_id: thread_id} end)}
+      {:ok,
+        Enum.map(msgs, fn(%{"id" => id, "threadId" => thread_id}) ->
+          %Message{id: id, thread_id: thread_id}
+        end)}
       {:ok, %{"resultSizeEstimate" => 0}} ->
         {:ok, []}
     end

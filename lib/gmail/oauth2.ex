@@ -7,6 +7,8 @@ defmodule Gmail.OAuth2 do
   alias Gmail.Utils
   import Poison, only: [decode: 1]
 
+  @typep refresh_access_token_response :: {:error, any} | {:ok, String.t, number}
+
   @token_url "https://accounts.google.com/o/oauth2/token"
   @token_headers %{"Content-Type" => "application/x-www-form-urlencoded"}
 
@@ -29,20 +31,21 @@ defmodule Gmail.OAuth2 do
     :os.system_time(:seconds) >= expires_at
   end
 
-  @spec refresh_access_token(String.t) :: {String.t, number}
+  @spec refresh_access_token(String.t) :: {:ok, {String.t, integer}} | {:error, any}
   def refresh_access_token(refresh_token) when is_binary(refresh_token) do
-    {:ok, access_token, expires_at} = do_refresh_access_token(refresh_token)
-    {access_token, expires_at}
+    case do_refresh_access_token(refresh_token) do
+      {:ok, access_token, expires_at} ->
+        {:ok, {access_token, expires_at}}
+      {:error, _} = err ->
+        err
+    end
   end
 
   #  }}} Client API #
 
   #  Private functions {{{ #
 
-  @typep refresh_access_token_response :: {atom, map} | {atom, String.t, number}
-  @spec do_refresh_access_token(String.t) :: refresh_access_token_response
-  @spec do_refresh_access_token(list, String.t) :: refresh_access_token_response
-
+  @spec do_refresh_access_token(String.t | map) :: refresh_access_token_response
   defp do_refresh_access_token(refresh_token) when is_binary(refresh_token) do
     :oauth2
     |> Utils.load_config
@@ -62,11 +65,11 @@ defmodule Gmail.OAuth2 do
         case decode(body) do
           {:ok, %{"access_token" => access_token, "expires_in" => expires_in}} ->
             {:ok, access_token, (:os.system_time(:seconds) + expires_in)}
-          other ->
-            {:error, other}
+          {:error, _} = err ->
+            err
         end
-      not_ok ->
-        {:error, not_ok}
+      {:error, _} = err ->
+        err
     end
   end
 

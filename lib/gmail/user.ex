@@ -17,7 +17,7 @@ defmodule Gmail.User do
 
   @doc false
   def init({user_id, refresh_token}) do
-    {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
+    {:ok, {access_token, expires_at}} = OAuth2.refresh_access_token(refresh_token)
     state = Map.new(user_id: user_id, refresh_token: refresh_token,
       access_token: access_token, expires_at: expires_at)
     {:ok, state}
@@ -642,7 +642,7 @@ defmodule Gmail.User do
   def http_execute(action, %{refresh_token: refresh_token, user_id: user_id} = state) do
     state = if OAuth2.access_token_expired?(state) do
       Logger.debug "Refreshing access token for #{user_id}"
-      {access_token, expires_at} = OAuth2.refresh_access_token(refresh_token)
+      {:ok, {access_token, expires_at}} = OAuth2.refresh_access_token(refresh_token)
       GenServer.cast(String.to_atom(user_id), {:update_access_token, access_token, expires_at})
       %{state | access_token: access_token}
     else

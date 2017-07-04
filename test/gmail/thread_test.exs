@@ -103,7 +103,7 @@ defmodule Gmail.ThreadTest do
     Application.put_env :gmail, :api, %{url: "http://localhost:#{bypass.port}/gmail/v1/"}
 
     Gmail.User.stop_mail(user_id)
-    with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {access_token, 100000000000000} end] do
+    with_mock Gmail.OAuth2, [refresh_access_token: fn(_) -> {:ok, {access_token, 100000000000000}} end] do
       {:ok, _server_pid} = Gmail.User.start_mail(user_id, "dummy-refresh-token")
     end
 
@@ -188,7 +188,7 @@ defmodule Gmail.ThreadTest do
       Plug.Conn.resp(conn, 200, json)
     end
     with_mock Gmail.OAuth2, [
-      refresh_access_token: fn(_) -> {access_token, 100000000000000} end,
+      refresh_access_token: fn(_) -> {:ok, {access_token, 100000000000000}} end,
       access_token_expired?: fn(_) -> true end
     ] do
       {:ok, thread} = Gmail.User.thread(user_id, thread_id)

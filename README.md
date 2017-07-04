@@ -24,14 +24,6 @@ end
 
 Then run `$ mix do deps.get, compile` to download and compile your dependencies.
 
-Finally, add the `:gmail` application as your list of applications in `mix.exs`:
-
-```elixir
-def application do
-  [applications: [:logger, :gmail]]
-end
-```
-
 Before you can work with mail for a user you'll need to start a process for them.
 
 ```elixir
