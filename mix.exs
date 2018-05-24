@@ -3,7 +3,7 @@ defmodule Gmail.Mixfile do
 
   def project do
     [app: :gmail,
-     version: "0.1.19",
+     version: "0.1.20",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
