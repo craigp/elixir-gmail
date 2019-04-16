@@ -227,7 +227,7 @@ defmodule Gmail.ThreadTest do
   } do
     Bypass.expect bypass, fn conn ->
       assert "/gmail/v1/users/#{user_id}/threads/#{thread_id}" == conn.request_path
-      assert URI.encode_query(%{"format" => "metadata", "metadataHeaders" => "header1,header1"}) == conn.query_string
+      assert URI.encode("format=metadata&metadataHeaders=header1&metadataHeaders=header1") == conn.query_string
       assert "GET" == conn.method
       assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
       {:ok, json} = Poison.encode(thread)
@@ -235,6 +235,25 @@ defmodule Gmail.ThreadTest do
     end
     {:ok, thread} = Gmail.User.thread(user_id, thread_id, %{format: "metadata", metadata_headers: ["header1", "header1"]})
     assert expected_result == thread
+  end
+
+  test "gets threads, specifying multiple labels", %{
+    access_token: access_token,
+    expected_search_results: expected_search_results,
+    list_results: list_results,
+    bypass: bypass,
+    user_id: user_id
+  } do
+    Bypass.expect bypass, fn conn ->
+      assert "/gmail/v1/users/#{user_id}/threads" == conn.request_path
+      assert URI.encode("&labelIds=sample&labelIds=blah") == conn.query_string
+      assert "GET" == conn.method
+      assert {"authorization", "Bearer #{access_token}"} in conn.req_headers
+      {:ok, json} = Poison.encode(list_results)
+      Plug.Conn.resp(conn, 200, json)
+    end
+    {:ok, results, _} = Gmail.User.threads(user_id, %{label_ids: ["sample", "blah"]})
+    assert expected_search_results == results
   end
 
   test "reports :not_found for a thread that doesn't exist", %{
