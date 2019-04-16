@@ -30,25 +30,37 @@ defmodule Gmail.Base do
     if Enum.empty?(params) do
       path
     else
-      query =
+      {query, list_params} =
         params
-        |> Map.keys
-        |> Enum.filter(fn key -> key in available_options end)
-        |> Enum.reduce(Map.new, fn key, query ->
-          string_key = Utils.camelize(key)
-          val = if is_list(params[key]) do
-            Enum.join(params[key], ",")
-          else
-            params[key]
-          end
-          Map.put(query, string_key, val)
-        end)
-      if Enum.empty?(query) do
+        |> Enum.reduce({ Map.new, Map.new}, fn {key, value}, {q, lps} ->
+            if key in available_options do
+              string_key = Utils.camelize(key)
+              if is_list(value) do
+                {q, Map.put(lps, string_key, value)}
+              else
+                {Map.put(q, string_key, value), lps}
+              end
+            else
+              {q, lps}
+            end
+          end)
+      if Enum.empty?(query) && Enum.empty?(list_params) do
         path
       else
-        path <> "?" <> URI.encode_query(query)
+        path <> "?" <> URI.encode_query(query) <> queryify_arrays(list_params)
       end
     end
+  end
+
+  @spec queryify_arrays(map) :: String.t
+  defp queryify_arrays(params) do
+        params
+        |> Map.keys
+        |> Enum.reduce("", fn key, query_string ->
+            string_key = "&" <> key <> "="
+            query_string <> string_key <> Enum.join(params[key], string_key)
+           end)
+        |> URI.encode
   end
 
   @spec handle_error({atom, map}) :: {atom, String.t} | {atom, map}
